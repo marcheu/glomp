@@ -1,0 +1,7 @@
+#!/bin/sh
+cd generate
+make clean
+make
+cd ..
+./generate/generate
+
