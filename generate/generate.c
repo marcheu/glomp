@@ -25,6 +25,7 @@ gl_type type_table[]=
 	{"GLsizeiptrARB","NULL",sizeof(GLsizeiptrARB)},
 	{"GLintptr","NULL",sizeof(GLintptr)},
 	{"GLintptrARB","NULL",sizeof(GLintptrARB)},
+	{"const GLubyte*","NULL",sizeof(GLubyte*)},
 
 	{"GLvoid*","NULL",sizeof(GLvoid*)},
 	{"GLvoid**","NULL",sizeof(GLvoid**)},
@@ -83,6 +84,12 @@ gl_type type_table[]=
 	{"GLhalfNV","0.0",sizeof(GLhalfNV)},
 	{"GLhalfNV*","NULL",sizeof(GLhalfNV*)},
 
+	{"GLbitfield", "0", sizeof(GLbitfield)},
+
+	{"GLint64EXT*","NULL",sizeof(int64_t*)},
+
+	{"GLuint64EXT*","NULL",sizeof(int64_t*)},
+
 	{NULL,NULL,0},
 };
 
@@ -103,6 +110,8 @@ char* type_return(char* type)
 int type_size(char* type)
 {
 	int i=0;
+	if (strncmp(type,"const",5)==0)
+		type+=6;
 	while(type_table[i].name!=NULL)
 	{
 		if (strcmp(type,type_table[i].name)==0)
@@ -122,7 +131,7 @@ int main()
 	system("sed -i -e s/WINGDIAPI\\ //g "tmpfile);
 	system("sed -i -e s/GLAPI\\ //g "tmpfile);
 	system("sed -i -e s/extern\\ //g "tmpfile);
-	system("sed -i -e s/const\\ //g "tmpfile);
+	//system("sed -i -e s/const\\ //g "tmpfile);
 	// stick the * to their matching type
 	system("sed -i -e \"s/\\ \\*/\\*/g\" "tmpfile);
 	// change "*" to "* "
@@ -130,11 +139,13 @@ int main()
 	// change "* *" to "**"
 	system("sed -i -e \"s/\\*\\ \\*/\\*\\*/g\" "tmpfile);
 	// replace double spaces with simple spaces
-	system("sed -i -e s/\\ \\ /\\ "tmpfile);
+	system("sed -i -e \"s/\\ \\ /\\ /g\" "tmpfile);
 	// replace double spaces with simple spaces
-	system("sed -i -e s/\\ \\ /\\ /g"tmpfile);
+	system("sed -i -e \"s/\\ \\ /\\ /g\" "tmpfile);
 	// stick the , to their matching type
 	system("sed -i -e \"s/,\\ /,/g\" "tmpfile);
+	// replace " )" with ")"
+	system("sed -i -e \"s/\\ )/)/g\" "tmpfile);
 
 	FILE* f;
 	FILE* fout_c;
@@ -149,9 +160,12 @@ int main()
 	char func_name[1024];
 	char params[20][1024];
 	int param_count;
+	int func_num=0;
 	f=fopen(tmpfile,"rb");
 	while(fgets(s,1024,f))
 	{
+		func_num++;
+
 		// change the first \n to a 0
 		int ii=0;
 		for(ii=0;ii<1024;ii++)
@@ -159,6 +173,13 @@ int main()
 				s[ii]=0;
 
 		int i=0;
+
+		/* handle possible "const" keyword */
+		if (strncmp(&s[i],"const ",6)==0)
+		{
+			memcpy(&(ret_type[i]),&s[i],6);
+			i+=6;
+		}
 		// find the return type
 		do
 		{
@@ -224,6 +245,17 @@ int main()
 		// TODO special-case void here ?
 		while(s[i]!=')')
 		{
+			j=0;
+			/* handle possible "const" keyword */
+			if (strncmp(&s[i],"const",5)==0)
+			{
+				memcpy(&(params[currentp][j]),&s[i],5);
+				j+=5;
+				i+=6;
+				params[currentp][j]=' ';
+				j++;
+			}
+
 			if (isalpha(s[i]))
 			{
 				while(isalnum(s[i]))
@@ -245,8 +277,6 @@ int main()
 					j++;
 				}
 				params[currentp][j]=0;
-				j=0;
-				currentp++;
 			}
 
 			if (s[i]==' ')
@@ -262,34 +292,46 @@ int main()
 			{
 				i++;
 			}
+			currentp++;
 		}
 
-		// generate the function proto
+		// generate the function proto, both to the .c and the .h file
 		fprintf(fout_c,"%s %s ",ret_type,func_name);
+		fprintf(fout_h,"%s %s ",ret_type,func_name);
 		fprintf(fout_c," (");
+		fprintf(fout_h," (");
 		int p;
 		for(p=0;p<param_count;p++)
 		{
-			fprintf(fout_c,"%s p%d",params[p],p);
+			if (strncmp(params[p],"void",4)==0)
+				fprintf(fout_c,"%s",params[p]);
+			else
+				fprintf(fout_c,"%s p%d",params[p],p);
+			fprintf(fout_h,"%s",params[p]);
 			if (p<param_count-1)
+			{
 				fprintf(fout_c,", ");
+				fprintf(fout_h,", ");
+			}
 		}
 		fprintf(fout_c," )\n");
+		fprintf(fout_h," );\n");
 		// generate the function body
 		fprintf(fout_c,"{\n");
+		fprintf(fout_c,"\tint fnum=%d;\n",func_num);
+		fprintf(fout_c,"\tint fflags=0;\n");
+		fprintf(fout_c,"\tOUTPUT_FIFO(&fnum,sizeof(fnum));\n");
+		fprintf(fout_c,"\tOUTPUT_FIFO(&fflags,sizeof(fflags));\n");
 		for(p=0;p<param_count;p++)
 		{
-			fprintf(fout_c,"\tOUTPUT_FIFO(&p%d,%d);\n",p,type_size(params[p]));
+			if (strncmp(params[p],"void",4)!=0)
+				fprintf(fout_c,"\tOUTPUT_FIFO(&p%d,%d);\n",p,type_size(params[p]));
 		}
 		// generate the function return
 		fprintf(fout_c,"\treturn %s;\n",type_return(ret_type));
 
 		fprintf(fout_c,"}\n\n");
 
-		// output the proto to the.h file
-		fprintf(fout_h,"%s %s ();\n",ret_type,func_name);
-
-		
 	}
 	fclose(f);
 	fclose(fout_c);
