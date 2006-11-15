@@ -1,0 +1,6 @@
+
+Optimization ideas
+--------------------
+Place the biggest surface on the master board
+Use GL extensions for efficient readbacks/uploads
+
