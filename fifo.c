@@ -19,16 +19,7 @@ int numshm;
 
 }
 
-//l'ecritu dans la fifo se fait a l'aide d ela macrot OUTPUT_FIFO
 
-void lectureFifo(void * buff,int idx){
-
-
-  memcpy(buff,&cmd_fifo[idx],sizeof(cmd_fifo[idx]));
-  idx=(cmd_fifo_idx+1)%TAILLEMEM;
-
-
-}
 
 
 
