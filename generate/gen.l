@@ -3,6 +3,8 @@
 
 %}
 
+%option noyywrap
+
 lettre [A-Za-z]
 chiffre [0-9]
 espace [ \t]

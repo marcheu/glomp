@@ -25,7 +25,7 @@ int np=-1;
 int fnum=0;
 int i;
 int sizep[20];
-char * ret_type,* type,* buffer;
+char * ret_type,* type,* buffer,* listparam;
 
 
 char* type_return(char* type);
@@ -129,14 +129,21 @@ S    : 	   LIGNE  { fprintf(fout_c,"\n{\n");
                      fprintf(fout_c,"\tOUTPUT_FIFO(&fflags,sizeof(fflags));\n");
                      for(i=0;i<=np;i++)
                        fprintf(fout_c,"\tOUTPUT_FIFO(&p%d,%d);\n",i,sizep[i]);
-                     fprintf(fout_c,"\treturn %s;\n",ret_type);
+                     fprintf(fout_c,"\treturn %s;\n",type_return(ret_type));
                      fprintf(fout_c,"\n}\n\n");
 
-                     fprintf(ftmpc,"\tglfunctable[%d](",fnum);
+
+                     for(i=0;i<=np;i++)
+                       fprintf(ftmpc,"\tINPUT_FIFO(&p%d,%d);\n",i,sizep[i]);
+                     fprintf(ftmpc,"\t((%s (*)(%s))glfunctable[%d])(",ret_type,listparam,fnum);
                      for(i=0;i<np;i++)
                         fprintf(ftmpc,"p%d,",i);
-                     fprintf(ftmpc,"p%d);\n}\n\n",i);
+                     if(np!=1)
+                       fprintf(ftmpc,"p%d",np);
+                     fprintf(ftmpc,");\n}\n\n");
 
+                     printf("jsuis la:%s\n",listparam);
+                     strcpy(listparam," ");
                      np=-1;                                       
                      fnum++;                                                     } S
      |                                     
@@ -145,10 +152,10 @@ S    : 	   LIGNE  { fprintf(fout_c,"\n{\n");
 
 LIGNE : GLAPI2  RETURN APIENTRY2 MOT {fprintf(fout_c,"%s ",yytext);
                                       fprintf(fout_h,"%s ",yytext); 
-                                      fprintf(fin_c,"glfunctable.a%s=glxGetProcAddress(\"%s\");\n",yytext,yytext);
+                                      fprintf(fin_c,"\tglfunctable[%d]=glxGetProcAddress(\"%s\");\n",fnum,yytext);
                                       fprintf(ftmpc,"f%s()\n{\n",yytext);
-                                      fprintf(fin_h,"\tf%s,\n",yytext);
-                                      fprintf(ftmph,"\ta%s,\n",yytext);} PO {fprintf(fout_c,"( ");
+                                      fprintf(fin_h,"void f%s();\n",yytext);
+                                      fprintf(ftmph,"\t&f%s,\n",yytext);} PO {fprintf(fout_c,"( ");
                                                                            fprintf(fout_h,"( ");} PARAMS PF {
                                                                                                     fprintf(fout_c,")");
                                                                                                     fprintf(fout_h,");\n");} 
@@ -157,7 +164,7 @@ LIGNE : GLAPI2  RETURN APIENTRY2 MOT {fprintf(fout_c,"%s ",yytext);
 
 RETURN : C MOT { fprintf(fout_c,"%s ",yytext);
                  fprintf(fout_h,"%s ",yytext);
-                 strcpy(type,yytext);          } E {ret_type=type_return(type);}
+                 strcpy(type,yytext);          } E {strcpy(ret_type,type);}
        ;  
 
 C : CONST {fprintf(fout_c,"const ");  fprintf(fout_h,"const ");}
@@ -170,19 +177,21 @@ E :  ETOILE {fprintf(fout_c,"*"); fprintf(fout_h,"*"); type=strcat(type,"*"); }
   ;
 
 
-PARAMS : PARAM V {fprintf(fout_c,", "); fprintf(fout_h,", "); } PARAMS
+PARAMS : PARAM V {fprintf(fout_c,", "); fprintf(fout_h,", "); strcat(listparam,","); } PARAMS
        | PARAM
        ;
 
 PARAM : C MOT {  fprintf(fout_c,"%s ",yytext);
                  if(strcmp(yytext,"void")!=0) 
                    fprintf(fout_h,"%s ",yytext);
-                 strcpy(type,yytext);            } E F{ if(strcmp(type,"void")!=0)
-                                                        {  
-                                                         np++;
-                                                         fprintf(fout_c,"p%d ",np); 
-                                                         sizep[np]=type_size(type);
-                                                       fprintf(ftmpc,"\t%s p%d==INPUT_FIFO(%d);\n",type,np,sizep[np]); }  }
+                 else strcat(listparam,"void");
+                 strcpy(type,yytext);            } E F { if(strcmp(type,"void")!=0)
+                                                         {  
+                                                           np++;
+                                                           fprintf(fout_c,"p%d ",np);
+                                                           strcat(listparam,type); 
+                                                           sizep[np]=type_size(type);
+                                                           fprintf(ftmpc,"\t%s p%d;\n",type,np); }  }
  
       | PARAMSPE {  np++; fprintf(fout_c,"%s p%d ",yytext,np); fprintf(fout_h,"%s ",yytext); sizep[np]=4; }
       ;
@@ -226,6 +235,7 @@ int main()
   ret_type=malloc(sizeof(char)*50);
   type=malloc(sizeof(char)*50);
   buffer=malloc(sizeof(char)*2048);
+  listparam=malloc(sizeof(char)*1024);
 
   fout_c=fopen(out_c_file,"wb");
   fout_h=fopen(out_h_file,"wb");
@@ -238,13 +248,12 @@ int main()
   fprintf(fout_h,"/* Auto-generated, do not edit ! */\n#include \"fifo.h\"\n#include <GL/gl.h>\n#include <GL/glext.h>\n\n");
   
   fprintf(fin_c,"/* Auto-generated, do not edit ! */\n#include \""in_h_file"\"\n\n");
-  fprintf(fin_c,"void unpack( )\n{\tint func=INPUT_FIFO(4);\n\tint flags=INPUT_FIFO(4);\n\tvoid* f=functable[func];\n\tf();\n}\n\n");
+  fprintf(fin_c,"void unpack( )\n{\n\tint func=INPUT_FIFO(4);\n\tint flags=INPUT_FIFO(4);\n\tfunctable[func]();\n}\n\n");
   fprintf(fin_c,"void init()\n{\n");
 
   fprintf(fin_h,"/* Auto-generated, do not edit ! */\n#include \"fifo.h\"\n#include <GL/gl.h>\n#include <GL/glext.h>\n\n");
-  fprintf(fin_h,"void* functable[]\n{\n");
   
-  fprintf(ftmph,"void* glfunctable[]\n{\n");
+  fprintf(ftmph,"void (*functable[])(void)=\n{\n");
 
 
   yyin=fopen("/usr/include/GL/gl.h","r");
@@ -255,8 +264,8 @@ int main()
 
 
   fprintf(fin_c,"}\n\n");
-  fprintf(fin_h,"}\n\n");
-  fprintf(ftmph,"}\n");
+  fprintf(fin_h,"};\n\n");
+  fprintf(ftmph,"};\n\nvoid * glfunctable[%d];",fnum);
 
   
   rewind(ftmpc);
