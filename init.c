@@ -8,6 +8,14 @@ uint32_t cmd_fifo_idx;
 int client_num;
 
 
+
+/* library interception variables */
+static void* lib_handle = 0;
+static void (*lib_glXSwapBuffers)(Display *dpy, GLXDrawable drawable) = 0;
+static GLXWindow (*lib_glXCreateWindow)(Display *dpy, GLXFBConfig config,
+			  Window win, const int *attrib_list);
+
+
 //variable global pour le semaphore
 int            sem_id ;			
 struct sembuf  sem_oper_P;	/* Operation P */	
@@ -98,3 +106,56 @@ void glop_init(){
 
 
 } 
+
+
+
+/*
+ * Load GLX library and find glXSwapBuffers() & other function
+ */
+inline static void load_library(void)
+{
+  /* open library (NOTE: you may need to change this filename!) */
+  lib_handle = dlopen("/usr/lib/libGL.so", RTLD_LAZY);///charge la liib.so
+
+  if (!lib_handle){perror("lib");exit(0);}
+
+  /* intercept library glxSwapBuffers function */
+  lib_glXSwapBuffers = dlsym(lib_handle, "glXSwapBuffers");    ///met le bon pointer dans lib_glX
+  lib_glXCreateWindow = dlsym(lib_handle, "glXCreateWindow");    ///met le bon po\inter dans lib_glX
+
+}
+
+
+/*
+ * Our glXSwapBuffers function that intercepts the "real" function.
+ *
+ * Load library if necessary. Then dump a frame and call the "real"
+ * glXSwapBuffers function.
+ */
+void glXSwapBuffers(Display *dpy, GLXDrawable drawable)///changement de la func swap
+{
+  if (!lib_handle)
+    {
+      load_library();
+    }
+
+
+  lib_glXSwapBuffers(dpy, drawable);
+
+}
+
+/*
+ * Our glXCreateWindow function that intercepts the "real" function.
+ *
+ * Load library if necessary. create 4 window
+ */
+GLXWindow glXCreateWindow(Display *dpy, GLXFBConfig config,Window win, const int *attrib_list)
+{
+  if (!lib_handle)
+    {
+      load_library();
+    }
+
+
+
+}
