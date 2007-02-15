@@ -6,6 +6,6 @@ lex.yy.c: gen.l
 	lex gen.l 
 
 clean:
-	rm -f y.tab.* lex.yy.c y.output
+	rm -f y.tab.* lex.yy.c y.output wrapped.c wrapped.h dewrapped.c dewrapped.h
 	rm -f *~
 	rm -f analyseur
