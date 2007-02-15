@@ -1,5 +1,5 @@
 generateur: y.tab.c lex.yy.c
-	gcc -o generateur  y.tab.c  lex.yy.c -ll
+	gcc -o generateur  y.tab.c  lex.yy.c -ll -lGL
 y.tab.c: gen.y
 	yacc -d gen.y 
 lex.yy.c: gen.l
