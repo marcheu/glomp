@@ -1,14 +1,21 @@
 #include "fifo.h"
 
-#define NBCARTE 4
+
 #define SEMKEY  64
 
-unit8_t* cmd_fifo;
-uint32_t cmd_fifo_idx;
+
+struct{
+  uint8_t* cmd_fifo;
+  uint32_t cmd_fifo_idx;//indice
+  uint32_t* idx; //tableau des indice client
+}fifo;
+
+
 int client_num;
+int nbcarte;
 
 
-
+sem_t **semap;
 /* library interception variables */
 static void* lib_handle = 0;
 static void (*lib_glXSwapBuffers)(Display *dpy, GLXDrawable drawable) = 0;
@@ -16,17 +23,24 @@ static GLXWindow (*lib_glXCreateWindow)(Display *dpy, GLXFBConfig config,
 			  Window win, const int *attrib_list);
 
 
-//variable global pour le semaphore
-int            sem_id ;			
-struct sembuf  sem_oper_P;	/* Operation P */	
-struct sembuf  sem_oper_V;	/* Operation V */
-
 	
 
 
 
 void glop_init(){
   /*tout d abord il faut ouvir les fichier de config*/
+
+  /*trouver les display, et donc le nomnbre de carte graphique*/
+        Display* dpy = XOpenDisplay("");
+        nbcarte=ScreenCount(dpy);
+
+        // potentially override the number of GPUs
+        char* force=getenv("FORCE_GPU");
+        if (force)
+        {
+                printf("forcing %d GPU\n",atoi(force));
+                nbcarte=atoi(force);
+        }
 
 
 
@@ -36,28 +50,14 @@ void glop_init(){
 
 
 
-  /*1ere etape, creation du semaphore, enfin de ces structures*/
-  union semun 
-  {
-    int val;
-    struct semid_ds *buf;
-    ushort *array;
-  } s_ctl;
-  
-  /* Initialisations des structures ad-hoc pour faire P et V */ 
-  s_ctl.val          =  1;       /* Valeur d'initialisation du compteur */
-  sem_oper_P.sem_num =  0;       
-  sem_oper_P.sem_op  = -1;       /* Pour faire P */
-  sem_oper_V.sem_num =  0;
-  sem_oper_V.sem_op  =  1;       /* Pour faire V */
+  /*creationt du tableau des sem*/
+  *semap = (sem_t *)malloc(NBCARTE*sizeof(sem_t));
+  int i;
+  for(i;i<nbcarte;i++)
+    sem_init(*semap[i],1,0);
 
-  /* Creation et initialisation du tableau de  semaphores.
-   *   Ici, on utilise un seul semaphore, donc le second parametre est 
-   *   positionne a 1
-   */
-  
-  sem_id = semget (SEMKEY, 1, 0777|IPC_CREAT);
-  /**/
+  /*chaque client utilise un seul semaphore du tableau */
+  /*le bonn semaphore correspondant a num_client*/
 
 
 
@@ -66,9 +66,13 @@ void glop_init(){
 
 
 
-  client_num=NBCARTE;
+  client_num=nbcarte;
   //avant le fork, on creer le shm
   creerFifo();
+  //maintenant qu'on a creer  la fifo on creer le tab contenant les indice des consommateurs dans la structure
+  fifo.idx=(uint32_t *)malloc(nbcarte*sizeof(uint32_t));
+
+
 
   /*boucle de creation des process*/
 
@@ -77,11 +81,11 @@ void glop_init(){
     int varfork;
     varfork=1;
 
-    for(i;i<NBCARTE;i++){
+    for(i;i<nbcarte;i++){
       if(varfork==0){
 	//on est dans un des processus fils
-
-
+	varfork=1;//pour ne pas y repasser au prochain increment
+	client_num=i-1;
       }
       else{
 	//on est dasn le pere
@@ -93,14 +97,9 @@ void glop_init(){
     /*process creer*/
 
 
-
-   
     if(varfork==0){
-      
-    }
-    else{
-
-    }
+      client_num=i-1;
+    }//on s'occupe du derrneir fils vu qu'on ne l'a pas fait avant;
 
   
 
@@ -121,7 +120,7 @@ inline static void load_library(void)
 
   /* intercept library glxSwapBuffers function */
   lib_glXSwapBuffers = dlsym(lib_handle, "glXSwapBuffers");    ///met le bon pointer dans lib_glX
-  lib_glXCreateWindow = dlsym(lib_handle, "glXCreateWindow");    ///met le bon po\inter dans lib_glX
+  lib_glXCreateWindow = dlsym(lib_handle, "glXCreateWindow");    ///met le bon pointer dans lib_glX
 
 }
 
@@ -156,6 +155,8 @@ GLXWindow glXCreateWindow(Display *dpy, GLXFBConfig config,Window win, const int
       load_library();
     }
 
+
+  }
 
 
 }
