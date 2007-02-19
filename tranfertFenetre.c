@@ -20,11 +20,11 @@ void lire_fenetre()
 {
   GLvoid * pointeur;
 
-    sem_wait(semadrfen_out[numero_proc]);
+    sem_wait(semadrfen_out[client_num]);
     if(fenetreactive==0)
-      glReadPixels(0,0,W,H,GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, shmadr_fenetre1[numero_proc]);
-    else glReadPixels(0,0,W,H,GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, shmadr_fenetre1[numero_proc]);
-    sem_post(semadrfen_in[numero_proc]);
+      glReadPixels(0,0,W,H,GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, shmadr_fenetre1[client_num]);
+    else glReadPixels(0,0,W,H,GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, shmadr_fenetre2[client_num]);
+    sem_post(semadrfen_in[client_num]);
     fenetreactive=(fenetreactive+1)%2;
 
 } 
@@ -36,14 +36,14 @@ void ecirre_fenetre()
    GLvoid * pointeur;
    
    if(fenetreactive==0)  
-     for(i=0;i<client_num;i++)
+     for(i=0;i<nbcarte;i++)
      {
         glRasterPos2i(0,0);
         sem_wait(semadrfen_in[i]);
         glDrawPixels(W,H,GL_BGRA,GL_UNSIGNED_INT_8_8_8_8_REV,shmadr_fenetre1[i]);
         sem_post(semadrfen_out[i]);
      } 
-   else for(i=0;i<client_num;i++)
+   else for(i=0;i<nbcarte;i++)
         {
           glRasterPos2i(0,0);
           sem_wait(semadrfen_in[i]);

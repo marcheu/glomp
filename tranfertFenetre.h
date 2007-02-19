@@ -12,7 +12,7 @@
 
 
 extern int client_num;
-extern int numero_proc;
+extern int nbcarte;
 extern int fenetreactive;
 extern char **shmadr_fenetre1;
 extern char **shmadr_fenetre2;
