@@ -27,6 +27,14 @@ sem_t **semap_in, **semap_out;
 static void* lib_handle_libGL = 0;
 static void* lib_handle_libX11 = 0;
 static void (*lib_glXSwapBuffers)(Display *dpy, GLXDrawable drawable) = 0;
+static void (*lib_XSetStandardProperties)( Display *dpy,
+                             Window w,
+                             _Xconst char *name,
+                             _Xconst char *icon_string,
+                             Pixmap icon_pixmap,
+                             char **argv,
+                             int argc,
+                             XSizeHints *hints  ) = 0;
 static GLXWindow (*lib_glXCreateWindow)(Display *dpy, GLXFBConfig config,
 			  Window win, const int *attrib_list);
 
@@ -59,8 +67,7 @@ void glop_init(){
 
 
   for(i=0;i<nbcarte;i++)
-  {
-    if(sem_init(semadrfen_in[i], 0,0)==-1);
+  {    if(sem_init(semadrfen_in[i], 0,0)==-1);
     { 
       printf("impossible de creer le semaphores in\n")
       exit(-1);
