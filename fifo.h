@@ -37,9 +37,8 @@ void creerFifo();
 do{\
      j=0;\
      for(j;j<NBCARTE;j++){\
-	  sem_post(semap[j]);}\
-	  //	     pthread_mutex_unlock(&mutex);
-							      
+	  sem_wait(semap_out[j]);}\
+ 							      
 	  /* here check there is enough room or wait or rewind or... */\
 	  if(fifo.cmd_fifo_idx+S>TAILLEMEM){\
 					 memcpy(&fifo.cmd_fifo[fifo.cmd_fifo_idx],A,S);\
@@ -53,23 +52,23 @@ do{\
 																		   
 	  j=0;\
 	  for(j;j<NBCARTE;j++)\
-	  sem_wait(semap[j]);\
+	  sem_post(semap_in[j]);\
 
 							      
-																							      }while(0)
+       }while(0)
 
      
      
 #define INPUT_FIFO(A,S) \
 	do{\
 
- sem_wait(semap[client_num]);\
+ sem_wait(semap_in[client_num]);\
 
  
  /* here check there is enough room or wait or rewind or... */\
   if(fifo.cmd_fifo_idx+S>TAILLEMEM){\
-				 memcpy(A,&fifo.cmd_fifo[fifo.idx[client_num]],S);\
-							      idx=(fifo.idx[client_num]+S)%TAILLEMEM;\
+      memcpy(A,&fifo.cmd_fifo[fifo.idx[client_num]],S);\
+      fifo.idx[client_num]=(fifo.idx[client_num]+S)%TAILLEMEM;\
 										      }
   else{
     fifo.cmd_fifo_idx=(fifo.cmd_fifo_idx+S)%TAILLEMEM;\
@@ -77,8 +76,8 @@ do{\
 									   }\
 		
 
-    sem_post(semap[client_num]);\		
-									      }while(0)
+    sem_post(semap_out[client_num]);\		
+   }while(0)
      
      
      
