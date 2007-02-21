@@ -1,14 +1,11 @@
-# include <sys/types.h>
-# include <sys/ipc.h>
-# include <sys/shm.h>
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
 #include <GL/gl.h>
 #include <GL/glext.h>
 #include <GL/glx.h>
 #include <GL/glxext.h>
 #include <semaphore.h>
-
-#define W 1024
-#define H 768
 
 
 extern int client_num;
@@ -18,6 +15,9 @@ extern char **shmadr_fenetre1;
 extern char **shmadr_fenetre2;
 extern sem_t **semadrfen_in;
 extern sem_t **semadrfen_out;
+extern int width;
+extern int height;
+extern int * heightclient;
 
 
 char * creershm_fenetre();

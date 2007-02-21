@@ -1,4 +1,4 @@
-#include "tranfertFenetre.h"
+#include "transfertFenetre.h"
 
 int i;
 
@@ -9,7 +9,7 @@ char * creershm_fenetre()
   int shmid;
   char * shmadr;
 
-   shmid = shmget(IPC_PRIVATE,W*H*4,0666|IPC_CREAT);
+   shmid = shmget(IPC_PRIVATE,width*heightclient[client_num]*4,0666|IPC_CREAT);
    shmadr = shmat(shmid,0,0);
    return shmadr;
 
@@ -22,8 +22,8 @@ void lire_fenetre()
 
     sem_wait(semadrfen_out[client_num]);
     if(fenetreactive==0)
-      glReadPixels(0,0,W,H,GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, shmadr_fenetre1[client_num]);
-    else glReadPixels(0,0,W,H,GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, shmadr_fenetre2[client_num]);
+      glReadPixels(0,0,width,heightclient[client_num],GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, shmadr_fenetre1[client_num]);
+    else glReadPixels(0,0,width,heightclient[client_num],GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, shmadr_fenetre2[client_num]);
     sem_post(semadrfen_in[client_num]);
     fenetreactive=(fenetreactive+1)%2;
 
@@ -38,16 +38,16 @@ void ecirre_fenetre()
    if(fenetreactive==0)  
      for(i=0;i<nbcarte;i++)
      {
-        glRasterPos2i(0,0);
+        glRasterPos2i(0,heightclient[i]);
         sem_wait(semadrfen_in[i]);
-        glDrawPixels(W,H,GL_BGRA,GL_UNSIGNED_INT_8_8_8_8_REV,shmadr_fenetre1[i]);
+        glDrawPixels(width,heightclient[i],GL_BGRA,GL_UNSIGNED_INT_8_8_8_8_REV,shmadr_fenetre1[i]);
         sem_post(semadrfen_out[i]);
      } 
    else for(i=0;i<nbcarte;i++)
         {
-          glRasterPos2i(0,0);
+          glRasterPos2i(0,heightclient[i]);
           sem_wait(semadrfen_in[i]);
-          glDrawPixels(W,H,GL_BGRA,GL_UNSIGNED_INT_8_8_8_8_REV,shmadr_fenetre2[i]);
+          glDrawPixels(width,heightclient[i],GL_BGRA,GL_UNSIGNED_INT_8_8_8_8_REV,shmadr_fenetre2[i]);
           sem_post(semadrfen_out[i]);
         } 
 

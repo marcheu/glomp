@@ -1,9 +1,6 @@
 #include "fifo.h"
 
 
-#define SEMKEY  64
-
-
 struct{
   uint8_t* cmd_fifo;
   uint32_t cmd_fifo_idx;//indice
@@ -15,11 +12,16 @@ int client_num;
 int nbcarte;
 
 int width,height;
-GLXContext glx;
+//GLXContext glx;
+int * heightclient;
 
 char **shmadr_fenetre1,**shmadr_fenetre2;
 sem_t **semadrfen_in,**semadrfen_out;
 
+//GLuint *tabtext;
+//int tailletabtext=0;
+char *shm_text_client;
+pthread_mutex_t *mutex;
 
 sem_t **semap_in, **semap_out;
 
@@ -58,12 +60,14 @@ void glop_init(){
                 nbcarte=atoi(force);
         }
 
+      
+    widhtclient=malloc(sizeof(int)*nbcarte)
 
-
-    shmadr_fenetre1=malloc(sizeof(char *shmadr)*nbcarte);
-    shmadr_fenetre2=malloc(sizeof(char *shmadr)*nbcarte);
+    shmadr_fenetre1=malloc(sizeof(char *)*nbcarte);
+    shmadr_fenetre2=malloc(sizeof(char *)*nbcarte);
     semadrfenin=malloc(sizeof(sem_t *)*nbcarte);
     semadrfenout=malloc(sizeof(sem_t *)*nbcarte);
+
 
 
   for(i=0;i<nbcarte;i++)
@@ -87,13 +91,14 @@ void glop_init(){
     shmadr_fenetre2[i]=creershm_fenetre();
   }
   
+  shm_text_client=shmat( shmget(IPC_PRIVATE,1024,0666|IPC_CREAT) ,0,0);  //1024 textures max
 
   //creation d'un pere et de 4 fils 
   //le pere etant le producteur dans le fifo
   //les fils serotn 4 consomateurs
 
 
-
+  
 
 
   /*creationt du tableau des sem*/
@@ -137,7 +142,7 @@ void glop_init(){
 	  varfork=-2;//pour ne pas y repasser au prochain increment
 	  client_num=i-1;
          
-           if (creerpbuffer(width,height)) {
+           if (creerpbuffer(width,heightclient[client_num])) {
                    printf("Error:couldn't create pbuffer")
                    exit(0);
            }
@@ -162,7 +167,9 @@ void glop_init(){
       client_num=i-1;
       varfork=-2;
     }//on s'occupe du derrneir fils vu qu'on ne l'a pas fait avant;
-
+    else if(varfork>0)
+             load_library();
+       
   
 
 
@@ -195,13 +202,19 @@ inline static void load_library(void)
 /*
  * Our glXSwapBuffers function that intercepts the "real" function.
  *
- * Load library if necessary. Then dump a frame and call the "real"
+ * Load library if necessary. Then dump a pthread_mutex_t *mutexframe and call the "real"
  * glXSwapBuffers function.
  */
 void glXSwapBuffers(Display *dpy, GLXDrawable drawable)///changement de la func swap
 {
+  int i;
 
-  lib_glXSwapBuffers(dpy, drawable);
+  if(client_num<nbcarte) 
+     lire_fenetre();
+  else {
+          ecirre_fenetre();
+          lib_glXSwapBuffers(dpy, drawable);
+       }
 
 }
 
@@ -212,6 +225,7 @@ void glXSwapBuffers(Display *dpy, GLXDrawable drawable)///changement de la func 
  */
 GLXWindow glXCreateWindow(Display *dpy, GLXFBConfig config,Window win, const int *attrib_list)
 {
+   
 
 }
  
@@ -227,10 +241,91 @@ void XSetStandardProperties( Display *dpy,
 
   memcpy(&width,hints,sizeof(int));
   memcpy(&height,&hints+sizeof(int),sizeof(int));
+  
+  for(i=1;i<nbcarte-1;i++)
+    heightclient[i]=height/nbcarte;
+  heightclient[i]=height-height*nbcarte;
+
 
   lib_XSetStandardProperties(dpy,w,name,icon_string,icon_pixmap,argv,argc,hints  );
 
 }
 
 
+void fglFrustum()
+{
+  int i;
+
+	GLdouble p0;
+	GLdouble p1;
+	GLdouble p2;
+	GLdouble p3;
+	GLdouble p4;
+	GLdouble p5;
+	INPUT_FIFO(&p0,8);
+	INPUT_FIFO(&p1,8);
+	INPUT_FIFO(&p2,8);
+	INPUT_FIFO(&p3,8);
+	INPUT_FIFO(&p4,8);
+	INPUT_FIFO(&p5,8);
+
+        for(i=0,i<num_client-1;i++)
+          p2=p2+heightclient[i]; 
+        p3=p2+heightclient[i]; 
+
+	((void (*)( GLdouble,GLdouble,GLdouble,GLdouble,GLdouble,GLdouble))glfunctable[96])(p0,p1,p2,p3,p4,p5);
+}
+
+void glGenTextures ( GLsizei p0 , GLuint *p1 )
+{
+        int i;
+
+	int fnum=98;
+	int fflags=0;
+        
+         
+        //realloc(tabtext,sizeof(GLuint)*p0);
+        //for(i=tailletabtext;i<(tailletabtext+p0);i++)
+        //     tabtext[i]=0;
+        memcpy        
+
+        //tailletabtext+=p0;
+	OUTPUT_FIFO(&fnum,sizeof(fnum));
+	OUTPUT_FIFO(&fflags,sizeof(fflags));
+	OUTPUT_FIFO(&p0,4);
+	OUTPUT_FIFO(&p1,4);
+        pthread_mutex_lock(mutex);
+        memcpy(p1,&shm_text_client[0],sizeof(GLuint)*p0);
+	return ;
+
+}
+
+void fglGenTextures()
+{
+        int i;
+
+	GLsizei p0;
+	GLuint* p1;
+	INPUT_FIFO(&p0,4);
+	INPUT_FIFO(&p1,4);
+        
+	((void (*)( GLsizei,GLuint*))glfunctable[98])(p0,p1);
+        memcpy(&shm_client[num_client],p1,sizeof(GLuint)*p0);
+        if(client_num=0)
+           pthread_mutex_unlock(mutex);
+}
+
+
+void glBindTexture ( GLenum p0 , GLuint p1 )
+{
+	int fnum=5;
+	int fflags=0;
+
+	OUTPUT_FIFO(&fnum,sizeof(fnum));
+	OUTPUT_FIFO(&fflags,sizeof(fflags));
+	OUTPUT_FIFO(&p0,4);
+	OUTPUT_FIFO(&p1,4);
+	return ;
+
+}
 
