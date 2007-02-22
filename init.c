@@ -1,11 +1,16 @@
+#include <GL/gl.h>
+#include <GL/glext.h>
+#include <GL/glx.h>
+#include <GL/glxext.h>
+#include <dlfcn.h>
+#include <stdlib.h>
 #include "fifo.h"
+#include "transfertFenetre.h"
 
 //la structure qui contient le shm servant de fifo
-struct{
   uint8_t* cmd_fifo;//le shm en lui meme
   uint32_t cmd_fifo_idx;//indice du pere
   uint32_t idx; //tableau des indice client
-}fifo;
 
 
 int client_num;//numeros du client, va nous permettre de selectionner les processus
@@ -15,12 +20,13 @@ int nbcarte;//nombre de GPU dispo
 int width,height;//taille de la zone
 int * heightclient;
 
-char **shmadr_fenetre1,**shmadr_fenetre2;
+void **shmadr_fenetre1,**shmadr_fenetre2;
 sem_t **semadrfen_in,**semadrfen_out;
 
 GLuint *tabtext;//le tableau des etxtures
-GLuint *shm_text_client;//un shm pour la position dansle tableau des textures
+GLuint *shm_text_client;//un shm pour le tableau des textures
 pthread_mutex_t *mutex;//le mutex qui le protege
+int tailletabtext=0;
 
 sem_t **semap_in, **semap_out;//les semaphore pour proteger la fifo
 
@@ -30,19 +36,21 @@ static void* lib_handle_libX11 = 0;
 
 /*les poiinteur sur les fonction à dériver*/
 static void (*lib_glXSwapBuffers)(Display *dpy, GLXDrawable drawable) = 0;
-static void (*lib_XSetStandardProperties)( Display *dpy,
-					   Window w,
-					   _Xconst char *name,
-					   _Xconst char *icon_string,
-					   Pixmap icon_pixmap,
-					   char **argv,
-					   int argc,
-					   XSizeHints *hints  ) = 0;
-//static GLXWindow (*lib_glXCreateWindow)(Display *dpy, GLXFBConfig config,
-//			  Window win, const int *attrib_list)=0;
+static int (*lib_XSetStandardProperties)(
+    Display*		/* display */,
+    Window		/* w */,
+    _Xconst char*	/* window_name */,
+    _Xconst char*	/* icon_name */,
+    Pixmap		/* icon_pixmap */,
+    char**		/* argv */,
+    int			/* argc */,
+    XSizeHints*		/* hints */
+) = 0;
+static GLXWindow (*lib_glXCreateWindow)(Display *dpy, GLXFBConfig config,
+			  Window win, const int *attrib_list)=0;
 
 static void (*lib_glBindTexture) ( GLenum p0 , GLuint p1 )=0;
-static void (*lib_glGenTextures) ( GLsizei p0 , GLuint p1 )=0;	
+static void (*lib_glGenTextures) ( GLsizei p0 , GLuint *p1 )=0;	
 static void (*lib_glFrustum) ( GLdouble left,
 			       GLdouble right,
 			       GLdouble bottom,
@@ -82,6 +90,9 @@ inline static void load_library(void)
 
 
 void glop_init(){
+ 
+  int i;
+  int varfork;
   /*tout d abord il faut ouvir les fichier de config*/
   
   /*trouver les display, et donc le nomnbre de carte graphique*/
@@ -100,11 +111,10 @@ void glop_init(){
   //initailisation de tout les tableau      
   heightclient=malloc(sizeof(int)*nbcarte);
 
-  shmadr_fenetre1=malloc(sizeof(char *)*nbcarte);
-  shmadr_fenetre2=malloc(sizeof(char *)*nbcarte);
-  semadrfenin=malloc(sizeof(sem_t *)*nbcarte);
-  semadrfenout=malloc(sizeof(sem_t *)*nbcarte);
-
+  shmadr_fenetre1=malloc(sizeof(void *)*nbcarte);
+  shmadr_fenetre2=malloc(sizeof(void *)*nbcarte);
+  semadrfen_in=malloc(sizeof(sem_t *)*nbcarte);
+  semadrfen_out=malloc(sizeof(sem_t *)*nbcarte);
 
   
   //initialisation des semaphore
@@ -112,12 +122,12 @@ void glop_init(){
     { 
       if(sem_init(semadrfen_in[i], 0,0)==-1);
       { 
-	printf("impossible de creer le semaphores in\n")
+	printf("impossible de creer le semaphores in\n");
 	  exit(-1);
       }
       if(sem_init(semadrfen_out[i], 0,2)==-1);
       { 
-	printf("impossible de creer le semaphores out\n")
+	printf("impossible de creer le semaphores out\n");
 	  exit(-1);
       }
     }
@@ -137,9 +147,9 @@ void glop_init(){
 
 
   /*creationt du tableau des sem*/
-  semap_in = (sem_t *)malloc(nbcarte*sizeof(sem_t *));
-  semap_out = (sem_t *)malloc(nbcarte*sizeof(sem_t *));  
-  int i;
+  semap_in = malloc(nbcarte*sizeof(sem_t *));
+  semap_out = malloc(nbcarte*sizeof(sem_t *));  
+
   for(i;i<nbcarte;i++){
     sem_init(semap_in[i],0,0);
     sem_init(semap_out[i],0,128);
@@ -163,14 +173,12 @@ void glop_init(){
   
   /*boucle de creation des process*/
   
-  int i;
   i=0;
-  int varfork;
+
   varfork=1;//pour ne pas executer la partie de code fils au 1er tour
   
   for(i;i<nbcarte;i++){
     if(varfork==0){
-      fifo.idx=0;
       //on est dans un des processus fils
       varfork=-2;//pour ne pas y repasser au prochain increment
       client_num=i-1;
@@ -179,7 +187,8 @@ void glop_init(){
 	printf("Error:couldn't create pbuffer");
 	exit(0);
       }
-      tabtext=malloc(sizeof(GLuint)*1024);//alloue le tableau des textures sur chaques client,car le pere n'en a pas besoin
+      tabtext=malloc(sizeof(GLuint)*1024);//alloue le tableau des textures sur chaques client
+      idx=0;
 
     }
     else{
@@ -187,12 +196,12 @@ void glop_init(){
 	//on est dasn le pere
 	varfork=fork();//le pere restera sup a 0 et va donc y repasser, et creer d'autre fils
 	//varfork des fils sera  a 0 et ils passeront donc par le 1er if
-	if(varfork==-1){perror("fork");return -1;}
+	if(varfork==-1){perror("fork"); exit(0);}
       }
     }
 
-    //fifo.idx[i]=0;
-    fifo.cmd_fifo_idx=0;
+    //fifo.idx=0;
+    cmd_fifo_idx=0;
 
   }
   /*process creer*/
@@ -232,20 +241,32 @@ void glXSwapBuffers(Display *dpy, GLXDrawable drawable)///changement de la func 
   
 }
 
+/*
+ * Our glXCreateWindow function that intercepts the "real" function.
+ *
+ * Load library if necessary. create 4 window
+ */
+GLXWindow glXCreateWindow(Display *dpy, GLXFBConfig config,Window win, const int *attrib_list)
+{
+   
 
+}
  
 
 /*on recupere les proprite de la fenetre (taille) pour les diviser par le nbr de cartes, afin de repartire les taches,puis on la lance*/
-void XSetStandardProperties( Display *dpy,
-                             Window w,
-                             _Xconst char *name,
-                             _Xconst char *icon_string,
-                             Pixmap icon_pixmap,
-                             char **argv,
-                             int argc,
-                             XSizeHints *hints  )
+int XSetStandardProperties(
+    Display*            dpy,
+    Window	        w,
+    _Xconst char*	name,
+    _Xconst char*	icon_string,
+    Pixmap		icon_pixmap,
+    char**		argv,
+    int			argc,
+    XSizeHints*		hints
+                                    )
 {
 
+  int i;
   //recupere les tailles
   memcpy(&width,hints,sizeof(int));
   memcpy(&height,&hints+sizeof(int),sizeof(int));
@@ -296,7 +317,7 @@ void fglFrustum()
   INPUT_FIFO(&p4,8);
   INPUT_FIFO(&p5,8);
   
-  for(i=0,i<num_client-1;i++)
+  for(i=0;i<client_num-1;i++)
     p2=p2+heightclient[i]; 
   p3=p2+heightclient[i]; 
   
@@ -341,9 +362,9 @@ void fglGenTextures()
 
 
   memcpy(&tabtext[tailletabtext],&p1,sizeof(GLuint)*p0);
-  if(num_client==0)
+  if(client_num==0)
     {//le client 0 met la position dans el shm
-      memcpy(&shm_text_client[tailletabtext],p1,sizeof(GLuint)*p0);
+      memcpy((void *)shm_text_client[tailletabtext],p1,sizeof(GLuint)*p0);
       pthread_mutex_unlock(mutex);
     }
   tailletabtext=tailletabtext+p0;
@@ -358,7 +379,7 @@ void glBindTexture ( GLenum p0 , GLuint p1 )
   int fflags=0;
 
   
-  while( memcmp(shm_text_client[i],&p1,sizeof(GLuint)) !=0 )    
+  while( memcmp((const void *)shm_text_client[i],&p1,sizeof(GLuint)) !=0 )    
     i++;           
  
   p1=i;

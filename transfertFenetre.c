@@ -3,11 +3,11 @@
 int i;
 
 //creer le segment de memoire partage
-char * creershm_fenetre()
+void * creershm_fenetre()
 {
 
   int shmid;
-  char * shmadr;
+  void * shmadr;
 
    shmid = shmget(IPC_PRIVATE,width*heightclient[client_num]*4,0666|IPC_CREAT);
    shmadr = shmat(shmid,0,0);

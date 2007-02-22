@@ -10,6 +10,7 @@ chiffre [0-9]
 espace [ \t]
 finligne [\n]
 
+foncnocatch .*(" glBindTexture "|" glGenTextures "|" glfrustum ")[^;]*";"
 apientry (APIENTRY|GLAPIENTRY)
 glapi (GLAPI|WINGDIAPI)
 paramspe "const GLvoid* const *"
@@ -37,6 +38,7 @@ entier {chiffre}+
 "typedef".          BEGIN TYPEDEF;
 <TYPEDEF>[^;]           ;
 <TYPEDEF>";"        BEGIN 0;
+{foncnocatch}           ;
 "extern".*              ;
 "#".*                   ;
 {finligne}              ;  
