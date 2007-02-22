@@ -38,8 +38,8 @@ static void (*lib_XSetStandardProperties)( Display *dpy,
 					   char **argv,
 					   int argc,
 					   XSizeHints *hints  ) = 0;
-static GLXWindow (*lib_glXCreateWindow)(Display *dpy, GLXFBConfig config,
-			  Window win, const int *attrib_list)=0;
+//static GLXWindow (*lib_glXCreateWindow)(Display *dpy, GLXFBConfig config,
+//			  Window win, const int *attrib_list)=0;
 
 static void (*lib_glBindTexture) ( GLenum p0 , GLuint p1 )=0;
 static void (*lib_glGenTextures) ( GLsizei p0 , GLuint p1 )=0;	
@@ -230,16 +230,7 @@ void glXSwapBuffers(Display *dpy, GLXDrawable drawable)///changement de la func 
   
 }
 
-/*
- * Our glXCreateWindow function that intercepts the "real" function.
- *
- * Load library if necessary. create 4 window
- */
-GLXWindow glXCreateWindow(Display *dpy, GLXFBConfig config,Window win, const int *attrib_list)
-{
-   
 
-}
  
 
 /*on recupere les proprite de la fenetre (taille) pour les diviser par le nbr de cartes, afin de repartire les taches,puis on la lance*/
