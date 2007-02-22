@@ -12,16 +12,17 @@ int client_num;
 int nbcarte;
 
 int width,height;
-//GLXContext glx;
 int * heightclient;
 
 char **shmadr_fenetre1,**shmadr_fenetre2;
 sem_t **semadrfen_in,**semadrfen_out;
 
-//GLuint *tabtext;
-//int tailletabtext=0;
+GLuint *tabtext;
+int tailletabtext=0;
 char *shm_text_client;
 pthread_mutex_t *mutex;
+int shmid;
+
 
 sem_t **semap_in, **semap_out;
 
@@ -91,6 +92,7 @@ void glop_init(){
     shmadr_fenetre2[i]=creershm_fenetre();
   }
   
+  //shm_text_client=shmat( shmget(IPC_PRIVATE,1024,0666|IPC_CREAT) ,0,0);  //1024 textures max
   shm_text_client=shmat( shmget(IPC_PRIVATE,1024,0666|IPC_CREAT) ,0,0);  //1024 textures max
 
   //creation d'un pere et de 4 fils 
@@ -146,6 +148,7 @@ void glop_init(){
                    printf("Error:couldn't create pbuffer")
                    exit(0);
            }
+           tabtext=malloc(sizeof(GLunint)*1024);
 
       }
       else{
@@ -283,19 +286,13 @@ void glGenTextures ( GLsizei p0 , GLuint *p1 )
 	int fnum=98;
 	int fflags=0;
         
-         
-        //realloc(tabtext,sizeof(GLuint)*p0);
-        //for(i=tailletabtext;i<(tailletabtext+p0);i++)
-        //     tabtext[i]=0;
-        memcpy        
-
-        //tailletabtext+=p0;
 	OUTPUT_FIFO(&fnum,sizeof(fnum));
 	OUTPUT_FIFO(&fflags,sizeof(fflags));
 	OUTPUT_FIFO(&p0,4);
 	OUTPUT_FIFO(&p1,4);
         pthread_mutex_lock(mutex);
         memcpy(p1,&shm_text_client[0],sizeof(GLuint)*p0);
+        tailletabtext=tailletabtext+p0;
 	return ;
 
 }
@@ -308,24 +305,47 @@ void fglGenTextures()
 	GLuint* p1;
 	INPUT_FIFO(&p0,4);
 	INPUT_FIFO(&p1,4);
-        
+        //realloc(tabtext,sizeof(GLuint)*(tailletabtext+p0));
 	((void (*)( GLsizei,GLuint*))glfunctable[98])(p0,p1);
-        memcpy(&shm_client[num_client],p1,sizeof(GLuint)*p0);
-        if(client_num=0)
+        if(client_num!=0)
+           memcpy(&tabtext[tailletabtext],&p1,sizeof(GLuint)*p0);
+        else
+        {
+           memcpy(&shm_text_client[tailletabtext*sizeof(GLuint)],p1,sizeof(GLuint)*p0);
            pthread_mutex_unlock(mutex);
+        }
+        tailletabtext=tailletabtext+p0;
 }
 
 
 void glBindTexture ( GLenum p0 , GLuint p1 )
 {
+        int i=0;
+
 	int fnum=5;
 	int fflags=0;
 
+        while( memcmp(shm_text_client[i*sizeof(GLuint)],&p1,sizeof(GLuint)) !=0 )         
+                  i++;           
+ 
+        p1=i;
 	OUTPUT_FIFO(&fnum,sizeof(fnum));
 	OUTPUT_FIFO(&fflags,sizeof(fflags));
 	OUTPUT_FIFO(&p0,4);
 	OUTPUT_FIFO(&p1,4);
 	return ;
 
+}
+
+void fglBindTexture()
+{
+	GLenum p0;
+	GLuint p1;
+	INPUT_FIFO(&p0,4);
+	INPUT_FIFO(&p1,4);
+            
+        p1=tabtext[p1];
+
+	((void (*)( GLenum,GLuint))glfunctable[292])(p0,p1);
 }
 
