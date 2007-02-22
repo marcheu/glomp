@@ -13,7 +13,7 @@
 extern struct{ 
   uint8_t* cmd_fifo;
   uint32_t cmd_fifo_idx;//indice
-  uint32_t* idx; //tableau des indice client
+  uint32_t idx; //tableau des indice client
 }fifo;
 
 
@@ -67,12 +67,12 @@ do{\
  
  /* here check there is enough room or wait or rewind or... */\
   if(fifo.cmd_fifo_idx+S>TAILLEMEM){\
-      memcpy(A,&fifo.cmd_fifo[fifo.idx[client_num]],S);\
-      fifo.idx[client_num]=(fifo.idx[client_num]+S)%TAILLEMEM;\
+      memcpy(A,&fifo.cmd_fifo[fifo.idx],S);\
+      fifo.idx=(fifo.idx+S)%TAILLEMEM;\
 										      }
   else{
     fifo.cmd_fifo_idx=(fifo.cmd_fifo_idx+S)%TAILLEMEM;\
-					      memcpy(A,&fifo.cmd_fifo[fifo.idx[client_num]],S);\
+					      memcpy(A,&fifo.cmd_fifo[fifo.idx],S);\
 									   }\
 		
 

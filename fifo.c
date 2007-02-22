@@ -5,7 +5,7 @@
 struct{
   uint8_t* cmd_fifo;
   uint32_t cmd_fifo_idx;//indice
-  uint32_t* idx; //tableau des indice client
+  uint32_t idx; //tableau des indice client
 }fifo;
 
 

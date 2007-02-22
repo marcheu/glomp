@@ -4,7 +4,7 @@
 struct{
   uint8_t* cmd_fifo;//le shm en lui meme
   uint32_t cmd_fifo_idx;//indice du pere
-  uint32_t* idx; //tableau des indice client
+  uint32_t idx; //tableau des indice client
 }fifo;
 
 
@@ -18,8 +18,8 @@ int * heightclient;
 char **shmadr_fenetre1,**shmadr_fenetre2;
 sem_t **semadrfen_in,**semadrfen_out;
 
-
-GLuint *shm_text_client;//un shm pour le tableau des textures
+GLuint *tabtext;//le tableau des etxtures
+GLuint *shm_text_client;//un shm pour la position dansle tableau des textures
 pthread_mutex_t *mutex;//le mutex qui le protege
 
 sem_t **semap_in, **semap_out;//les semaphore pour proteger la fifo
@@ -105,6 +105,7 @@ void glop_init(){
   semadrfenin=malloc(sizeof(sem_t *)*nbcarte);
   semadrfenout=malloc(sizeof(sem_t *)*nbcarte);
 
+
   
   //initialisation des semaphore
   for(i=0;i<nbcarte;i++)
@@ -156,7 +157,7 @@ void glop_init(){
   //avant le fork, on creer le shm
   creerFifo();
   //maintenant qu'on a creer  la fifo on creer le tab contenant les indice des consommateurs dans la structure
-  fifo.idx=(uint32_t *)malloc(nbcarte*sizeof(uint32_t));
+  //fifo.idx=(uint32_t *)malloc(nbcarte*sizeof(uint32_t));
   
 
   
@@ -169,6 +170,7 @@ void glop_init(){
   
   for(i;i<nbcarte;i++){
     if(varfork==0){
+      fifo.idx=0;
       //on est dans un des processus fils
       varfork=-2;//pour ne pas y repasser au prochain increment
       client_num=i-1;
@@ -177,7 +179,7 @@ void glop_init(){
 	printf("Error:couldn't create pbuffer");
 	exit(0);
       }
-      tabtext=malloc(sizeof(GLuint)*1024);//alloue le tableau des textures sur chaques client
+      tabtext=malloc(sizeof(GLuint)*1024);//alloue le tableau des textures sur chaques client,car le pere n'en a pas besoin
 
     }
     else{
@@ -189,7 +191,7 @@ void glop_init(){
       }
     }
 
-    fifo.idx[i]=0;
+    //fifo.idx[i]=0;
     fifo.cmd_fifo_idx=0;
 
   }
