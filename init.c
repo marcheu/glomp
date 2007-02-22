@@ -39,10 +39,45 @@ static void (*lib_XSetStandardProperties)( Display *dpy,
 					   int argc,
 					   XSizeHints *hints  ) = 0;
 static GLXWindow (*lib_glXCreateWindow)(Display *dpy, GLXFBConfig config,
-			  Window win, const int *attrib_list);
+			  Window win, const int *attrib_list)=0;
+
+static void (*lib_glBindTexture) ( GLenum p0 , GLuint p1 )=0;
+static void (*lib_glGenTextures) ( GLsizei p0 , GLuint p1 )=0;	
+static void (*lib_glFrustum) ( GLdouble left,
+			       GLdouble right,
+			       GLdouble bottom,
+			       GLdouble top,
+			       GLdouble zNear,
+			       GLdouble zFar	)=0;	
 
 
-	
+
+/*
+ * Load GLX & X library and find glXSwapBuffers() & other function
+ */
+inline static void load_library(void)
+{
+  /* open library (NOTE: you may need to change this filename!) */
+  lib_handle_libGL = dlopen("/usr/lib/libGL.so", RTLD_LAZY);///charge la liib.so
+  lib_handle_libX11 = dlopen("/usr/lib/libX11.so", RTLD_LAZY);
+  
+  if (!lib_handle_libGL){perror("lib");exit(0);}
+
+  /* intercept library GL function */
+  lib_glXSwapBuffers = dlsym(lib_handle_libGL, "glXSwapBuffers");    ///met le bon pointer dans lib_glX
+  lib_glXCreateWindow = dlsym(lib_handle_libGL, "glXCreateWindow");   
+  lib_glBindTexture = dlsym(lib_handle_libGL, "glBindTexture");    
+  lib_glGenTextures = dlsym(lib_handle_libGL, "glGenTextures");    
+  lib_glFrustum = dlsym(lib_handle_libGL, "glFrustum"); 
+  
+  /*intercepte ls fonction X*/
+
+  if (!lib_handle_libX11){perror("lib");exit(0);}
+
+  lib_XSetStandardProperties = dlsym(lib_handle_libX11, "XSetStandardProperties");
+}
+
+
 
 
 
@@ -175,30 +210,6 @@ void glop_init(){
 
 
 
-/*
- * Load GLX & X library and find glXSwapBuffers() & other function
- */
-inline static void load_library(void)
-{
-  /* open library (NOTE: you may need to change this filename!) */
-  lib_handle_libGL = dlopen("/usr/lib/libGL.so", RTLD_LAZY);///charge la liib.so
-  
-  if (!lib_handle_libGL){perror("lib");exit(0);}
-
-  /* intercept library GL function */
-  lib_glXSwapBuffers = dlsym(lib_handle_libGL, "glXSwapBuffers");    ///met le bon pointer dans lib_glX
-  lib_glXCreateWindow = dlsym(lib_handle_libGL, "glXCreateWindow");    ///met le bon pointer dans lib_glX
-
-  
-  /*intercepte ls fonction X*/
-  lib_handle_libX11 = dlopen("/usr/lib/libX11.so", RTLD_LAZY);
-  if (!lib_handle_libX11){perror("lib");exit(0);}
-
-  lib_XSetStandardProperties = dlsym(lib_handle_libX11, "XSetStandardProperties");
-}
-
-
-
 
 /*
  * Our glXSwapBuffers function that intercepts the "real" function.
@@ -256,6 +267,24 @@ void XSetStandardProperties( Display *dpy,
 
 }
 
+
+
+void glFrustum ( GLdouble p0 , GLdouble p1 , GLdouble p2 , GLdouble p3 , GLdouble p4 , GLdouble p5 )
+{
+	int fnum=96;
+	int fflags=0;
+	OUTPUT_FIFO(&fnum,sizeof(fnum));
+	OUTPUT_FIFO(&fflags,sizeof(fflags));
+	OUTPUT_FIFO(&p0,8);
+	OUTPUT_FIFO(&p1,8);
+	OUTPUT_FIFO(&p2,8);
+	OUTPUT_FIFO(&p3,8);
+	OUTPUT_FIFO(&p4,8);
+	OUTPUT_FIFO(&p5,8);
+	return ;
+
+}
+
 /*on a besoin de gerer la perspective donc on interceptent les info de glfrumstun*/
 void fglFrustum()
 {
@@ -278,7 +307,9 @@ void fglFrustum()
     p2=p2+heightclient[i]; 
   p3=p2+heightclient[i]; 
   
-  ((void (*)( GLdouble,GLdouble,GLdouble,GLdouble,GLdouble,GLdouble))glfunctable[96])(p0,p1,p2,p3,p4,p5);
+  lib_glFrustum(p0,p1,p2,p3,p4,p5);
+
+
 }
 
 
@@ -312,6 +343,10 @@ void fglGenTextures()
   GLuint* p1;
   INPUT_FIFO(&p0,4);
   INPUT_FIFO(&p1,4);
+ 
+  lib_glGenTextures ( p0 , p1 );
+
+
   memcpy(&tabtext[tailletabtext],&p1,sizeof(GLuint)*p0);
   if(num_client==0)
     {//le client 0 met la position dans el shm
@@ -352,5 +387,5 @@ void fglBindTexture()
   
   p1=tabtext[p1];
   
-  ((void (*)( GLenum,GLuint))glfunctable[292])(p0,p1);
+  lib_glBindTexture ( p0 , p1 );//on utilise le vrai bind texture
 }
