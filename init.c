@@ -343,3 +343,14 @@ void glBindTexture ( GLenum p0 , GLuint p1 )
   
 }
 
+void fglBindTexture()
+{
+  GLenum p0;
+  GLuint p1;
+  INPUT_FIFO(&p0,4);
+  INPUT_FIFO(&p1,4);
+  
+  p1=tabtext[p1];
+  
+  ((void (*)( GLenum,GLuint))glfunctable[292])(p0,p1);
+}
