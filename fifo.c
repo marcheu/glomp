@@ -1,7 +1,11 @@
 #include "fifo.h"
 
 
-//creer la fifo dans les variable globales
+/*Cette fonction alloue la memoire pour la fifo
+*les variables utile pour la fifo sont globale
+*ici nous allons juste allouer la memoire partage
+*cette fonction ne doit etre appellle qu'un fois, au debut de init
+*/
 void creerFifo(){
 
 int numshm;

@@ -1,21 +1,28 @@
-#include "transfertFenetre.h"
-
+#include<transfertFenetre.h>
+/*
+*Les fonction de transfert de fenetre, associer avec la recuperation des donnees GPU via pBuffer
+* vont nous permettre de gerer efficacement les evenements qui surviennent lors de l'appel swapBuffer
+*en effet, nous ne voulons pas que nos GPU affichent leur resultats,
+*mais qu'elle l'envoie au processus maitre qui lui va les afficher 
+*/
 int i;
 
-//creer le segment de memoire partage
+//creer le segment de memoire partage qui va contenir toute l'image
+//c'est a dire les nbcarte pBuffer
 void * creershm_fenetre()
 {
 
   int shmid;
   void * shmadr;
 
-   shmid = shmget(IPC_PRIVATE,width*heightclient[client_num]*4,0666|IPC_CREAT);
+   shmid = shmget(IPC_PRIVATE,width*heightclient[client_num]*nbcarte,0666|IPC_CREAT);
    shmadr = shmat(shmid,0,0);
    return shmadr;
 
 }
 
 //lecture de la fenetre pour copie vers le segment de memoire
+//vu qu'il y a une recipoie vers un shm, ceci doit etre proteger (ici avec un semaphore)
 void lire_fenetre()
 {
   GLvoid * pointeur;
@@ -31,6 +38,7 @@ void lire_fenetre()
 
 
 //lecrture depuis le segment de memoire pour ecriture dans le buffer d'affichage
+
 void ecirre_fenetre()
 {
    GLvoid * pointeur;

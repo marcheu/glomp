@@ -16,11 +16,24 @@ extern  uint32_t cmd_fifo_idx;//indice
 extern  uint32_t idx; //tableau des indice client
 
 extern int client_num;//sert a savoir dasn quel process on est
-extern sem_t **semap;
+extern sem_t **semap;//les semaphores qui protege la fifo
 
 int j;//comteur
 
 void creerFifo();
+
+/*
+ *Voici de macro permettant de lire et d'ecrire dans la fifo, en gerant les protections
+ *Par contre cette macro est tres sensible a la casse, et chaque ligne dit finir par un \ 
+ *et ne pas comprendre d'espace suplementraire apres
+ *les commentaire doivent aussi etre suivi de \
+*/
+
+/*cette premiere macro, n'est utilise que par le pere et ecrit dans la shm (la fifo)
+ *en ayant prealablemant bloquer tous les semaphores, et donc l'acces a la fifo au fils
+*/
+
+
 
 
 #define OUTPUT_FIFO(A,S)\
@@ -43,6 +56,7 @@ do{\
        }while(0)
 
      
+/*la deuxieme macro fait l'inverse et bien sur du coup ne bloque pas tous les semaphores*/
      
 #define INPUT_FIFO(A,S) \
 	do{\

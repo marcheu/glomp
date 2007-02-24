@@ -7,6 +7,7 @@
 #include <GL/glxext.h>
 #include <semaphore.h>
 
+#include"fifo.h"
 
 extern int client_num;
 extern int nbcarte;

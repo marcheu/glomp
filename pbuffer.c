@@ -1,9 +1,16 @@
 #include "pbuffer.h"
 
+/*
+*Les pbuffer vont nous permettre d'enregistrer une image dasn un buffer plutot que de l'afficher 
+*nous allons nous servir de cela lorsque nous derivons la fonction swapBuffer
+*pour enregistrer le resultat des calcul des GPU
+*et l'envoyer au maitre qui va gerer l'affichage reel
+*/
 
+
+/*fonction permettant de version courante de GLX*/
 int RuntimeQueryGLXVersion(Display *dpy, int screen)
 {
-//#if defined(GLX_VERSION_1_3) || defined(GLX_VERSION_1_4)
    char *glxversion;
  
    glxversion = (char *) glXGetClientString(dpy, GLX_VERSION);
@@ -15,13 +22,14 @@ int RuntimeQueryGLXVersion(Display *dpy, int screen)
       return 0;
 
    return 1;
-//#else
-//   return 0;
-//#endif
 }
 
 
-
+/*
+*Creer un pBuffer de taille width * height
+*la fonction retourne le pBuffer correctemnt cr	er (avec les bon attribut)
+*mais celui-ci est vide
+*/
 GLXPbuffer MakePbuffer( Display *dpy, int screen, int width, int height )
 {
    GLXFBConfig *fbConfigs;
@@ -67,8 +75,6 @@ GLXPbuffer MakePbuffer( Display *dpy, int screen, int width, int height )
 
    if (pBuffer) {
       gFBconfig = chosenFBConfig;
-      //gWidth = width;
-      //gHeight = height;
    }
 
    XFree(fbConfigs);
@@ -77,7 +83,11 @@ GLXPbuffer MakePbuffer( Display *dpy, int screen, int width, int height )
 }
 
 
-
+/*
+*La fonction creerpbuffer va creer un pbuffer vide avec makePBuffer
+*celui-ci va etre renplit par ce que la GPU a calculer (ici 1/4 de l'ecran)
+*avant d'etre renvoyer (evec transfertFentre) au maitre
+*/
 
 int creerpbuffer(int width,int height)
 {
@@ -104,8 +114,6 @@ int creerpbuffer(int width,int height)
      XCloseDisplay(gDpy);
      return 0;
    }
-
-
 
   /* Create Pbuffer */
    gPBuffer = MakePbuffer( gDpy, gScreen, width, height );

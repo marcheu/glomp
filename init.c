@@ -225,8 +225,6 @@ void glop_init(){
 /*
  * Our glXSwapBuffers function that intercepts the "real" function.
  *
- * Load library if necessary. Then dump a pthread_mutex_t *mutexframe and call the "real"
- * glXSwapBuffers function.
  */
 void glXSwapBuffers(Display *dpy, GLXDrawable drawable)///changement de la func swap
 {
@@ -241,16 +239,6 @@ void glXSwapBuffers(Display *dpy, GLXDrawable drawable)///changement de la func 
   
 }
 
-/*
- * Our glXCreateWindow function that intercepts the "real" function.
- *
- * Load library if necessary. create 4 window
- */
-GLXWindow glXCreateWindow(Display *dpy, GLXFBConfig config,Window win, const int *attrib_list)
-{
-   
-
-}
  
 
 /*on recupere les proprite de la fenetre (taille) pour les diviser par le nbr de cartes, afin de repartire les taches,puis on la lance*/
