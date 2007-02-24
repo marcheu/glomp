@@ -1,7 +1,7 @@
 #include "fifo.h"
 
 
-//creer la fifo dasn les variable globales
+//creer la fifo dans les variable globales
 void creerFifo(){
 
 int numshm;
