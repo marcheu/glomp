@@ -1,11 +1,13 @@
-# include <sys/types.h>
-# include <sys/ipc.h>
-# include <sys/shm.h>
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
 #include <GL/gl.h>
 #include <GL/glext.h>
 #include <GL/glx.h>
 #include <GL/glxext.h>
 #include <semaphore.h>
+#include <string.h>
 
 
 extern int client_num;

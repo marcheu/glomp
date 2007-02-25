@@ -97,7 +97,7 @@ int creerpbuffer(int width,int height)
   
   
 
-  sprintf(envDysplay,"DISPLAY=0.%d",client_num)
+  sprintf(envDysplay,"DISPLAY=0.%d",client_num);
   putenv(envDysplay);
 
   gDpy = XOpenDisplay(NULL);

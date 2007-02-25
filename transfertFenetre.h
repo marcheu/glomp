@@ -1,11 +1,12 @@
-# include <sys/types.h>
-# include <sys/ipc.h>
-# include <sys/shm.h>
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
 #include <GL/gl.h>
 #include <GL/glext.h>
 #include <GL/glx.h>
 #include <GL/glxext.h>
 #include <semaphore.h>
+#include <pthread.h>
 
 #include"fifo.h"
 
@@ -19,6 +20,7 @@ extern sem_t **semadrfen_out;
 extern int width;
 extern int height;
 extern int * heightclient;
+extern int fenetreactive;
 
 
 void * creershm_fenetre();

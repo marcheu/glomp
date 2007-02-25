@@ -22,6 +22,7 @@ int * heightclient;
 
 void **shmadr_fenetre1,**shmadr_fenetre2;
 sem_t **semadrfen_in,**semadrfen_out;
+int fenetreactive=0;
 
 GLuint *tabtext;//le tableau des etxtures
 GLuint *shm_text_client;//un shm pour le tableau des textures
@@ -391,3 +392,4 @@ void fglBindTexture()
   
   lib_glBindTexture ( p0 , p1 );//on utilise le vrai bind texture
 }
+

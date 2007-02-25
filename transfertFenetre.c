@@ -1,4 +1,4 @@
-#include<transfertFenetre.h>
+#include "transfertFenetre.h"
 /*
 *Les fonction de transfert de fenetre, associer avec la recuperation des donnees GPU via pBuffer
 * vont nous permettre de gerer efficacement les evenements qui surviennent lors de l'appel swapBuffer
@@ -25,8 +25,6 @@ void * creershm_fenetre()
 //vu qu'il y a une recipoie vers un shm, ceci doit etre proteger (ici avec un semaphore)
 void lire_fenetre()
 {
-  GLvoid * pointeur;
-
     sem_wait(semadrfen_out[client_num]);
     if(fenetreactive==0)
       glReadPixels(0,0,width,heightclient[client_num],GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, shmadr_fenetre1[client_num]);
@@ -40,9 +38,7 @@ void lire_fenetre()
 //lecrture depuis le segment de memoire pour ecriture dans le buffer d'affichage
 
 void ecirre_fenetre()
-{
-   GLvoid * pointeur;
-   
+{   
    if(fenetreactive==0)  
      for(i=0;i<nbcarte;i++)
      {
