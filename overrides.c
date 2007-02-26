@@ -1,10 +1,10 @@
+
 #include "overrides.h"
 /* functions we implement ourselves */
 
-//la structure qui contient le shm servant de fifo
-  uint8_t* cmd_fifo;//le shm en lui meme
-  uint32_t cmd_fifo_idx;//indice du pere
-  uint32_t idx; //tableau des indice client
+
+/*les poiinteur sur les fonction à dériver*/
+
 
 
 int client_num;//numeros du client, va nous permettre de selectionner les processus
@@ -18,7 +18,7 @@ int * heightclient;
 /*
  * Load GLX & X library and find glXSwapBuffers() & other function
  */
-inline static void load_library(void)
+void load_library(void)
 {
   /* open library (NOTE: you may need to change this filename!) */
   lib_handle_libGL = dlopen("/usr/lib/libGL.so", RTLD_LAZY);///charge la liib.so
@@ -213,4 +213,6 @@ void fglBindTexture()
   
   lib_glBindTexture ( p0 , p1 );//on utilise le vrai bind texture
 }
+
+
 

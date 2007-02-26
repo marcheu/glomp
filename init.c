@@ -8,6 +8,10 @@
 #include "transfertFenetre.h"
 #include "overrides.h"
 
+
+
+
+
 //la structure qui contient le shm servant de fifo
   uint8_t* cmd_fifo;//le shm en lui meme
   uint32_t cmd_fifo_idx;//indice du pere
@@ -160,7 +164,5 @@ void glop_init(){
   else if(varfork>0)
     load_library();
        
-  
-
-
 } 
+
