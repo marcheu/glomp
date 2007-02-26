@@ -253,12 +253,12 @@ int main()
   fprintf(fout_h,"/* Auto-generated, do not edit ! */\n#include \"fifo.h\"\n#include <GL/gl.h>\n#include <GL/glext.h>\n\n");
   
   fprintf(fin_c,"/* Auto-generated, do not edit ! */\n#include \""in_h_file"\"\n\n");
-  fprintf(fin_c,"void unpack( )\n{\n\tint func;\n\tint flags;\n\tINPUT_FIFO(&func,4);\n\tINPUT_FIFO(&flags,4);\n\tfunctable[func]();\n}\n\n");
-  fprintf(fin_c,"void init()\n{\n");
+  //fprintf(fin_c,"void unpack( )\n{\n\tint func;\n\tint flags;\n\tINPUT_FIFO(&func,4);\n\tINPUT_FIFO(&flags,4);\n\functables[func]();\n}\n\n");
+  //fprintf(fin_c,"void init()\n{\n");
 
   fprintf(fin_h,"/* Auto-generated, do not edit ! */\n#include \"fifo.h\"\n#include <GL/gl.h>\n#include <GL/glext.h>\n#include <GL/glx.h>\n#include <GL/glxext.h>\n\n");
   
-  fprintf(ftmph,"void (*functable[])(void)=\n{\n");
+  fprintf(ftmph,"void (*functables[])(void)=\n{\n");
 
 
   yyin=fopen("/usr/include/GL/gl.h","r");

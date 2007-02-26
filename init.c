@@ -274,7 +274,7 @@ int XSetStandardProperties(
 
 void glFrustum ( GLdouble p0 , GLdouble p1 , GLdouble p2 , GLdouble p3 , GLdouble p4 , GLdouble p5 )
 {
-	int fnum=96;
+	int fnum=8000;
 	int fflags=0;
 	OUTPUT_FIFO(&fnum,sizeof(fnum));
 	OUTPUT_FIFO(&fflags,sizeof(fflags));
@@ -320,7 +320,7 @@ void glGenTextures ( GLsizei p0 , GLuint *p1 )
 {
   int i;
   
-  int fnum=98;
+  int fnum=8001;
   int fflags=0;
   
   
@@ -364,7 +364,7 @@ void glBindTexture ( GLenum p0 , GLuint p1 )
 {
 
   GLuint i=0;
-  int fnum=5;
+  int fnum=8002;
   int fflags=0;
 
   
