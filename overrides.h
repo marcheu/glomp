@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #include"fifo.h"
 
+#define OVERRIDE_BASE 8000
+
 static void (*lib_glXSwapBuffers)(Display *dpy, GLXDrawable drawable)=0;
 static int (*lib_XSetStandardProperties)(
     Display*		/* display */,

@@ -12,7 +12,7 @@ int client_num;//numeros du client, va nous permettre de selectionner les proces
 int nbcarte;//nombre de GPU dispo
 
 int width,height;//taille de la zone
-int * heightclient;
+int * clientload;
 
 
 /*
@@ -75,13 +75,12 @@ int XSetStandardProperties(
 
   int i;
   //recupere les tailles
-  memcpy(&width,hints,sizeof(int));
-  memcpy(&height,&hints+sizeof(int),sizeof(int));
+  width=hints->width;
+  height=hints->height;
   
   //on les divisent et on repartie les taches entre chaques clients
   for(i=1;i<nbcarte-1;i++)
-    heightclient[i]=height/nbcarte;
-  heightclient[i]=height-height*nbcarte;
+	  clientload[i]=10;
   
   //on relance la fonction
   lib_XSetStandardProperties(dpy,w,name,icon_string,icon_pixmap,argv,argc,hints  );
@@ -92,7 +91,7 @@ int XSetStandardProperties(
 
 void glFrustum ( GLdouble p0 , GLdouble p1 , GLdouble p2 , GLdouble p3 , GLdouble p4 , GLdouble p5 )
 {
-	int fnum=8000;
+	int fnum=OVERRIDE_BASE;
 	int fflags=0;
 	OUTPUT_FIFO(&fnum,sizeof(fnum));
 	OUTPUT_FIFO(&fflags,sizeof(fflags));
@@ -125,11 +124,19 @@ void fglFrustum()
   INPUT_FIFO(&p4,8);
   INPUT_FIFO(&p5,8);
   
-  for(i=0;i<client_num-1;i++)
-    p2=p2+heightclient[i]; 
-  p3=p2+heightclient[i]; 
+  int totalload=0;
+  int beforeload=0;
+  for(i=0;i<nbcarte;i++)
+  {
+	  totalload+=clientload[i];
+	  if (i<num_client)
+		beforeload+=clientload[i];
+  }
   
-  lib_glFrustum(p0,p1,p2,p3,p4,p5);
+  newp2=(p3-p2)*(double)beforeload/(double)totalload;
+  newp3=(p3-p2)*(double)(beforeload+clientload[client_num])/(double)totalload;
+
+  lib_glFrustum(p0,p1,newp2,newp3,p4,p5);
 
 
 }
@@ -139,7 +146,7 @@ void glGenTextures ( GLsizei p0 , GLuint *p1 )
 {
   int i;
   
-  int fnum=8001;
+  int fnum=OVERRIDE_BASE+1;
   int fflags=0;
   
   
@@ -185,7 +192,7 @@ void glBindTexture ( GLenum p0 , GLuint p1 )
 {
 
   GLuint i=0;
-  int fnum=8002;
+  int fnum=OVERRIDE_BASE+2;
   int fflags=0;
 
   

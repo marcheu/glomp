@@ -1,4 +1,5 @@
 #include "transfertFenetre.h"
+#include "init.h"
 /*
 *Les fonction de transfert de fenetre, associer avec la recuperation des donnees GPU via pBuffer
 * vont nous permettre de gerer efficacement les evenements qui surviennent lors de l'appel swapBuffer
@@ -15,7 +16,7 @@ void * creershm_fenetre()
   int shmid;
   void * shmadr;
 
-   shmid = shmget(IPC_PRIVATE,width*heightclient[client_num]*nbcarte,0666|IPC_CREAT);
+   shmid = shmget(IPC_PRIVATE,width*height*4,0666|IPC_CREAT);
    shmadr = shmat(shmid,0,0);
    return shmadr;
 
@@ -26,9 +27,14 @@ void * creershm_fenetre()
 void lire_fenetre()
 {
     sem_wait(semadrfen_out[client_num]);
+    int totalload=0;
+    for(i=0;i<nbcarte;i++)
+	    totalload+=clientload[i];
+    int heightclient=(double)clientload[client_num]/(double)totalload*height;
+
     if(fenetreactive==0)
-      glReadPixels(0,0,width,heightclient[client_num],GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, shmadr_fenetre1[client_num]);
-    else glReadPixels(0,0,width,heightclient[client_num],GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, shmadr_fenetre2[client_num]);
+      glReadPixels(0,0,width,heightclient,GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, shmadr_fenetre1[client_num]);
+    else glReadPixels(0,0,width,heightclient,GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, shmadr_fenetre2[client_num]);
     sem_post(semadrfen_in[client_num]);
     fenetreactive=(fenetreactive+1)%2;
 
@@ -38,7 +44,7 @@ void lire_fenetre()
 //lecrture depuis le segment de memoire pour ecriture dans le buffer d'affichage
 
 void ecirre_fenetre()
-{   
+{
    if(fenetreactive==0)  
      for(i=0;i<nbcarte;i++)
      {
@@ -56,5 +62,6 @@ void ecirre_fenetre()
         } 
 
    fenetreactive=(fenetreactive+1)%2;
+   free(heightclient);
 }  
 
