@@ -393,3 +393,11 @@ void fglBindTexture()
   lib_glBindTexture ( p0 , p1 );//on utilise le vrai bind texture
 }
 
+int main()
+{
+
+}
+
+
+
+

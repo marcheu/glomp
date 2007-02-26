@@ -10,7 +10,7 @@ chiffre [0-9]
 espace [ \t]
 finligne [\n]
 
-foncnocatch .*(" glBindTexture "|" glGenTextures "|" glfrustum ")[^;]*";"
+foncnocatch .*(" glBindTexture "|" glGenTextures "|" glFrustum ")[^;]*";"
 apientry (APIENTRY|GLAPIENTRY)
 glapi (GLAPI|WINGDIAPI)
 paramspe "const GLvoid* const *"

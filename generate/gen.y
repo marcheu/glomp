@@ -19,7 +19,7 @@ FILE * fout_h;
 FILE * fin_c;
 FILE * ftmpc;
 FILE * fin_h;
-FILE * ftmph;
+FILE * ftmpc2;
 
 int np=-1;
 int fnum=0;
@@ -151,10 +151,10 @@ S    : 	   LIGNE  { fprintf(fout_c,"\n{\n");
 
 LIGNE : GLAPI2  RETURN APIENTRY2 MOT {fprintf(fout_c,"%s ",yytext);
                                       fprintf(fout_h,"%s ",yytext); 
-                                      fprintf(fin_c,"\tglfunctable[%d]=(__GLXextFuncPtr)glXGetProcAddress(\"%s\");\n",fnum,yytext);
+                                      fprintf(fin_c,"\tglfunctable[%d]=(__GLXextFuncPtr)glXGetProcAddressARB(\"%s\");\n",fnum,yytext);
                                       fprintf(ftmpc,"void f%s()\n{\n",yytext);
                                       fprintf(fin_h,"void f%s();\n",yytext);
-                                      fprintf(ftmph,"\t&f%s,\n",yytext);} PO {fprintf(fout_c,"( ");
+                                      fprintf(ftmpc2,"\tfunctable[%d]=&f%s;\n",fnum,yytext);} PO {fprintf(fout_c,"( ");
                                                                               fprintf(fout_h,"( ");} PARAMS PF {
                                                                                                     fprintf(fout_c,")");
                                                                                                     fprintf(fout_h,");\n");} 
@@ -247,18 +247,18 @@ int main()
   fin_c=fopen(in_c_file,"wb");
   fin_h=fopen(in_h_file,"wb");
   ftmpc=fopen("tmpc","w+b");
-  ftmph=fopen("tmph","w+b");
+  ftmpc2=fopen("tmph","w+b");
 
   fprintf(fout_c,"/* Auto-generated, do not edit ! */\n#include \""out_h_file"\"\n\n");
   fprintf(fout_h,"/* Auto-generated, do not edit ! */\n#include \"fifo.h\"\n#include <GL/gl.h>\n#include <GL/glext.h>\n\n");
   
   fprintf(fin_c,"/* Auto-generated, do not edit ! */\n#include \""in_h_file"\"\n\n");
-  //fprintf(fin_c,"void unpack( )\n{\n\tint func;\n\tint flags;\n\tINPUT_FIFO(&func,4);\n\tINPUT_FIFO(&flags,4);\n\functables[func]();\n}\n\n");
-  //fprintf(fin_c,"void init()\n{\n");
+  //fprintf(fin_c,"void unpack( )\n{\n\tint func;\n\tint flags;\n\tINPUT_FIFO(&func,4);\n\tINPUT_FIFO(&flags,4);\n\lfunctable[func]();\n}\n\n");
+  fprintf(fin_c,"void init()\n{\n");
 
   fprintf(fin_h,"/* Auto-generated, do not edit ! */\n#include \"fifo.h\"\n#include <GL/gl.h>\n#include <GL/glext.h>\n#include <GL/glx.h>\n#include <GL/glxext.h>\n\n");
   
-  fprintf(ftmph,"void (*functables[])(void)=\n{\n");
+  fprintf(ftmpc2,"void creertabfunc()\n{\n");
 
 
   yyin=fopen("/usr/include/GL/gl.h","r");
@@ -270,11 +270,14 @@ int main()
 
   fprintf(fin_c,"}\n\n");
   fprintf(fin_h,"\n\n");
-  fprintf(ftmph,"};\n__GLXextFuncPtr glfunctable[%d];",fnum);
-
   
+  fprintf(fin_h,"\n__GLXextFuncPtr glfunctable[%d];\n",fnum);
+  fprintf(fin_h,"\nvoid (*functable[%d])(void);\n",fnum);
+  fprintf(ftmpc2,"}\n");  
+
+
   rewind(ftmpc);
-  rewind(ftmph);  
+  rewind(ftmpc2);  
 
   
 
@@ -282,8 +285,8 @@ int main()
     fputs(buffer,fin_c); 
 
 
-  while(fgets(buffer,2048,ftmph)!=NULL)
-    fputs(buffer,fin_h);
+  while(fgets(buffer,2048,ftmpc2)!=NULL)
+    fputs(buffer,fin_c);
   fputc('\n',fin_h);
 
   fclose(fout_c);
@@ -291,7 +294,7 @@ int main()
   fclose(fin_c);
   fclose(fin_h);
   fclose(ftmpc);
-  fclose(ftmph);
+  fclose(ftmpc2);
 
   free(listparam);
   free(ret_type);
