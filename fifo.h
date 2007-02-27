@@ -13,6 +13,8 @@
 int j;//compteur pour la macro
 
 void creerFifo();
+void outpout_fifo(void *, int);
+void input_fifo(void *,int);
 
 /*
  *Voici de macro permettant de lire et d'ecrire dans la fifo, en gerant les protections
@@ -53,7 +55,6 @@ do{\
 #define INPUT_FIFO(A,S) \
 	do{\
  sem_wait(semap_in[client_num]);\
- /* here check there is enough room or wait or rewind or... */\
   if(cmd_fifo_idx+S>TAILLEMEM){\
       memcpy(A,&cmd_fifo[idx],S);\
       idx=(idx+S)%TAILLEMEM;\
