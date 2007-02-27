@@ -22,39 +22,36 @@ void creerFifo(){
 
 /*si on ne veux pas utiliser la macro, on peux utiliser les fonctions*/
 void outpout_fifo(void * data, int taille){//void * data marche peux etre pas ... void * type trop generique
-  do{
-    j=0;
-    for(j;j<nbcarte;j++){
-      sem_wait(semap_out[j]);
-    }
-    if(cmd_fifo_idx+taille>TAILLEMEM){
-      memcpy(&cmd_fifo[cmd_fifo_idx],data,taille);
-      cmd_fifo_idx=(cmd_fifo_idx+taille)%TAILLEMEM;
-    }
-    else{
-      cmd_fifo_idx=(cmd_fifo_idx+taille)%TAILLEMEM;
-      memcpy(&cmd_fifo[cmd_fifo_idx],data,taille);
-    }
-    j=0;
-    for(j;j<nbcarte;j++)
-      sem_post(semap_in[j]);
-  }while(0)
-     }
+  j=0;
+  for(j;j<nbcarte;j++){
+    sem_wait(semap_out[j]);
+  }
+  if(cmd_fifo_idx+taille>TAILLEMEM){
+    memcpy(&cmd_fifo[cmd_fifo_idx],data,taille);
+    cmd_fifo_idx=(cmd_fifo_idx+taille)%TAILLEMEM;
+  }
+  else{
+    cmd_fifo_idx=(cmd_fifo_idx+taille)%TAILLEMEM;
+    memcpy(&cmd_fifo[cmd_fifo_idx],data,taille);
+  }
+  j=0;
+  for(j;j<nbcarte;j++)
+    sem_post(semap_in[j]);
+}
 
 
 void input_fifo(void * buff,int taille ){
-  do{
-    sem_wait(semap_in[client_num]);
-    if(cmd_fifo_idx+taille>TAILLEMEM){
-      memcpy(buff,&cmd_fifo[idx],taille);
-      idx=(idx+taille)%TAILLEMEM;
-    }
-    else{
-      cmd_fifo_idx=(cmd_fifo_idx+taille)%TAILLEMEM;
-      memcpy(buff,&cmd_fifo[idx],taille);
-    }
-    sem_post(semap_out[client_num]);
-  }while(0)
-     
-     }
+  sem_wait(semap_in[client_num]);
+  if(cmd_fifo_idx+taille>TAILLEMEM){
+    memcpy(buff,&cmd_fifo[idx],taille);
+    idx=(idx+taille)%TAILLEMEM;
+  }
+  else{
+    cmd_fifo_idx=(cmd_fifo_idx+taille)%TAILLEMEM;
+    memcpy(buff,&cmd_fifo[idx],taille);
+  }
+  sem_post(semap_out[client_num]);
+  
+  
+}
 
