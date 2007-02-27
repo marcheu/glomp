@@ -1,21 +1,12 @@
-#include <GL/gl.h>
-#include <GL/glext.h>
-#include <GL/glx.h>
-#include <GL/glxext.h>
-#include <dlfcn.h>
-#include <stdlib.h>
-#include "fifo.h"
-#include "transfertFenetre.h"
-#include "overrides.h"
-
+#include "init.h"
 
 
 
 
 //la structure qui contient le shm servant de fifo
-  uint8_t* cmd_fifo;//le shm en lui meme
-  uint32_t cmd_fifo_idx;//indice du pere
-  uint32_t idx; //tableau des indice client
+uint8_t* cmd_fifo;//le shm en lui meme
+uint32_t cmd_fifo_idx;//indice du pere
+uint32_t idx; //tableau des indice client
 
 
 int client_num;//numeros du client, va nous permettre de selectionner les processus

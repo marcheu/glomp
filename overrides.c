@@ -1,18 +1,7 @@
-
 #include "overrides.h"
 /* functions we implement ourselves */
 
 
-/*les poiinteur sur les fonction à dériver*/
-
-
-
-int client_num;//numeros du client, va nous permettre de selectionner les processus
-//les fils de 0 a nbcarte-1, le pere = nbcarre
-int nbcarte;//nombre de GPU dispo
-
-int width,height;//taille de la zone
-int * clientload;
 
 
 /*

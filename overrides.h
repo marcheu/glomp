@@ -1,10 +1,4 @@
-#include <GL/gl.h>
-#include <GL/glext.h>
-#include <GL/glx.h>
-#include <GL/glxext.h>
-#include <dlfcn.h>
-#include <stdlib.h>
-#include"fifo.h"
+#include"init.h"
 
 #define OVERRIDE_BASE 8000
 
@@ -37,15 +31,6 @@ static void (*lib_glFrustum) ( GLdouble left,
 static void* lib_handle_libGL = 0;
 static void* lib_handle_libX11 = 0;
 
-//la structure qui contient le shm servant de fifo
-extern uint8_t* cmd_fifo;//le shm en lui meme
-extern uint32_t cmd_fifo_idx;//indice du pere
-extern uint32_t idx; //tableau des indice client
-
-extern pthread_mutex_t *mutex;
-extern GLuint *shm_text_client;
-extern int tailletabtext;
-extern GLuint *tabtext;
 
 
 

@@ -1,5 +1,5 @@
 #include "transfertFenetre.h"
-#include "init.h"
+
 /*
 *Les fonction de transfert de fenetre, associer avec la recuperation des donnees GPU via pBuffer
 * vont nous permettre de gerer efficacement les evenements qui surviennent lors de l'appel swapBuffer

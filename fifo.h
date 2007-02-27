@@ -6,20 +6,11 @@
 #include <semaphore.h>
 #include <sys/types.h>
 #include <pthread.h>
+#include "init.h"
 
 
-#define TAILLEMEM 128*1024
 
-
-extern  uint8_t* cmd_fifo;
-extern  uint32_t cmd_fifo_idx;//indice
-extern  uint32_t idx; //tableau des indice client
-
-extern int client_num;//sert a savoir dasn quel process on est
-extern sem_t **semap_in,**semap_out;//les semaphores qui protege la fifo
-extern int nbcarte;//nombre de carte graphique
-
-int j;//comteur
+int j;//compteur pour la macro
 
 void creerFifo();
 
