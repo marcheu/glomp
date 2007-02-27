@@ -33,11 +33,12 @@ extern int fenetreactive;
 
 extern GLuint *tabtext;//le tableau des etxtures
 extern GLuint *shm_text_client;//un shm pour le tableau des textures
-extern pthread_mutex_t *mutex;//le mutex qui le protege
 extern int tailletabtext;
 
 extern sem_t **semap_in;
 extern sem_t **semap_out;//les semaphore pour proteger la fifo
 
-#endif
+
+extern GLuint conteur_textures;//conteur de texture pour le maitre 
+extern GLuint * tabtextures;//tableau de conversion de texture des client
 

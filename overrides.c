@@ -138,15 +138,18 @@ void glGenTextures ( GLsizei p0 , GLuint *p1 )
   int fnum=OVERRIDE_BASE+1;
   int fflags=0;
   
-  
   OUTPUT_FIFO(&fnum,sizeof(fnum));
   OUTPUT_FIFO(&fflags,sizeof(fflags));
   OUTPUT_FIFO(&p0,4);
   OUTPUT_FIFO(&p1,4);
-  pthread_mutex_lock(mutex);
-  memcpy(p1,&shm_text_client[tailletabtext],sizeof(GLuint)*p0);//on cherche la position de la texture dans le shm (apres avoir bloquee le mutex)
-  tailletabtext=tailletabtext+p0;
-  
+
+  for(i=0;i<p0;i++)
+  {
+     p1[i]=conteur_textures;
+     conteur_textures++;
+  }  
+
+
 }
 
 
@@ -166,30 +169,23 @@ void fglGenTextures()
  
   lib_glGenTextures ( p0 , p1 );
 
+  realloc(tabtextures,sizeof(GLuint)*(conteur_textures+p0));
 
-  memcpy(&tabtext[tailletabtext],&p1,sizeof(GLuint)*p0);
-  if(client_num==0)
-    {//le client 0 met la position dans el shm
-      memcpy((void *)shm_text_client[tailletabtext],p1,sizeof(GLuint)*p0);
-      pthread_mutex_unlock(mutex);
-    }
-  tailletabtext=tailletabtext+p0;
+  for(i=0;i<p0;i++)
+  {
+        tabtextures[conteur_textures+i]=p1[i];
+        conteur_textures++;
+  }
+
 }
 
 
 void glBindTexture ( GLenum p0 , GLuint p1 )
 {
 
-  GLuint i=0;
   int fnum=OVERRIDE_BASE+2;
   int fflags=0;
 
-  
-  while( memcmp((const void *)shm_text_client[i],&p1,sizeof(GLuint)) !=0 )    
-    i++;           
- 
-  p1=i;
-	
   OUTPUT_FIFO(&fnum,sizeof(fnum));
   OUTPUT_FIFO(&fflags,sizeof(fflags));
   OUTPUT_FIFO(&p0,4);
@@ -205,7 +201,7 @@ void fglBindTexture()
   INPUT_FIFO(&p0,4);
   INPUT_FIFO(&p1,4);
   
-  p1=tabtext[p1];
+  p1=tabtextures[p1];
   
   lib_glBindTexture ( p0 , p1 );//on utilise le vrai bind texture
 }
