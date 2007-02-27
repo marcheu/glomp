@@ -35,5 +35,8 @@ extern int tailletabtext;
 extern GLuint conteur_textures;//conteur de texture pour le maitre 
 extern GLuint * tabtextures;//tableau de conversion de texture des client
 
+extern pthread_mutex_t *mutex2D;//le mutex pour proteger les texture 2D
+extern void *shm2D;
+
 #endif
 

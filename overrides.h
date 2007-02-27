@@ -43,3 +43,5 @@ void fglFrustum();
 void fglGenTextures();
 //void glBindTexture ( GLenum, GLuint);
 void fglBindTexture();
+//void glTexImage2D( GLenum ,GLint ,GLint ,GLsizei,GLsizei,GLint ,GLenum ,GLenum ,const GLvoid * );
+void fglTexImage2D();

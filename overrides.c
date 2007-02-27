@@ -21,6 +21,7 @@ void load_library(void)
   lib_glBindTexture = dlsym(lib_handle_libGL, "glBindTexture");    
   lib_glGenTextures = dlsym(lib_handle_libGL, "glGenTextures");    
   lib_glFrustum = dlsym(lib_handle_libGL, "glFrustum"); 
+  lib_glTexImage2D = dlsym(lib_handle_libGL, "glTexImage2D");
   
   /*intercepte ls fonction X*/
 
@@ -204,6 +205,90 @@ void fglBindTexture()
   p1=tabtextures[p1];
   
   lib_glBindTexture ( p0 , p1 );//on utilise le vrai bind texture
+}
+
+
+
+/*la fonction TexImage2D va renvoyer ses info dans la fifo, et au meme moment creer un shm ou on place la texture qui va pouvoir etre recuperer*/
+void glTexImage2D( GLenum p0,
+		   GLint p1,
+		   GLint p2,
+		   GLsizei p3,
+		   GLsizei p4,
+		   GLint p5,
+		   GLenum p6,
+		   GLenum p7,
+		   const GLvoid *p8 ){
+
+
+  //on detruit le shm si il existe
+  shmdt(shm2D);
+
+ 
+  //code de glTex 
+  int i;
+  
+  int fnum=OVERRIDE_BASE+3;
+  int fflags=0;
+  
+  pthread_mutex_lock(mutex2D);
+  shm2D=(GLvoid *)shmat( shmget(IPC_PRIVATE,p3*p4*sizeof(p7),0666|IPC_CREAT) ,0,0);
+  memcpy(&shm2D[0],p8,p3*p4*sizeof(p7));//on copie la text dans le shm
+
+  
+  OUTPUT_FIFO(&fnum,sizeof(fnum));
+  OUTPUT_FIFO(&fflags,sizeof(fflags));
+  OUTPUT_FIFO(&p0,4);
+  OUTPUT_FIFO(&p1,4);
+  OUTPUT_FIFO(&p2,4);
+  OUTPUT_FIFO(&p3,4);
+  OUTPUT_FIFO(&p4,4);
+  OUTPUT_FIFO(&p5,4);
+  OUTPUT_FIFO(&p6,4);
+  OUTPUT_FIFO(&p7,4);
+  
+
+  pthread_mutex_unlock(mutex2D);
+
+
+
+
+
+}
+
+void fglTexImage2D(){
+ 
+  GLenum p0;
+  GLint p1;
+  GLint p2;
+  GLsizei p3;
+  GLsizei p4;
+  GLint p5;
+  GLenum p6;
+  GLenum p7;
+  const GLvoid *p8;
+
+  INPUT_FIFO(&p0,4);
+  INPUT_FIFO(&p1,4);
+  INPUT_FIFO(&p2,4);
+  INPUT_FIFO(&p3,4);
+  INPUT_FIFO(&p4,4);
+  INPUT_FIFO(&p5,4);
+  INPUT_FIFO(&p6,4);
+  INPUT_FIFO(&p7,4);
+
+
+
+  pthread_mutex_lock(mutex2D);
+  memcpy(p8,&shm2D[0],p3*p4*sizeof(p7));//on recupere les valeurs du shm
+  pthread_mutex_unlock(mutex2D);
+  //et on appelle la vrai fonction tex2D pour charger les etxtures en memeoire GPU
+
+
+  lib_glTexImage2D ( p0 , p1 ,p2,p3,p4,p5,p6,p7,p8);//p8 etant recuperer par le shm
+
+
+
 }
 
 

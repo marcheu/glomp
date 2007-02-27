@@ -28,7 +28,8 @@ sem_t **semap_in, **semap_out;//les semaphore pour proteger la fifo
 GLuint conteur_textures=0;
 GLuint * tabtextures;
 	
-
+pthread_mutex_t *mutex2D;//le mutex pour proteger les texture 2D
+void *shm2D;
 
 void glop_init(){
  
