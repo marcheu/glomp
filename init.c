@@ -106,7 +106,7 @@ void glop_init(){
   
   client_num=nbcarte;
   //avant le fork, on creer le shm
-  creerFifo();
+  fifo_init();
   //maintenant qu'on a creer  la fifo on creer le tab contenant les indice des consommateurs dans la structure
   //fifo.idx=(uint32_t *)malloc(nbcarte*sizeof(uint32_t));
   

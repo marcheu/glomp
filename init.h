@@ -1,3 +1,6 @@
+#ifndef _INIT_H_
+#define _INIT_H_
+
 #include <GL/gl.h>
 #include <GL/glext.h>
 #include <GL/glx.h>
@@ -35,4 +38,6 @@ extern int tailletabtext;
 
 extern sem_t **semap_in;
 extern sem_t **semap_out;//les semaphore pour proteger la fifo
+
+#endif
 

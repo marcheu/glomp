@@ -6,7 +6,7 @@
 *ici nous allons juste allouer la memoire partage
 *cette fonction ne doit etre appellle qu'un fois, au debut de init
 */
-void creerFifo(){
+void fifo_init(){
   
   int numshm;
   
@@ -21,9 +21,8 @@ void creerFifo(){
 
 
 /*si on ne veux pas utiliser la macro, on peux utiliser les fonctions*/
-void outpout_fifo(void * data, int taille){//void * data marche peux etre pas ... void * type trop generique
-  j=0;
-  for(j;j<nbcarte;j++){
+void fifo_outpout(void * data, int taille){//void * data marche peux etre pas ... void * type trop generique
+  for(j=0;j<nbcarte;j++){
     sem_wait(semap_out[j]);
   }
   if(cmd_fifo_idx+taille>TAILLEMEM){
@@ -34,13 +33,12 @@ void outpout_fifo(void * data, int taille){//void * data marche peux etre pas ..
     cmd_fifo_idx=(cmd_fifo_idx+taille)%TAILLEMEM;
     memcpy(&cmd_fifo[cmd_fifo_idx],data,taille);
   }
-  j=0;
-  for(j;j<nbcarte;j++)
+  for(j=0;j<nbcarte;j++)
     sem_post(semap_in[j]);
 }
 
 
-void input_fifo(void * buff,int taille ){
+void fifo_input(void * buff,int taille ){
   sem_wait(semap_in[client_num]);
   if(cmd_fifo_idx+taille>TAILLEMEM){
     memcpy(buff,&cmd_fifo[idx],taille);
