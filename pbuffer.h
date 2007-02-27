@@ -1,3 +1,6 @@
+#ifndef _PBUFFER_H_
+#define _PBUFFER_H_
+
 #include "init.h"
 
 
@@ -6,4 +9,6 @@ GLXFBConfig gFBconfig = 0;
 Display *gDpy = NULL;
 int gScreen = 0;
 GLXPbuffer gPBuffer = 0;
+
+#endif
 
