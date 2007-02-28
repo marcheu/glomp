@@ -1,5 +1,8 @@
+#include <sys/types.h>
+#include <unistd.h>
 #include "init.h"
 #include "pbuffer.h"
+#include "overrides.h"
 #include "transfertFenetre.h"
 
 
