@@ -5,14 +5,15 @@
 #include "overrides.h"
 #include "transfertFenetre.h"
 
-
+// FIXME deplacer ca dans dewrapped.h
+extern void creertabfunc();
 
 
 int client_num;//numeros du client, va nous permettre de selectionner les processus
 //les fils de 0 a nbcarte-1, le pere = nbcarre
 int nbcarte;//nombre de GPU dispo
 
-int width,height;//taille de la zone
+int width,height;//taille de l'ecran
 
 void **shmadr_fenetre1,**shmadr_fenetre2;
 sem_t **semadrfen_in,**semadrfen_out;
@@ -37,6 +38,7 @@ static void init_client()
 	}
 	// allocate texture table
 	tabtext=malloc(sizeof(GLuint)*1024);
+	creertabfunc();
 	idx=0;
 }
 
@@ -92,7 +94,9 @@ void init()
 		}
 	}
 
-	load_library();
+	// the server hooks the GL functions
+	if (client_num==nbcarte)
+		load_library();
        
 } 
 
