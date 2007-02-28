@@ -1,12 +1,7 @@
 #include "init.h"
+#include "transfertFenetre.h"
 
 
-
-
-//la structure qui contient le shm servant de fifo
-uint8_t* cmd_fifo;//le shm en lui meme
-uint32_t cmd_fifo_idx;//indice du pere
-uint32_t idx; //tableau des indice client
 
 
 int client_num;//numeros du client, va nous permettre de selectionner les processus
@@ -14,7 +9,6 @@ int client_num;//numeros du client, va nous permettre de selectionner les proces
 int nbcarte;//nombre de GPU dispo
 
 int width,height;//taille de la zone
-int * heightclient;
 
 void **shmadr_fenetre1,**shmadr_fenetre2;
 sem_t **semadrfen_in,**semadrfen_out;
@@ -31,7 +25,7 @@ GLuint * tabtextures;
 pthread_mutex_t *mutex2D;//le mutex pour proteger les texture 2D
 void *shm2D;
 
-void glop_init(){
+void glomp_init(){
  
   int i;
   int varfork;
@@ -49,9 +43,6 @@ void glop_init(){
       nbcarte=atoi(force);
     }
 
-
-  //initailisation de tout les tableau      
-  heightclient=malloc(sizeof(int)*nbcarte);
 
   shmadr_fenetre1=malloc(sizeof(void *)*nbcarte);
   shmadr_fenetre2=malloc(sizeof(void *)*nbcarte);
@@ -88,44 +79,26 @@ void glop_init(){
 
 
 
-  /*creationt du tableau des sem*/
-  semap_in = malloc(nbcarte*sizeof(sem_t *));
-  semap_out = malloc(nbcarte*sizeof(sem_t *));  
-
-  for(i;i<nbcarte;i++){
-    sem_init(semap_in[i],0,0);
-    sem_init(semap_out[i],0,128);
-  }//on creer un decalage entre les semaphores pour faire un effet de fifo
-
-
-  /*chaque client utilise un seul semaphore du tableau */
-  /*le bonn semaphore correspondant a num_client*/
-  
-
 
   //on creer un pere et nbcarte fils
   
   client_num=nbcarte;
   //avant le fork, on creer le shm
-  fifo_init();
+  fifo_init(cmd_fifo);
   //maintenant qu'on a creer  la fifo on creer le tab contenant les indice des consommateurs dans la structure
   //fifo.idx=(uint32_t *)malloc(nbcarte*sizeof(uint32_t));
   
-
-  
   /*boucle de creation des process*/
   
-  i=0;
-
   varfork=1;//pour ne pas executer la partie de code fils au 1er tour
   
-  for(i;i<nbcarte;i++){
+  for(i=0;i<nbcarte;i++){
     if(varfork==0){
       //on est dans un des processus fils
       varfork=-2;//pour ne pas y repasser au prochain increment
       client_num=i-1;
          
-      if (creerpbuffer(width,heightclient[client_num])) {//chaque fils doit crer son pbuffer
+      if (creerpbuffer(width,height)) {//chaque fils doit crer son pbuffer
 	printf("Error:couldn't create pbuffer");
 	exit(0);
       }
