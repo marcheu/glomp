@@ -43,7 +43,7 @@ void lire_fenetre()
 
 //lecrture depuis le segment de memoire pour ecriture dans le buffer d'affichage
 
-void ecirre_fenetre()
+void ecrire_fenetre()
 {
    if(fenetreactive==0)  
      for(i=0;i<nbcarte;i++)

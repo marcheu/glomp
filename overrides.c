@@ -43,7 +43,7 @@ void glXSwapBuffers(Display *dpy, GLXDrawable drawable)///changement de la func 
   if(client_num<nbcarte) 
     lire_fenetre();/*on utilise lire_fenetre pour remplire des buffer*/
   else {
-    ecirre_fenetre();//si on est dans le maitre, on recupere les buffers
+    ecrire_fenetre();//si on est dans le maitre, on recupere les buffers
     lib_glXSwapBuffers(dpy, drawable);//et on utilise la vrai fonction swapbuffer
   }
   

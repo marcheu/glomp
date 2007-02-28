@@ -19,7 +19,6 @@ GLuint *tabtext;//le tableau des etxtures
 GLuint *shm_text_client;//un shm pour le tableau des textures
 int tailletabtext=0;
 
-sem_t **semap_in, **semap_out;//les semaphore pour proteger la fifo
 GLuint conteur_textures=0;
 GLuint * tabtextures;
 	
