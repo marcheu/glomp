@@ -1,4 +1,5 @@
 #include "init.h"
+#include "pbuffer.h"
 #include "transfertFenetre.h"
 
 
@@ -25,109 +26,71 @@ GLuint * tabtextures;
 pthread_mutex_t *mutex2D;//le mutex pour proteger les texture 2D
 void *shm2D;
 
-void glomp_init(){
- 
-  int i;
-  int varfork;
-  /*tout d abord il faut ouvir les fichier de config*/
-  
-  /*trouver les display, et donc le nomnbre de carte graphique*/
-  Display* dpy = XOpenDisplay("");
-  nbcarte=ScreenCount(dpy);
+static void init_client()
+{
+	// create the pbuffer
+	if (creerpbuffer(width,height)) {
+		printf("Error:couldn't create pbuffer");
+		exit(0);
+	}
+	// allocate texture table
+	tabtext=malloc(sizeof(GLuint)*1024);
+	idx=0;
+}
 
-  // potentially override the number of GPUs
-  char* force=getenv("FORCE_GPU");
-  if (force)
-    {
-      printf("forcing %d GPU\n",atoi(force));
-      nbcarte=atoi(force);
-    }
+void init()
+{
+	int i;
+
+	// figure out the number of clients
+	Display* dpy = XOpenDisplay("");
+	nbcarte=ScreenCount(dpy);
+
+	// potentially override the number of GPUs
+	char* force=getenv("FORCE_GPU");
+	if (force)
+	{
+		printf("forcing %d GPU\n",atoi(force));
+		nbcarte=atoi(force);
+	}
 
 
-  shmadr_fenetre1=malloc(sizeof(void *)*nbcarte);
-  shmadr_fenetre2=malloc(sizeof(void *)*nbcarte);
-  semadrfen_in=malloc(sizeof(sem_t *)*nbcarte);
-  semadrfen_out=malloc(sizeof(sem_t *)*nbcarte);
+	shmadr_fenetre1=malloc(sizeof(void *)*nbcarte);
+	shmadr_fenetre2=malloc(sizeof(void *)*nbcarte);
+	semadrfen_in=malloc(sizeof(sem_t *)*nbcarte);
+	semadrfen_out=malloc(sizeof(sem_t *)*nbcarte);
 
-  
-  //initialisation des semaphore
-  for(i=0;i<nbcarte;i++)
-    { 
-      if(sem_init(semadrfen_in[i], 0,0)==-1);
-      { 
-	printf("impossible de creer le semaphores in\n");
-	  exit(-1);
-      }
-      if(sem_init(semadrfen_out[i], 0,2)==-1);
-      { 
-	printf("impossible de creer le semaphores out\n");
-	  exit(-1);
-      }
-    }
-  
+	/*creation de la shm des fenetre des differentes cartes*/
+	for(i=0;i<nbcarte;i++)
+	{
+		shmadr_fenetre1[i]=creershm_fenetre();
+		shmadr_fenetre2[i]=creershm_fenetre();
+	}
 
-  /*creation de la shm des fenetre des differentes cartes*/
-  for(i=0;i<nbcarte;i++)
-    {
-      shmadr_fenetre1[i]=creershm_fenetre();
-      shmadr_fenetre2[i]=creershm_fenetre();
-    }
-  
-  //creation du shm, la creation d un shm alloue la memoire (donc pas de malloc)
-  shm_text_client=(GLuint *)shmat( shmget(IPC_PRIVATE,1024,0666|IPC_CREAT) ,0,0);  //1024 textures max
+	//creation du shm, la creation d un shm alloue la memoire (donc pas de malloc)
+	shm_text_client=(GLuint *)shmat( shmget(IPC_PRIVATE,1024,0666|IPC_CREAT) ,0,0);  //1024 textures max
 
 
 
+	client_num=nbcarte;
+	// avant le fork, on initialise la fifo
+	fifo_init(&cmd_fifo);
 
+	// spawn client processes
+	for(i=0;i<nbcarte;i++)
+	{
+		pid_t pid;
+		pid=fork();
+		if (pid==0)
+		{
+			// child process
+			client_num=i;
+			init_client();
+			break;
+		}
+	}
 
-  //on creer un pere et nbcarte fils
-  
-  client_num=nbcarte;
-  //avant le fork, on creer le shm
-  fifo_init(cmd_fifo);
-  //maintenant qu'on a creer  la fifo on creer le tab contenant les indice des consommateurs dans la structure
-  //fifo.idx=(uint32_t *)malloc(nbcarte*sizeof(uint32_t));
-  
-  /*boucle de creation des process*/
-  
-  varfork=1;//pour ne pas executer la partie de code fils au 1er tour
-  
-  for(i=0;i<nbcarte;i++){
-    if(varfork==0){
-      //on est dans un des processus fils
-      varfork=-2;//pour ne pas y repasser au prochain increment
-      client_num=i-1;
-         
-      if (creerpbuffer(width,height)) {//chaque fils doit crer son pbuffer
-	printf("Error:couldn't create pbuffer");
-	exit(0);
-      }
-      tabtext=malloc(sizeof(GLuint)*1024);//alloue le tableau des textures sur chaques client
-      idx=0;
-
-    }
-    else{
-      if(varfork>0){
-	//on est dasn le pere
-	varfork=fork();//le pere restera sup a 0 et va donc y repasser, et creer d'autre fils
-	//varfork des fils sera  a 0 et ils passeront donc par le 1er if
-	if(varfork==-1){perror("fork"); exit(0);}
-      }
-    }
-
-    //fifo.idx=0;
-    cmd_fifo_idx=0;
-
-  }
-  /*process creer*/
-
-
-  if(varfork==0){
-    client_num=i-1;
-    varfork=-2;
-  }//on s'occupe du derrneir fils vu qu'on ne l'a pas fait avant;
-  else if(varfork>0)
-    load_library();
+	load_library();
        
 } 
 

@@ -21,6 +21,7 @@ void fifo_init(fifo* f)
 		msgctl(f->message_queue[i], IPC_SET, &buf);
 	}
 	f->idx=4;
+	f->size=0;
 }
 
 /* master process flushes what remains in the fifo */

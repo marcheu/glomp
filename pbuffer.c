@@ -7,6 +7,12 @@
 *et l'envoyer au maitre qui va gerer l'affichage reel
 */
 
+/* Some global vars */
+static GLXFBConfig gFBconfig = 0;
+static Display *gDpy = NULL;
+static int gScreen = 0;
+static GLXPbuffer gPBuffer = 0;
+
 
 /*fonction permettant de version courante de GLX*/
 int RuntimeQueryGLXVersion(Display *dpy, int screen)
