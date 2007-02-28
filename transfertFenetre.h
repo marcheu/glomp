@@ -3,4 +3,4 @@
 
 void * creershm_fenetre();
 void lire_fenetre();
-void ecirre_fenetre();
+void ecrire_fenetre();
