@@ -132,6 +132,26 @@ int type_size(char* type)
 	return 0;
 }
 
+char * type_remove_const(char * type)
+{
+	if (strncmp(type,"const",5)==0)
+		type+=6;
+	return type;
+}
+
+char * type_remove_etoile(char * type)
+{
+	char *returntype=malloc(sizeof(char)*20);
+        char * typeretoile;
+
+	strcpy(returntype,type);
+	typeretoile=strchr(returntype,'*');
+	if(typeretoile==NULL)
+	   return type;
+	else typeretoile[0]='\0';
+        return returntype;
+}
+
 
 int main()
 {
@@ -253,27 +273,22 @@ int main()
 
 			    fprintf(fout_c,"%s p%d,",attrib,np);
 			    fprintf(fout_h,"%s,",attrib);
-			    fprintf(ftmpc,"\t%s p%d",attrib,np);
 
 			    strcpy(type[np],attrib);
 			    attrib=xmlGetProp(cur, "count");
 			    if( attrib!=NULL)
-			    count[np]=atoi(attrib);
+			        count[np]=atoi(attrib);
 			    else count[np]=0;
-
+			
 			    if(count[np]!=0)
-				fprintf(ftmpc,"=malloc(%d);\n",type_size(type[np])*count[np]);
-			    else fprintf(ftmpc,";\n");
+				fprintf(ftmpc,"\t%s p%d[%d];\n",type_remove_etoile(type_remove_const(type[np])),np,count[np]);
+			    else fprintf(ftmpc,"\t%s p%d;\n",type[np]);
 
 			    if(cur->next->next==NULL)
 				break;
 			    cur = cur->next->next;
 			}
 
-			//for(i=0;i<=np;i++)
-			//    if(count[i]!=0)
-			//	fprintf(ftmpc,"\tp%d=malloc(%d);\n",i,type_size(type[i])*count[i]);
-				
 			if(np!=-1)
 			{
 			    fseek(fout_c,-1,SEEK_CUR);
@@ -292,8 +307,8 @@ int main()
 				fprintf(ftmpc,"\tfifo_input(&cmd_fifo,&p%d,%d);\n",i,type_size(type[i]));
 			    }
 			    else
-			    {    //printf("fnum:%d,  i:%d,  count:%d\n",fnum,i,count[i]);
-				fprintf(fout_c,"\tfifo_outpout(&cmd_fifo,p%d,sizeof(%d));\n",i,type_size(type[i])*count[i]);
+			    {   
+				fprintf(fout_c,"\tfifo_outpout(&cmd_fifo,p%d,%d);\n",i,type_size(type[i])*count[i]);
 				fprintf(ftmpc,"\tfifo_input(&cmd_fifo,p%d,%d);\n",i,type_size(type[i])*count[i]);
 			    }
 			}
@@ -305,20 +320,20 @@ int main()
 	
 			fprintf(ftmpc,"\t((%s (*)(",return_type);
 			for(i=0;i<=np;i++)
-			    fprintf(ftmpc,"%s,",type[i]);
+			    fprintf(ftmpc,"%s,",type_remove_const(type[i]));
 			if(np==-1)
 			    fprintf(ftmpc,"void");
 			else fseek(ftmpc,-1,SEEK_CUR);
 			fprintf(ftmpc,"))glfunctable[%d])(",fnum);                
 			for(i=0;i<=np;i++)
+			{
+			    if(count[i]!=0)
+				fprintf(ftmpc,"(%s)",type_remove_const(type[np]));
 			    fprintf(ftmpc,"p%d,",i);
+			}
 			if(np!=-1)
 			    fseek(ftmpc,-1,SEEK_CUR);
 			fprintf(ftmpc,");\n\n");
-
-			for(i=0;i<=np;i++)
-			    if(count[i]!=0)
-				fprintf(ftmpc,"\tfree(p%d);\n",i);
 
 			fprintf(ftmpc,"}\n\n");
 
