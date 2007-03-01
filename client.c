@@ -36,10 +36,7 @@ void client_init()
 		printf("Error:couldn't create pbuffer");
 		exit(0);
 	}
-	// allocate texture table
-	tabtext=malloc(sizeof(GLuint)*1024);
 	creertabfunc();
-	idx=0;
 }
 	
 void client_run()
