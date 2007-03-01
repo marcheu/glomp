@@ -1,3 +1,6 @@
+#ifndef _SEGMENT_H_
+#define _SEGMENT_H_
+
 
 // creer le segment et ecrit dans la fifo
 int segment_create(char* p,int size);
@@ -8,4 +11,6 @@ char * segment_attach();
 // detruit tous les segments
 void segment_delete();
 
+
+#endif
 
