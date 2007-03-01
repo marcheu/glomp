@@ -1,6 +1,8 @@
 #include "overrides.h"
 #include "init.h"
 #include "id.h"
+#include "config.h"
+
 /* functions we implement ourselves */
 
 static void (*lib_glXSwapBuffers)(Display *dpy, GLXDrawable drawable)=0;
@@ -262,5 +264,23 @@ void fglBindTexture()
 }
 
 
+const GLubyte* glGetString( GLenum name )
+{
+	const GLubyte* vendor="Vendor";
+	const GLubyte* renderer="Glomp " VERSION;
+	const GLubyte* version="1.2 Glomp " VERSION;
+	const GLubyte* extensions="";
+	switch(name)
+	{
+		case GL_VENDOR:
+			return vendor;
+		case GL_RENDERER:
+			return renderer;
+		case GL_VERSION:
+			return version;
+		case GL_EXTENSIONS:
+			return extensions;
+	}
+}
 
 
