@@ -29,8 +29,8 @@ void lire_fenetre()
     sem_wait(semadrfen_out[client_num]);
     int totalload=0;
     for(i=0;i<nbcarte;i++)
-	    totalload+=clientload[i];
-    int heightclient=(double)clientload[client_num]/(double)totalload*height;
+	    totalload+=client_load[i];
+    int heightclient=(double)client_load[client_num]/(double)totalload*height;
 
     if(fenetreactive==0)
       glReadPixels(0,0,width,heightclient,GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, shmadr_fenetre1[client_num]);

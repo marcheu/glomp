@@ -51,9 +51,10 @@ void init()
 	}
 
 	// initially everyone has the same load
-	for(i=1;i<nbcarte-1;i++)
-		clientload[i]=10;
-
+	// FIXME : make this a shm ?
+	client_load=(int*)malloc(nbcarte*sizeof(int));
+	for(i=0;i<nbcarte;i++)
+		client_load[i]=10;
 
 	client_num=nbcarte;
 	// avant le fork, on initialise la fifo

@@ -2,7 +2,6 @@
 #include "overrides.h"
 #include "fifo.h"
 
-
 static void unpack( )
 {
 	int func;

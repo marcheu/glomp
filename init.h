@@ -17,6 +17,8 @@ extern int nbcarte;//nombre de GPU dispo
 
 extern int width,height;//taille de la zone
 
+extern int* client_load;
+
 extern void **shmadr_fenetre1;
 extern void **shmadr_fenetre2;
 extern sem_t **semadrfen_in;
