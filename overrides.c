@@ -99,8 +99,8 @@ void glXSwapBuffers(Display *dpy, GLXDrawable drawable)
 	int fnum=OVERRIDE_BASE+6;
 	int fflags=0;
 
-	fifo_outpout(&cmd_fifo,&fnum,sizeof(fnum));
-	fifo_outpout(&cmd_fifo,&fflags,sizeof(fflags));
+	fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
+	fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
 	fifo_flush();
 	ecrire_fenetre();//si on est dans le maitre, on recupere les buffers
 	lib_glXSwapBuffers(dpy, drawable);//et on utilise la vrai fonction swapbuffer
@@ -146,14 +146,14 @@ void glFrustum ( GLdouble p0 , GLdouble p1 , GLdouble p2 , GLdouble p3 , GLdoubl
 {
 	int fnum=OVERRIDE_BASE;
 	int fflags=0;
-	OUTPUT_FIFO(&fnum,sizeof(fnum));
-	OUTPUT_FIFO(&fflags,sizeof(fflags));
-	OUTPUT_FIFO(&p0,8);
-	OUTPUT_FIFO(&p1,8);
-	OUTPUT_FIFO(&p2,8);
-	OUTPUT_FIFO(&p3,8);
-	OUTPUT_FIFO(&p4,8);
-	OUTPUT_FIFO(&p5,8);
+	fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
+	fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
+	fifo_output(&cmd_fifo,&p0,8);
+	fifo_output(&cmd_fifo,&p1,8);
+	fifo_output(&cmd_fifo,&p2,8);
+	fifo_output(&cmd_fifo,&p3,8);
+	fifo_output(&cmd_fifo,&p4,8);
+	fifo_output(&cmd_fifo,&p5,8);
 	return ;
 
 }
@@ -170,12 +170,12 @@ void fglFrustum()
   GLdouble p3;
   GLdouble p4;
   GLdouble p5;
-  INPUT_FIFO(&p0,8);
-  INPUT_FIFO(&p1,8);
-  INPUT_FIFO(&p2,8);
-  INPUT_FIFO(&p3,8);
-  INPUT_FIFO(&p4,8);
-  INPUT_FIFO(&p5,8);
+  fifo_input(&cmd_fifo,&p0,8);
+  fifo_input(&cmd_fifo,&p1,8);
+  fifo_input(&cmd_fifo,&p2,8);
+  fifo_input(&cmd_fifo,&p3,8);
+  fifo_input(&cmd_fifo,&p4,8);
+  fifo_input(&cmd_fifo,&p5,8);
   
   int totalload=0;
   int beforeload=0;
@@ -202,10 +202,10 @@ void glGenTextures ( GLsizei p0 , GLuint *p1 )
   int fnum=OVERRIDE_BASE+1;
   int fflags=0;
   
-  OUTPUT_FIFO(&fnum,sizeof(fnum));
-  OUTPUT_FIFO(&fflags,sizeof(fflags));
-  OUTPUT_FIFO(&p0,4);
-  OUTPUT_FIFO(&p1,4);
+  fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
+  fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
+  fifo_output(&cmd_fifo,&p0,4);
+  fifo_output(&cmd_fifo,&p1,4);
 
   for(i=0;i<p0;i++)
   {
@@ -228,8 +228,8 @@ void fglGenTextures()
 
   GLsizei p0;
   GLuint* p1;
-  INPUT_FIFO(&p0,4);
-  INPUT_FIFO(&p1,4);
+  fifo_input(&cmd_fifo,&p0,4);
+  fifo_input(&cmd_fifo,&p1,4);
  
   lib_glGenTextures ( p0 , p1 );
 
@@ -250,10 +250,10 @@ void glBindTexture ( GLenum p0 , GLuint p1 )
   int fnum=OVERRIDE_BASE+2;
   int fflags=0;
 
-  OUTPUT_FIFO(&fnum,sizeof(fnum));
-  OUTPUT_FIFO(&fflags,sizeof(fflags));
-  OUTPUT_FIFO(&p0,4);
-  OUTPUT_FIFO(&p1,4);
+  fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
+  fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
+  fifo_output(&cmd_fifo,&p0,4);
+  fifo_output(&cmd_fifo,&p1,4);
   return ;
   
 }
@@ -262,8 +262,8 @@ void fglBindTexture()
 {
   GLenum p0;
   GLuint p1;
-  INPUT_FIFO(&p0,4);
-  INPUT_FIFO(&p1,4);
+  fifo_input(&cmd_fifo,&p0,4);
+  fifo_input(&cmd_fifo,&p1,4);
   
   p1=tabtextures[p1];
   
@@ -297,16 +297,16 @@ void glTexImage2D( GLenum p0,
   memcpy(&shm2D[0],p8,p3*p4*sizeof(p7));//on copie la text dans le shm
 
   
-  OUTPUT_FIFO(&fnum,sizeof(fnum));
-  OUTPUT_FIFO(&fflags,sizeof(fflags));
-  OUTPUT_FIFO(&p0,4);
-  OUTPUT_FIFO(&p1,4);
-  OUTPUT_FIFO(&p2,4);
-  OUTPUT_FIFO(&p3,4);
-  OUTPUT_FIFO(&p4,4);
-  OUTPUT_FIFO(&p5,4);
-  OUTPUT_FIFO(&p6,4);
-  OUTPUT_FIFO(&p7,4);
+  fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
+  fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
+  fifo_output(&cmd_fifo,&p0,4);
+  fifo_output(&cmd_fifo,&p1,4);
+  fifo_output(&cmd_fifo,&p2,4);
+  fifo_output(&cmd_fifo,&p3,4);
+  fifo_output(&cmd_fifo,&p4,4);
+  fifo_output(&cmd_fifo,&p5,4);
+  fifo_output(&cmd_fifo,&p6,4);
+  fifo_output(&cmd_fifo,&p7,4);
   
 
   pthread_mutex_unlock(mutex2D);
@@ -329,14 +329,14 @@ void fglTexImage2D(){
   GLenum p7;
   const GLvoid *p8;
 
-  INPUT_FIFO(&p0,4);
-  INPUT_FIFO(&p1,4);
-  INPUT_FIFO(&p2,4);
-  INPUT_FIFO(&p3,4);
-  INPUT_FIFO(&p4,4);
-  INPUT_FIFO(&p5,4);
-  INPUT_FIFO(&p6,4);
-  INPUT_FIFO(&p7,4);
+  fifo_input(&cmd_fifo,&p0,4);
+  fifo_input(&cmd_fifo,&p1,4);
+  fifo_input(&cmd_fifo,&p2,4);
+  fifo_input(&cmd_fifo,&p3,4);
+  fifo_input(&cmd_fifo,&p4,4);
+  fifo_input(&cmd_fifo,&p5,4);
+  fifo_input(&cmd_fifo,&p6,4);
+  fifo_input(&cmd_fifo,&p7,4);
 
 
 
@@ -367,16 +367,16 @@ void glTexSubImage2D(GLenum p0,GLint p1,GLint p2,GLint p3,GLsizei p4,GLsizei p5,
   memcpy(&shmSub2D[0],p8,p3*p4*sizeof(p7));//on copie la text dans le shm
 
   
-  OUTPUT_FIFO(&fnum,sizeof(fnum));
-  OUTPUT_FIFO(&fflags,sizeof(fflags));
-  OUTPUT_FIFO(&p0,4);
-  OUTPUT_FIFO(&p1,4);
-  OUTPUT_FIFO(&p2,4);
-  OUTPUT_FIFO(&p3,4);
-  OUTPUT_FIFO(&p4,4);
-  OUTPUT_FIFO(&p5,4);
-  OUTPUT_FIFO(&p6,4);
-  OUTPUT_FIFO(&p7,4);
+  fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
+  fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
+  fifo_output(&cmd_fifo,&p0,4);
+  fifo_output(&cmd_fifo,&p1,4);
+  fifo_output(&cmd_fifo,&p2,4);
+  fifo_output(&cmd_fifo,&p3,4);
+  fifo_output(&cmd_fifo,&p4,4);
+  fifo_output(&cmd_fifo,&p5,4);
+  fifo_output(&cmd_fifo,&p6,4);
+  fifo_output(&cmd_fifo,&p7,4);
   
 
   pthread_mutex_unlock(mutexSub2D);
@@ -394,14 +394,14 @@ void fglTexSubImage2D(){
   GLenum p7;
   const GLvoid *p8;
 
-  INPUT_FIFO(&p0,4);
-  INPUT_FIFO(&p1,4);
-  INPUT_FIFO(&p2,4);
-  INPUT_FIFO(&p3,4);
-  INPUT_FIFO(&p4,4);
-  INPUT_FIFO(&p5,4);
-  INPUT_FIFO(&p6,4);
-  INPUT_FIFO(&p7,4);
+  fifo_input(&cmd_fifo,&p0,4);
+  fifo_input(&cmd_fifo,&p1,4);
+  fifo_input(&cmd_fifo,&p2,4);
+  fifo_input(&cmd_fifo,&p3,4);
+  fifo_input(&cmd_fifo,&p4,4);
+  fifo_input(&cmd_fifo,&p5,4);
+  fifo_input(&cmd_fifo,&p6,4);
+  fifo_input(&cmd_fifo,&p7,4);
 
 
 
@@ -433,14 +433,14 @@ void glBitmap( GLsizei p0,GLsizei p1,GLfloat p2,GLfloat p3,GLfloat p4,GLfloat p5
   memcpy(&shmBitmap[0],p6,p0*p1);//on copie la text dans le shm
 
   
-  OUTPUT_FIFO(&fnum,sizeof(fnum));
-  OUTPUT_FIFO(&fflags,sizeof(fflags));
-  OUTPUT_FIFO(&p0,4);
-  OUTPUT_FIFO(&p1,4);
-  OUTPUT_FIFO(&p2,4);
-  OUTPUT_FIFO(&p3,4);
-  OUTPUT_FIFO(&p4,4);
-  OUTPUT_FIFO(&p5,4);
+  fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
+  fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
+  fifo_output(&cmd_fifo,&p0,4);
+  fifo_output(&cmd_fifo,&p1,4);
+  fifo_output(&cmd_fifo,&p2,4);
+  fifo_output(&cmd_fifo,&p3,4);
+  fifo_output(&cmd_fifo,&p4,4);
+  fifo_output(&cmd_fifo,&p5,4);
   
 
   pthread_mutex_unlock(mutexBitmap);
@@ -457,12 +457,12 @@ void fglBitmap(){
   GLfloat p5;
   const GLubyte *p6;
 
-  INPUT_FIFO(&p0,4);
-  INPUT_FIFO(&p1,4);
-  INPUT_FIFO(&p2,4);
-  INPUT_FIFO(&p3,4);
-  INPUT_FIFO(&p4,4);
-  INPUT_FIFO(&p5,4);
+  fifo_input(&cmd_fifo,&p0,4);
+  fifo_input(&cmd_fifo,&p1,4);
+  fifo_input(&cmd_fifo,&p2,4);
+  fifo_input(&cmd_fifo,&p3,4);
+  fifo_input(&cmd_fifo,&p4,4);
+  fifo_input(&cmd_fifo,&p5,4);
 
 
 

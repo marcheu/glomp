@@ -40,7 +40,7 @@ void fifo_flush(fifo* f)
 
 
 /* outputs data to the fifo from the master process */
-void fifo_outpout(fifo* f,const void* data, int size)
+void fifo_output(fifo* f,const void* data, int size)
 {
 	if (f->idx+size>PACKET_SIZE)
 		fifo_flush(f);

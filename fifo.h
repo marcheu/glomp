@@ -29,7 +29,7 @@ fifo;
 extern fifo cmd_fifo;
 
 void fifo_init(fifo* f);
-void fifo_outpout(fifo* f,const void * buffer, int size);
+void fifo_output(fifo* f,const void * buffer, int size);
 void fifo_input(fifo* f,void * buffer,int size);
 void fifo_flush(fifo* f);
     
