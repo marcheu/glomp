@@ -17,6 +17,12 @@ static void unpack( )
               fglGenTextures();
         else if(func==OVERRIDE_BASE+2)
               fglBindTexture();
+        else if(func==OVERRIDE_BASE+3)
+              fglTexImage2D();
+        else if(func==OVERRIDE_BASE+4)
+              fglTexSubImage2D();
+        else if(func==OVERRIDE_BASE+5)
+              fglBitmap();
 }
 
 void client_init()

@@ -41,5 +41,9 @@ extern void *shm2D;
 //pour glTexSubImage2D
 extern pthread_mutex_t *mutexSub2D;//le mutex pour proteger les texture 2D
 extern void *shmSub2D;
+
+//pour glBitmap
+extern pthread_mutex_t *mutexBitmap;//le mutex pour proteger les texture 2D
+extern void *shmBitmap;
 #endif
 

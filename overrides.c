@@ -12,8 +12,6 @@ static int (*lib_XSetStandardProperties)(
     int			/* argc */,
     XSizeHints*		/* hints */
 )=0;
-static GLXWindow (*lib_glXCreateWindow)(Display *dpy, GLXFBConfig config,
-			  Window win, const int *attrib_list)=0;
 
 static void (*lib_glBindTexture) ( GLenum p0 , GLuint p1 )=0;
 static void (*lib_glGenTextures) ( GLsizei p0 , GLuint *p1 )=0;	
@@ -23,6 +21,34 @@ static void (*lib_glFrustum) ( GLdouble left,
 			       GLdouble top,
 			       GLdouble zNear,
 			       GLdouble zFar	)=0;
+static void (*lib_glTexImage2D) ( GLenum target,
+			     GLint level,
+			     GLint internalformat,
+			     GLsizei width,
+			     GLsizei height,
+			     GLint border,
+			     GLenum format,
+			     GLenum type,
+			     const GLvoid *pixels )=0;
+static void (*lib_glTexSubImage2D) (GLenum target,
+				GLint level,
+				GLint xoffset,
+				GLint yoffset,
+				GLsizei	width,
+				GLsizei	height,
+				GLenum format,
+				GLenum type,
+				const GLvoid *pixels )=0;
+static void (*lib_glBitmap)( GLsizei width,
+			 GLsizei height,
+			 GLfloat xorig,
+			 GLfloat yorig,
+			 GLfloat xmove,
+			 GLfloat ymove,
+			     const GLubyte *bitmap )=0;
+
+
+
 
 // the list of overridden gl function that can't be auto-generated
 
@@ -47,12 +73,13 @@ void load_library(void)
   if (!lib_handle_libGL){perror("lib");exit(0);}
 
   /* intercept library GL function */
-  lib_glXSwapBuffers = dlsym(lib_handle_libGL, "glXSwapBuffers");    ///met le bon pointer dans lib_glX
-  lib_glXCreateWindow = dlsym(lib_handle_libGL, "glXCreateWindow");   
+  lib_glXSwapBuffers = dlsym(lib_handle_libGL, "glXSwapBuffers");    ///met le bon pointer dans lib_glX   
   lib_glBindTexture = dlsym(lib_handle_libGL, "glBindTexture");    
   lib_glGenTextures = dlsym(lib_handle_libGL, "glGenTextures");    
   lib_glFrustum = dlsym(lib_handle_libGL, "glFrustum"); 
   lib_glTexImage2D = dlsym(lib_handle_libGL, "glTexImage2D");
+  lib_glTexSubImage2D = dlsym(lib_handle_libGL, "glTexSubImage2D");
+  lib_glBitmap = dlsym(lib_handle_libGL, "glBitmap");
   
   /*intercepte ls fonction X*/
 
@@ -347,7 +374,7 @@ void glTexSubImage2D(GLenum p0,GLint p1,GLint p2,GLint p3,GLsizei p4,GLsizei p5,
   OUTPUT_FIFO(&p7,4);
   
 
-  pthread_mutex_unlock(mutex2D);
+  pthread_mutex_unlock(mutexSub2D);
 }
 
 void fglTexSubImage2D(){
@@ -379,8 +406,66 @@ void fglTexSubImage2D(){
   //et on appelle la vrai fonction tex2D pour charger les etxtures en memeoire GPU
 
 
-  lib_glTexImage2D ( p0 , p1 ,p2,p3,p4,p5,p6,p7,p8);//p8 etant recuperer par le shm
+  lib_glTexSubImage2D ( p0 , p1 ,p2,p3,p4,p5,p6,p7,p8);//p8 etant recuperer par le shm
 
 
+
+}
+
+
+void glBitmap( GLsizei p0,GLsizei p1,GLfloat p2,GLfloat p3,GLfloat p4,GLfloat p5,const GLubyte * p6){
+
+  //on detruit le shm si il existe
+  shmdt(shmBitmap);
+
+
+  
+  int fnum=OVERRIDE_BASE+5;
+  int fflags=0;
+  
+  pthread_mutex_lock(mutexBitmap);
+  shmBitmap=(GLvoid *)shmat( shmget(IPC_PRIVATE,p0*p1,0666|IPC_CREAT) ,0,0);
+  memcpy(&shmBitmap[0],p6,p0*p1);//on copie la text dans le shm
+
+  
+  OUTPUT_FIFO(&fnum,sizeof(fnum));
+  OUTPUT_FIFO(&fflags,sizeof(fflags));
+  OUTPUT_FIFO(&p0,4);
+  OUTPUT_FIFO(&p1,4);
+  OUTPUT_FIFO(&p2,4);
+  OUTPUT_FIFO(&p3,4);
+  OUTPUT_FIFO(&p4,4);
+  OUTPUT_FIFO(&p5,4);
+  
+
+  pthread_mutex_unlock(mutexBitmap);
+
+}
+
+void fglBitmap(){
+
+  GLsizei p0;
+  GLsizei p1;
+  GLfloat p2;
+  GLfloat p3;
+  GLfloat p4;
+  GLfloat p5;
+  const GLubyte *p6;
+
+  INPUT_FIFO(&p0,4);
+  INPUT_FIFO(&p1,4);
+  INPUT_FIFO(&p2,4);
+  INPUT_FIFO(&p3,4);
+  INPUT_FIFO(&p4,4);
+  INPUT_FIFO(&p5,4);
+
+
+
+  pthread_mutex_lock(mutexBitmap);
+  memcpy(p6,&shmBitmap[0],p0*p1);//on recupere les valeurs du shm
+  pthread_mutex_unlock(mutexBitmap);
+  //et on appelle la vrai fonction bitmap
+
+  lib_glBitamp ( p0 , p1 ,p2,p3,p4,p5,p6);//p6 etant recuperer par le shm
 
 }

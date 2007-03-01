@@ -19,5 +19,8 @@ void fglBindTexture();
 void fglTexImage2D();
 //void glTexSubImage2D(GLenum ,GLint ,GLint ,GLint ,GLsizei,GLsizei,GLenum ,GLenum ,const GLvoid *)
 void fglTexSubImage2D();
+//void glBitmap( GLsizei,GLsizei ,GLfloat ,GLfloat ,GLfloat,GLfloat,const GLubyte *);
+void fglBitmap();
+
 #endif
 

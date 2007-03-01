@@ -31,8 +31,11 @@ GLuint * tabtextures;
 pthread_mutex_t *mutex2D;//le mutex pour proteger les texture 2D
 void *shm2D;
 
-pthread_mutex_t *mutexSub2D;//le mutex pour proteger les texture 2D
+pthread_mutex_t *mutexSub2D;//le mutex pour proteger les texture Sub2D
 void *shmSub2D;
+
+pthread_mutex_t *mutexBitmap;//le mutex pour proteger les texture bitmap
+void *shmBitmap;
 
 void init()
 {
