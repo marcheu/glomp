@@ -1,6 +1,11 @@
 
-void segment_attach(int id);
+// creer le segment et ecrit dans la fifo
 int segment_create(char* p,int size);
-void segment_delete(int id);
+
+// recupere un segment dans la fifo et l'attache
+char * segment_attach();
+
+// detruit tous les segments
+void segment_delete();
 
 
