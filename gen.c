@@ -14,10 +14,9 @@
 int np=-1;
 int fnum=0;
 int i;
-char * typenoconst;
 char * type[50];
 int count[50];
-char * return_type;
+char * return_type,* buffer;
 
 
 
@@ -148,14 +147,14 @@ int main()
 	FILE * fin_c=fopen(in_c_file,"wb");
 	FILE * fin_h=fopen(in_h_file,"wb");
 	FILE * ftmpc=fopen("tmpc","w+b");
-	FILE * ftmpc2=fopen("tmph","w+b");
+	FILE * ftmpc2=fopen("tmpc2","w+b");
 
 
         for(i=0;i<50;i++)
 		type[i]=malloc(sizeof(char)*50);
 
 	return_type=malloc(sizeof(char)*50);
-	typenoconst=malloc(sizeof(char)*50);
+	buffer=malloc(sizeof(char)*2048);
 
 
 	doc = xmlParseFile(docname);
@@ -316,6 +315,42 @@ int main()
 	    cur=retourcategory;
 	    cur = cur->next;
 	}//fin while final
+
+
+        fprintf(fin_c,"}\n\n");
+
+	fprintf(fin_h,"\n__GLXextFuncPtr glfunctable[%d];\n",fnum);
+	fprintf(fin_h,"\nvoid (*functable[%d])(void);\n",fnum);
+
+        fprintf(ftmpc2,"}\n");
+
+        rewind(ftmpc);
+	rewind(ftmpc2);  
+
+  
+
+	while(fgets(buffer,2048,ftmpc)!=NULL)
+		fputs(buffer,fin_c); 
+
+
+	while(fgets(buffer,2048,ftmpc2)!=NULL)
+		fputs(buffer,fin_c);
+	fputc('\n',fin_h);
+
+	fclose(fout_c);
+	fclose(fout_h);
+	fclose(fin_c);
+	fclose(fin_h);
+	fclose(ftmpc);
+	fclose(ftmpc2);
+
+	free(return_type);
+	free(buffer);
+	for(i=0;i<50;i++)
+		free(type[i]);
+
+	system("rm -f tmpc tmpc2");
+
 	return;
 }
    
