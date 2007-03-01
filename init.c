@@ -2,6 +2,8 @@
 #include <unistd.h>
 #include "init.h"
 #include "pbuffer.h"
+#include "client.h"
+#include "server.h"
 #include "overrides.h"
 #include "transfertFenetre.h"
 
@@ -31,19 +33,6 @@ void *shm2D;
 
 pthread_mutex_t *mutexSub2D;//le mutex pour proteger les texture 2D
 void *shmSub2D;
-
-static void init_client()
-{
-	// create the pbuffer
-	if (creerpbuffer(width,height)) {
-		printf("Error:couldn't create pbuffer");
-		exit(0);
-	}
-	// allocate texture table
-	tabtext=malloc(sizeof(GLuint)*1024);
-	creertabfunc();
-	idx=0;
-}
 
 void init()
 {
@@ -92,14 +81,19 @@ void init()
 		{
 			// child process
 			client_num=i;
-			init_client();
 			break;
 		}
 	}
 
-	// the server hooks the GL functions
+	// initialize
 	if (client_num==nbcarte)
-		load_library();
+		server_init();
+	else
+		client_init();
        
+	if (client_num<nbcarte)
+		client_run();
+
+	// the server exits this ; the clients don't
 } 
 
