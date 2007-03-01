@@ -9,20 +9,24 @@ static void unpack( )
 	int flags;
 	fifo_input(&cmd_fifo,&func,4);
 	fifo_input(&cmd_fifo,&flags,4);
-        if(func<OVERRIDE_BASE)
-	   functable[func]();
-        else if(func==OVERRIDE_BASE)
-              fglFrustum();
-        else if(func==OVERRIDE_BASE+1)
-              fglGenTextures();
-        else if(func==OVERRIDE_BASE+2)
-              fglBindTexture();
-        else if(func==OVERRIDE_BASE+3)
-              fglTexImage2D();
-        else if(func==OVERRIDE_BASE+4)
-              fglTexSubImage2D();
-        else if(func==OVERRIDE_BASE+5)
-              fglBitmap();
+	if(func<OVERRIDE_BASE)
+		functable[func]();
+	else if(func==OVERRIDE_BASE)
+		fglFrustum();
+	else if(func==OVERRIDE_BASE+1)
+		fglGenTextures();
+	else if(func==OVERRIDE_BASE+2)
+		fglBindTexture();
+	else if(func==OVERRIDE_BASE+3)
+		fglTexImage2D();
+	else if(func==OVERRIDE_BASE+4)
+		fglTexSubImage2D();
+	else if(func==OVERRIDE_BASE+5)
+		fglBitmap();
+	else if(func==OVERRIDE_BASE+6)
+		fglXSwapBuffers();
+	else if(func==OVERRIDE_BASE+7)
+		segment_attach();
 }
 
 void client_init()

@@ -1,4 +1,5 @@
 #include "overrides.h"
+#include "init.h"
 /* functions we implement ourselves */
 
 static void (*lib_glXSwapBuffers)(Display *dpy, GLXDrawable drawable)=0;
@@ -50,8 +51,6 @@ static void (*lib_glBitmap)( GLsizei width,
 
 
 
-// the list of overridden gl function that can't be auto-generated
-
 /* library interception variables */
 static void* lib_handle_libGL = 0;
 static void* lib_handle_libX11 = 0;
@@ -67,13 +66,13 @@ static void* lib_handle_libX11 = 0;
 void load_library(void)
 {
   /* open library (NOTE: you may need to change this filename!) */
-  lib_handle_libGL = dlopen("/usr/lib/libGL.so", RTLD_LAZY);///charge la liib.so
-  lib_handle_libX11 = dlopen("/usr/lib/libX11.so", RTLD_LAZY);
+  lib_handle_libGL = dlopen("/usr/lib/libGL.so", RTLD_LAZY);
   
   if (!lib_handle_libGL){perror("lib");exit(0);}
 
   /* intercept library GL function */
-  lib_glXSwapBuffers = dlsym(lib_handle_libGL, "glXSwapBuffers");    ///met le bon pointer dans lib_glX   
+  lib_glXSwapBuffers = dlsym(lib_handle_libGL, "glXSwapBuffers");
+  lib_glXCreateWindow = dlsym(lib_handle_libGL, "glXCreateWindow");   
   lib_glBindTexture = dlsym(lib_handle_libGL, "glBindTexture");    
   lib_glGenTextures = dlsym(lib_handle_libGL, "glGenTextures");    
   lib_glFrustum = dlsym(lib_handle_libGL, "glFrustum"); 
@@ -81,7 +80,8 @@ void load_library(void)
   lib_glTexSubImage2D = dlsym(lib_handle_libGL, "glTexSubImage2D");
   lib_glBitmap = dlsym(lib_handle_libGL, "glBitmap");
   
-  /*intercepte ls fonction X*/
+  /* intercept XSetStandardProperties */
+  lib_handle_libX11 = dlopen("/usr/lib/libX11.so", RTLD_LAZY);
 
   if (!lib_handle_libX11){perror("lib");exit(0);}
 
@@ -94,19 +94,22 @@ void load_library(void)
  * Our glXSwapBuffers function that intercepts the "real" function.
  *
  */
-void glXSwapBuffers(Display *dpy, GLXDrawable drawable)///changement de la func swap
+void glXSwapBuffers(Display *dpy, GLXDrawable drawable)
 {
-  int i;
+	int fnum=OVERRIDE_BASE+6;
+	int fflags=0;
 
-  if(client_num<nbcarte) 
-    lire_fenetre();/*on utilise lire_fenetre pour remplire des buffer*/
-  else {
-    ecrire_fenetre();//si on est dans le maitre, on recupere les buffers
-    lib_glXSwapBuffers(dpy, drawable);//et on utilise la vrai fonction swapbuffer
-  }
-  
+	fifo_outpout(&cmd_fifo,&fnum,sizeof(fnum));
+	fifo_outpout(&cmd_fifo,&fflags,sizeof(fflags));
+	fifo_flush();
+	ecrire_fenetre();//si on est dans le maitre, on recupere les buffers
+	lib_glXSwapBuffers(dpy, drawable);//et on utilise la vrai fonction swapbuffer
 }
- 
+
+void fglXSwapBufferes()
+{
+	lire_fenetre();
+}
 
 /*on recupere les proprite de la fenetre (taille) pour les diviser par le nbr de cartes, afin de repartire les taches,puis on la lance*/
 int XSetStandardProperties(
@@ -126,16 +129,18 @@ int XSetStandardProperties(
   width=hints->width;
   height=hints->height;
   
-  //on les divisent et on repartie les taches entre chaques clients
-  for(i=1;i<nbcarte-1;i++)
-	  clientload[i]=10;
-  
+ 
   //on relance la fonction
   lib_XSetStandardProperties(dpy,w,name,icon_string,icon_pixmap,argv,argc,hints  );
 
 }
 
 
+extern GLXWindow glXCreateWindow(Display *dpy, GLXFBConfig config, Window win, const int *attrib_list)
+{
+	init();
+	lib_glXCreateWindow(dpy,config,win,attrib_list);
+}
 
 void glFrustum ( GLdouble p0 , GLdouble p1 , GLdouble p2 , GLdouble p3 , GLdouble p4 , GLdouble p5 )
 {

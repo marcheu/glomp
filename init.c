@@ -69,6 +69,9 @@ void init()
 	//creation du shm, la creation d un shm alloue la memoire (donc pas de malloc)
 	shm_text_client=(GLuint *)shmat( shmget(IPC_PRIVATE,1024,0666|IPC_CREAT) ,0,0);  //1024 textures max
 
+	// initially everyone has the same load
+	for(i=1;i<nbcarte-1;i++)
+		clientload[i]=10;
 
 
 	client_num=nbcarte;
