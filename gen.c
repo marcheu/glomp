@@ -142,7 +142,7 @@ int main()
 	xmlNodePtr retour,retourcategory;
 	xmlChar *attrib;
 
-        FILE * fout_c=fopen(out_c_file,"wb");
+    FILE * fout_c=fopen(out_c_file,"wb");
 	FILE * fout_h=fopen(out_h_file,"wb");
 	FILE * fin_c=fopen(in_c_file,"wb");
 	FILE * fin_h=fopen(in_h_file,"wb");
@@ -150,7 +150,7 @@ int main()
 	FILE * ftmpc2=fopen("tmpc2","w+b");
 
 
-        for(i=0;i<50;i++)
+    for(i=0;i<50;i++)
 		type[i]=malloc(sizeof(char)*50);
 
 	return_type=malloc(sizeof(char)*50);
@@ -273,20 +273,20 @@ int main()
 			}
 			fprintf(fout_c,")\n{\n\tint fnum=%d;\n",fnum);
 			fprintf(fout_c,"\tint fflags=0;\n");
-			fprintf(fout_c,"\tOUTPUT_FIFO(&fnum,sizeof(fnum));\n");
-			fprintf(fout_c,"\tOUTPUT_FIFO(&fflags,sizeof(fflags));\n");
+			fprintf(fout_c,"\tfifo_outpout(&cmd_fifo,&fnum,sizeof(fnum));\n");
+			fprintf(fout_c,"\tfifo_outpout(&cmd_fifo,&fflags,sizeof(fflags));\n");
 			fprintf(fout_h,");\n");
 			for(i=0;i<=np;i++)
 			{
 			    if(count[i]==0)
 			    {
-				fprintf(fout_c,"\tOUTPUT_FIFO(&p%d,sizeof(%d));\n",i,type_size(type[i]));
-				fprintf(ftmpc,"\tINPUT_FIFO(&p%d,%d);\n",i,type_size(type[i]));
+				fprintf(fout_c,"\tfifo_outpout(&cmd_fifo,&p%d,sizeof(%d));\n",i,type_size(type[i]));
+				fprintf(ftmpc,"\tfifo_input(&cmd_fifo,&p%d,%d);\n",i,type_size(type[i]));
 			    }
 			    else
 			    {    //printf("fnum:%d,  i:%d,  count:%d\n",fnum,i,count[i]);
-				fprintf(fout_c,"\tOUTPUT_FIFO(p%d,sizeof(%d));\n",i,type_size(type[i])*count[i]);
-				fprintf(ftmpc,"\tINPUT_FIFO(p%d,%d);\n",i,type_size(type[i])*count[i]);
+				fprintf(fout_c,"\tfifo_outpout(&cmd_fifo,p%d,sizeof(%d));\n",i,type_size(type[i])*count[i]);
+				fprintf(ftmpc,"\tfifo_input(&cmd_fifo,p%d,%d);\n",i,type_size(type[i])*count[i]);
 			    }
 			}
 	
