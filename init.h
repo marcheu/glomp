@@ -11,10 +11,6 @@
 
 
 
-//la structure qui contient le shm servant de fifo
-//dans le .h pour qu'elle soit global
-extern uint32_t idx; //tableau des indice client
-
 extern int client_num;//numeros du client, va nous permettre de selectionner les processus
 //les fils de 0 a nbcarte-1, le pere = nbcarte
 extern int nbcarte;//nombre de GPU dispo
@@ -27,23 +23,6 @@ extern sem_t **semadrfen_in;
 extern sem_t **semadrfen_out;
 extern int fenetreactive;
 
-extern GLuint *tabtext;//le tableau des etxtures
-extern GLuint *shm_text_client;//un shm pour le tableau des textures
-extern int tailletabtext;
 
-
-extern GLuint conteur_textures;//conteur de texture pour le maitre 
-extern GLuint * tabtextures;//tableau de conversion de texture des client
-
-extern pthread_mutex_t *mutex2D;//le mutex pour proteger les texture 2D
-extern void *shm2D;
-
-//pour glTexSubImage2D
-extern pthread_mutex_t *mutexSub2D;//le mutex pour proteger les texture 2D
-extern void *shmSub2D;
-
-//pour glBitmap
-extern pthread_mutex_t *mutexBitmap;//le mutex pour proteger les texture 2D
-extern void *shmBitmap;
 #endif
 

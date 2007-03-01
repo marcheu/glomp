@@ -21,22 +21,6 @@ void **shmadr_fenetre1,**shmadr_fenetre2;
 sem_t **semadrfen_in,**semadrfen_out;
 int fenetreactive=0;
 
-GLuint *tabtext;//le tableau des etxtures
-GLuint *shm_text_client;//un shm pour le tableau des textures
-int tailletabtext=0;
-
-GLuint conteur_textures=0;
-GLuint * tabtextures;
-	
-pthread_mutex_t *mutex2D;//le mutex pour proteger les texture 2D
-void *shm2D;
-
-pthread_mutex_t *mutexSub2D;//le mutex pour proteger les texture Sub2D
-void *shmSub2D;
-
-pthread_mutex_t *mutexBitmap;//le mutex pour proteger les texture bitmap
-void *shmBitmap;
-
 void init()
 {
 	int i;
@@ -65,9 +49,6 @@ void init()
 		shmadr_fenetre1[i]=creershm_fenetre();
 		shmadr_fenetre2[i]=creershm_fenetre();
 	}
-
-	//creation du shm, la creation d un shm alloue la memoire (donc pas de malloc)
-	shm_text_client=(GLuint *)shmat( shmget(IPC_PRIVATE,1024,0666|IPC_CREAT) ,0,0);  //1024 textures max
 
 	// initially everyone has the same load
 	for(i=1;i<nbcarte-1;i++)
@@ -101,5 +82,7 @@ void init()
 		client_run();
 
 	// the server exits this ; the clients don't
+	if (client_num<nbcarte)
+		exit(0);
 } 
 
