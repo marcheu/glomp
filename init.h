@@ -38,5 +38,8 @@ extern GLuint * tabtextures;//tableau de conversion de texture des client
 extern pthread_mutex_t *mutex2D;//le mutex pour proteger les texture 2D
 extern void *shm2D;
 
+//pour glTexSubImage2D
+extern pthread_mutex_t *mutexSub2D;//le mutex pour proteger les texture 2D
+extern void *shmSub2D;
 #endif
 

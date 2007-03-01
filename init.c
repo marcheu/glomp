@@ -29,6 +29,9 @@ GLuint * tabtextures;
 pthread_mutex_t *mutex2D;//le mutex pour proteger les texture 2D
 void *shm2D;
 
+pthread_mutex_t *mutexSub2D;//le mutex pour proteger les texture 2D
+void *shmSub2D;
+
 static void init_client()
 {
 	// create the pbuffer

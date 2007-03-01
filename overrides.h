@@ -17,6 +17,7 @@ void fglGenTextures();
 void fglBindTexture();
 //void glTexImage2D( GLenum ,GLint ,GLint ,GLsizei,GLsizei,GLint ,GLenum ,GLenum ,const GLvoid * );
 void fglTexImage2D();
-
+//void glTexSubImage2D(GLenum ,GLint ,GLint ,GLint ,GLsizei,GLsizei,GLenum ,GLenum ,const GLvoid *)
+void fglTexSubImage2D();
 #endif
 
