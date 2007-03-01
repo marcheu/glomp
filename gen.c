@@ -142,7 +142,7 @@ int main()
 	xmlNodePtr retour,retourcategory;
 	xmlChar *attrib;
 
-    FILE * fout_c=fopen(out_c_file,"wb");
+        FILE * fout_c=fopen(out_c_file,"wb");
 	FILE * fout_h=fopen(out_h_file,"wb");
 	FILE * fin_c=fopen(in_c_file,"wb");
 	FILE * fin_h=fopen(in_h_file,"wb");
@@ -253,7 +253,7 @@ int main()
 
 			    fprintf(fout_c,"%s p%d,",attrib,np);
 			    fprintf(fout_h,"%s,",attrib);
-			    fprintf(ftmpc,"\t%s p%d;\n",attrib,np);
+			    fprintf(ftmpc,"\t%s p%d",attrib,np);
 
 			    strcpy(type[np],attrib);
 			    attrib=xmlGetProp(cur, "count");
@@ -261,11 +261,19 @@ int main()
 			    count[np]=atoi(attrib);
 			    else count[np]=0;
 
+			    if(count[np]!=0)
+				fprintf(ftmpc,"=malloc(%d);\n",type_size(type[np])*count[np]);
+			    else fprintf(ftmpc,";\n");
+
 			    if(cur->next->next==NULL)
 				break;
 			    cur = cur->next->next;
 			}
-	
+
+			//for(i=0;i<=np;i++)
+			//    if(count[i]!=0)
+			//	fprintf(ftmpc,"\tp%d=malloc(%d);\n",i,type_size(type[i])*count[i]);
+				
 			if(np!=-1)
 			{
 			    fseek(fout_c,-1,SEEK_CUR);
@@ -290,6 +298,8 @@ int main()
 			    }
 			}
 	
+			
+
 			fprintf(fout_c,"\treturn %s;\n",type_return(return_type));
 			fprintf(fout_c,"}\n\n");
 	
@@ -304,7 +314,17 @@ int main()
 			    fprintf(ftmpc,"p%d,",i);
 			if(np!=-1)
 			    fseek(ftmpc,-1,SEEK_CUR);
-			fprintf(ftmpc,");\n}\n\n",type[i]);
+			fprintf(ftmpc,");\n\n");
+
+			for(i=0;i<=np;i++)
+			    if(count[i]!=0)
+				fprintf(ftmpc,"\tfree(p%d);\n",i);
+
+			fprintf(ftmpc,"}\n\n");
+
+
+
+			
 	
 			fnum++;
 		    }//fin if function
