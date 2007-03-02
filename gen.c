@@ -15,9 +15,17 @@ int np=-1;
 int fnum=0;
 int i;
 char * type[50];
-int count[50];
 char * return_type,* buffer;
 
+char * nameparam[50];
+int count[50];
+char * countchar[50];
+char * variable_param[50];
+char * img_width[50];
+char * img_height[50];
+char * img_depth[50];
+char * img_type[50];
+int param_attrib[50][6];   // [0]=count [1]=variable_param [2]=img_width [3]=img_height [4]=img_depth [5]=img_type
 
 
 typedef struct gl_type{
@@ -26,6 +34,15 @@ typedef struct gl_type{
 	int size;
 }
 gl_type;
+
+
+/*typedef struct gl_pixeltype{
+	char* name;
+	int 
+	int size;
+}
+gl_pixeltype;*/
+
 
 gl_type type_table[]=
 {
@@ -105,6 +122,36 @@ gl_type type_table[]=
 };
 
 
+/*gl_pixeltype pixeltype_table[]=
+{
+	{GL_UNSIGNED_BYTE,1}
+	{GL_BYTE,1}
+	{GL_BITMAP,0}
+	{GL_UNSIGNED_SHORT,2}
+	{GL_SHORT,2}
+	{GL_UNSIGNED_INT,4}
+	{GL_INT,4}
+	{GL_FLOAT,sizeof(float)}
+	{GL_UNSIGNED_BYTE_3_3_2,1}
+	{GL_UNSIGNED_BYTE_2_3_3_REV,1}
+	{GL_UNSIGNED_SHORT_5_6_5,2},
+	{GL_UNSIGNED_SHORT_5_6_5_REV,2},
+	{GL_UNSIGNED_SHORT_4_4_4_4,2},
+	{GL_UNSIGNED_SHORT_4_4_4_4_REV,2},
+	{GL_UNSIGNED_SHORT_5_5_5_1,2},
+	{GL_UNSIGNED_SHORT_1_5_5_5_REV,2},
+	{GL_UNSIGNED_INT_8_8_8_8,4},
+	{GL_UNSIGNED_INT_8_8_8_8_REV,4},
+	{GL_UNSIGNED_INT_10_10_10_2,4},
+	{GL_UNSIGNED_INT_2_10_10_10_REV.4},
+	{NULL,0},
+};*/
+
+
+
+
+
+
 
 char* type_return(char* type)
 {
@@ -152,6 +199,34 @@ char * type_remove_etoile(char * type)
         return returntype;
 }
 
+/*donne la taille du type de pixel utiliser par une fonction*/
+/*int typepixel_size(char* type)
+{
+	int i=0;
+	int j=0;
+
+	while(pixeltype_table[i].name!=NULL)
+	{
+		if (strcmp(type,pixeltype_table[i].name)==0)
+			return pixeltype_table[i].size; 
+		i++;
+	}
+	
+	i=0;
+
+	while( strcmp(type,nameparam[i])!=0)
+	   i++
+
+	while(pixeltype_table[j].name!=NULL)
+	{
+		if (strcmp(,pixeltype_table[j].name)==0)
+			return pixeltype_table[j].size; 
+		j++;
+	}
+
+	return 0;
+}*/
+
 
 int main()
 {
@@ -171,10 +246,19 @@ int main()
 
 
     for(i=0;i<50;i++)
-		type[i]=malloc(sizeof(char)*50);
+    {
+	type[i]=malloc(sizeof(char)*50);
+	nameparam[i]=malloc(sizeof(char)*50);
+	img_width[i]=malloc(sizeof(char)*50);
+	img_height[i]=malloc(sizeof(char)*50);
+	img_depth[i]=malloc(sizeof(char)*50);
+	img_type[i]=malloc(sizeof(char)*50);
+	countchar[i]=malloc(sizeof(char)*50);
+    }
 
 	return_type=malloc(sizeof(char)*50);
 	buffer=malloc(sizeof(char)*2048);
+	
 
 
 	doc = xmlParseFile(docname);
@@ -266,50 +350,160 @@ int main()
 			
 			np=-1;                    
 
+
+			/*---parametre de la fonction---*/
 	 		while((!xmlStrcmp(cur->name, (const xmlChar *)"param")))
 			{
 			    np++;
+
+			    attrib = xmlGetProp(cur, "name");
+			    strcpy(nameparam[np],attrib);
+
 			    attrib = xmlGetProp(cur, "type");
-
-			    fprintf(fout_c,"%s p%d,",attrib,np);
+			    fprintf(fout_c,"%s %s,",attrib,nameparam[np]);
 			    fprintf(fout_h,"%s,",attrib);
-
 			    strcpy(type[np],attrib);
+
+				
+			    /*verification de presence de l'attribut count*/
 			    attrib=xmlGetProp(cur, "count");
 			    if( attrib!=NULL)
-			        count[np]=atoi(attrib);
-			    else count[np]=0;
-			
-			    if(count[np]!=0)
-				fprintf(ftmpc,"\t%s p%d[%d];\n",type_remove_etoile(type_remove_const(type[np])),np,count[np]);
-			    else fprintf(ftmpc,"\t%s p%d;\n",type[np]);
+			    {
+				if(atoi(attrib)!=0)
+				{
+				    count[np]=atoi(attrib);
+				    param_attrib[np][0]=1;
+				}
+				else 
+				{
+				    strcpy(countchar[np],attrib);
+				    param_attrib[np][0]=2;
+				}
+
+			    }
+			    else 
+			    {
+				count[np]=0;
+				param_attrib[np][0]=0;
+			    }
+
+
+			    /*verification de presence de l'attribut variable_param*/
+			    attrib=xmlGetProp(cur, "variable_param");
+			    if( attrib!=NULL)
+			    {
+			        
+				param_attrib[np][1]=1;
+			    }
+			    else param_attrib[np][1]=0;
+
+
+			    /*verification de presence de l'attribut img_width*/
+			    attrib=xmlGetProp(cur, "img_width");
+			    if( attrib!=NULL)
+			    {
+				strcpy(img_width[np],attrib);
+				param_attrib[np][2]=1;
+			    }
+			    else param_attrib[np][2]=0;
+
+			    /*verification de presence de l'attribut img_height*/
+			    attrib=xmlGetProp(cur, "img_height");
+			    if( attrib!=NULL)
+			    {
+			        strcpy(img_height[np],attrib);
+				param_attrib[np][3]=1;
+			    }
+			    else param_attrib[np][3]=0;
+
+			    /*verification de presence de l'attribut img_depth*/
+			    attrib=xmlGetProp(cur, "img_depth");
+			    if( attrib!=NULL)
+			    {
+			        strcpy(img_depth[np],attrib);
+				param_attrib[np][4]=1;
+			    }
+			    else param_attrib[np][4]=0;
+
+			    /*verification de presence de l'attribut img_type*/
+			    attrib=xmlGetProp(cur, "img_type");
+			    if( attrib!=NULL)
+			    {
+			        strcpy(img_type[np],attrib);
+				param_attrib[np][5]=1;
+			    }
+			    else param_attrib[np][5]=0;
+			    
+
+
+			    if(param_attrib[np][0]==1 || param_attrib[np][1]==1)
+				fprintf(ftmpc,"\t%s %s[%d];\n",type_remove_etoile(type_remove_const(type[np])),
+											nameparam[np],count[np]);
+			    else //if(param_attrib[np][2]==0)
+				fprintf(ftmpc,"\t%s %s;\n",type_remove_const(type[np]),nameparam[np]);
+
+
 
 			    if(cur->next->next==NULL)
 				break;
 			    cur = cur->next->next;
-			}
+			}      //fin de detection des parametres de la fonction
+
+
+
 
 			if(np!=-1)
 			{
 			    fseek(fout_c,-1,SEEK_CUR);
 			    fseek(fout_h,-1,SEEK_CUR);
 			}
-			fprintf(fout_c,")\n{\n\tint fnum=%d;\n",fnum);
+			fprintf(fout_c,")\n{\n");
+			if(param_attrib[np][2]==1)
+				fprintf(fout_c,"\tint size;\n");
+			fprintf(fout_c,"\tint fnum=%d;\n",fnum);
 			fprintf(fout_c,"\tint fflags=0;\n");
 			fprintf(fout_c,"\tfifo_outpout(&cmd_fifo,&fnum,sizeof(fnum));\n");
 			fprintf(fout_c,"\tfifo_outpout(&cmd_fifo,&fflags,sizeof(fflags));\n");
 			fprintf(fout_h,");\n");
 			for(i=0;i<=np;i++)
 			{
-			    if(count[i]==0)
+			    if(param_attrib[i][2]==1)
 			    {
-				fprintf(fout_c,"\tfifo_outpout(&cmd_fifo,&p%d,sizeof(%d));\n",i,type_size(type[i]));
-				fprintf(ftmpc,"\tfifo_input(&cmd_fifo,&p%d,%d);\n",i,type_size(type[i]));
+				if(param_attrib[i][3]==1)
+				{
+				    if(param_attrib[i][4]==1)
+					fprintf(fout_c,"\tsize=%s*%s*%s*size_pixel(%s);\n",img_width[i],img_height[i],
+											   img_depth[i],img_type[i]);
+				    else fprintf(fout_c,"\tsize=%s*%s*size_pixel(%s);\n",img_width[i],
+											 img_height[i],img_type[i]);
+				}
+				else fprintf(fout_c,"\tsize=%s*size_pixel(%s);\n",img_width[i],img_type[i]);
+
+			    	fprintf(fout_c,"\tsegment_create(%s,size);\n",nameparam[i]);
+				fprintf(ftmpc,"\t%s=segment_attach();\n",nameparam[i]);
+			    }
+			    else if(param_attrib[i][0]==1)
+			    {   
+				fprintf(fout_c,"\tfifo_outpout(&cmd_fifo,%s,%d);\n",nameparam[i],
+											type_size(type[i])*count[i]);
+				fprintf(ftmpc,"\tfifo_input(&cmd_fifo,%s,%d);\n",nameparam[i],type_size(type[i])*count[i]);
+			    }
+			    else if(param_attrib[i][0]==2)
+			    {   
+				fprintf(fout_c,"\tfifo_outpout(&cmd_fifo,%s,%d*%s);\n",nameparam[i],
+										       type_size(type[i]),countchar[i]);
+				fprintf(ftmpc,"\tfifo_input(&cmd_fifo,%s,%d*%s);\n",nameparam[i],
+										    type_size(type[i]),countchar[i]);
+			    }
+			    else if(param_attrib[i][1]==1)
+			    {   
+				fprintf(fout_c,"\tfifo_outpout(&cmd_fifo,%s,%d);\n",nameparam[i],type_size(type[i]));
+				fprintf(ftmpc,"\tfifo_input(&cmd_fifo,%s,%d);\n",nameparam[i],type_size(type[i]));
 			    }
 			    else
-			    {   
-				fprintf(fout_c,"\tfifo_outpout(&cmd_fifo,p%d,%d);\n",i,type_size(type[i])*count[i]);
-				fprintf(ftmpc,"\tfifo_input(&cmd_fifo,p%d,%d);\n",i,type_size(type[i])*count[i]);
+			    {
+				fprintf(fout_c,"\tfifo_outpout(&cmd_fifo,&%s,%d);\n",nameparam[i],type_size(type[i]));
+				fprintf(ftmpc,"\tfifo_input(&cmd_fifo,&%s,%d);\n",nameparam[i],type_size(type[i]));
 			    }
 			}
 	
@@ -329,13 +523,20 @@ int main()
 			{
 			    if(count[i]!=0)
 				fprintf(ftmpc,"(%s)",type_remove_const(type[np]));
-			    fprintf(ftmpc,"p%d,",i);
+			    fprintf(ftmpc,"%s,",nameparam[i]);
 			}
+
 			if(np!=-1)
 			    fseek(ftmpc,-1,SEEK_CUR);
 			fprintf(ftmpc,");\n\n");
 
+			for(i=0;i<np;i++)
+			    if(param_attrib[i][2]==1)
+				fprintf(ftmpc,"\tsegment_delete();\n");
+
 			fprintf(ftmpc,"}\n\n");
+
+			
 
 
 
