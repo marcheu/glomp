@@ -22,6 +22,12 @@ static void unpack( )
 		fglGenLists();
 	else if(func==OVERRIDE_BASE+5)
 		fglCallList();
+	else if(func==OVERRIDE_BASE+6)
+		fglCallLists();
+	else if(func==OVERRIDE_BASE+7)
+		fglGenTexturesEXT();
+	else if(func==OVERRIDE_BASE+8)
+		fglGenTexturesEXT();
 }
 
 void client_init()

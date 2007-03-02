@@ -29,8 +29,17 @@ static int (*lib_XSetStandardProperties)(
     XSizeHints*		/* hints */
 )=0;
 
-
-
+static GLuint (*lib_glGenLists)( GLsizei range )=0;
+static void (*lib_glCallList) (GLuint list)=0;
+static void (*lib_glCallLists) (GLsizei n, GLenum type, const GLvoid *lists)=0;
+static void (*lib_glCopyPixels) (GLint x, GLint y, GLsizei width, GLsizei height, GLenum type)=0;
+static void (*lib_glCopyTexImage1D) (GLenum target, GLint level, GLenum internalFormat, GLint x, GLint y, GLsizei width, GLint border)=0;
+static void (*lib_glCopyTexImage2D) (GLenum target, GLint level, GLenum internalFormat, GLint x, GLint y, GLsizei width, GLsizei height, GLint border)=0;
+static void (*lib_glCopyTexSubImage1D) (GLenum target, GLint level, GLint xoffset, GLint x, GLint y, GLsizei width)=0;
+static void (*lib_glCopyTexSubImage2D) (GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint x, GLint y, GLsizei width, GLsizei height)=0;
+static void (*lib_glFlush) (void);
+static void (*lib_glBindTextureEXT) ( GLenum p0 , GLuint p1 )=0;
+static void (*lib_glGenTexturesEXT) ( GLsizei p0 , GLuint *p1 )=0;
 
 
 /* library interception variables */
@@ -58,7 +67,20 @@ void load_library(void)
   lib_glBindTexture = dlsym(lib_handle_libGL, "glBindTexture");    
   lib_glGenTextures = dlsym(lib_handle_libGL, "glGenTextures");    
   lib_glFrustum = dlsym(lib_handle_libGL, "glFrustum"); 
-  
+  lib_glGenList= dlsym(lib_handle_libGL, "glGenLists");
+  lib_glCallList= dlsym(lib_handle_libGL, "glCallList");
+  lib_glCallLists= dlsym(lib_handle_libGL, "glCallLists");
+  lib_glCopyPixels= dlsym(lib_handle_libGL, "glCopyPixels");
+  lib_glCopyTexImage1D= dlsym(lib_handle_libGL, "glCopyTexImage1D");
+  lib_glCopyTexImage2D= dlsym(lib_handle_libGL, "glCopyTexImage2D");
+  lib_glCopyTexSubImage1D= dlsym(lib_handle_libGL, "glCopyTexSubImage1D");
+  lib_glCopyTexSubImage2D= dlsym(lib_handle_libGL, "glCopyTexSubImage2D");
+  lib_glFlush= dlsym(lib_handle_libGL, "glFlush");
+
+  /*les extensions*/
+  lib_glBindTextureEXT = dlsym(lib_handle_libGL, "glBindTextureEXT");    
+  lib_glGenTexturesEXT = dlsym(lib_handle_libGL, "glGenTexturesEXT");
+
   /* intercept XSetStandardProperties */
   lib_handle_libX11 = dlopen("/usr/lib/libX11.so", RTLD_LAZY);
 
@@ -318,4 +340,139 @@ const GLubyte* glGetString( GLenum name )
 	}
 }
 
+/*pas sur d'avoir la bonne taille dasn segment_create*/
+void glCallLists (GLsizei n, GLenum type, const GLvoid *lists)
+{
 
+	int fnum=OVERRIDE_BASE+6;
+	int fflags=0;
+	fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
+	fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
+	fifo_output(&cmd_fifo,&n,4);
+	fifo_output(&cmd_fifo,&type,4);
+	segment_create(lists,n);
+
+}
+
+void fglCallLists ()
+{
+	GLsizei p0;
+	GLenum p1;
+	GLvoid *p2;
+	fifo_input(&cmd_fifo,&p0,4);
+	fifo_input(&cmd_fifo,&p1,4);
+	p2=(GLvoid *)segment_attach();
+	lib_glCallList(p0,p1,p2);
+}
+
+
+/*vu qu'on souhaite juste retrouver les pixel du frame buffer, on ne l'envoie pas, mais on l'utilise sur le maitre*/
+void glCopyPixels (GLint x, GLint y, GLsizei width, GLsizei height, GLenum type)
+{
+  lib_glCopyPixels (x,y,width,height,type);
+}
+
+/*apres toute la serie des copyTexImage qui marche comme copyPixel (cf man) donc on ne les envoie dans la fifo*/
+/*vu que l'on copi direct du read_buffer, dispo chez le maiter, les derivees des fonctions on juste besoin de les rappeler sur le maitre (pas de fifo !)*/
+
+
+void glCopyTexImage1D (GLenum target, GLint level, GLenum internalFormat, GLint x, GLint y, GLsizei width, GLint border)
+{
+  lib_glCopyTexImage1D(target,level,internalFormat,x,y,width,border);
+}
+void glCopyTexImage2D (GLenum target, GLint level, GLenum internalFormat, GLint x, GLint y, GLsizei width, GLsizei height, GLint border)
+{
+  lib_glCopyTexImage2D(target,level,internalFormat,x,y,width,heigth,border);
+}
+void glCopyTexSubImage1D (GLenum target, GLint level, GLint xoffset, GLint x, GLint y, GLsizei width)
+{
+  lib_glCopyTexSubImage1D(target,level,xoffset,x,y,width);
+}
+void glCopyTexSubImage2D (GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint x, GLint y, GLsizei width, GLsizei height)
+{
+  lib_glCopyTexSubImage2D(target,level,xoffset,yoffset,x,y,width,height );
+}
+
+/*fin des copyTex*/
+
+
+
+/*glFlush à n'utiliser que sur le maitre ? -> donc pas de fifo*/
+void glFlush(void){
+  glFlush();
+}
+
+
+
+
+
+
+
+/*les fonction EXT de texturing*/
+void glGenTexturesEXT ( GLsizei p0 , GLuint *p1 )
+{
+	int i;
+	int fnum=OVERRIDE_BASE+7;
+	int fflags=0;
+
+	fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
+	fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
+	fifo_output(&cmd_fifo,&p0,4);
+
+	for(i=0;i<p0;i++)
+	{
+		GLuint id=id_server_generate(id_texture);
+		*p1=id;
+		fifo_output(&cmd_fifo,&id,4);
+		p1++;
+	}
+
+}
+
+void fglGenTexturesEXT()
+{
+	int i;
+
+	GLsizei p0;
+	GLuint p1;
+	fifo_input(&cmd_fifo,&p0,4);
+	for(i=0;i<p0;i++)
+	{
+		GLuint local_id;
+		fifo_input(&cmd_fifo,&p1,4);
+		lib_glGenTexturesEXT ( p0 , &local_id );
+		id_add(p1,local_id);
+	}
+}
+
+GLboolean glIsTextureEXT ( GLuint p0 )
+{
+	return id_server_test_type(p0,id_texture);
+}
+
+void glBindTextureEXT ( GLenum p0 , GLuint p1 )
+{
+
+  int fnum=OVERRIDE_BASE+8;
+  int fflags=0;
+
+  fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
+  fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
+  fifo_output(&cmd_fifo,&p0,4);
+  fifo_output(&cmd_fifo,&p1,4);
+  return ;
+  
+}
+void fglBindTextureEXT()
+{
+  GLenum p0;
+  GLuint p1;
+  fifo_input(&cmd_fifo,&p0,4);
+  fifo_input(&cmd_fifo,&p1,4);
+  
+  p1=id_translate(p1);
+  
+  lib_glBindTextureEXT ( p0 , p1 );//on utilise le vrai bind texture
+}
+
+/*fin des fonction EXt de texturing*/
