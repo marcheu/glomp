@@ -20,7 +20,10 @@ void id_add(int value,int translated_value)
 int id_translate(int value)
 {
 	if (id_table_size>value)
-		printf("oops id not found\n");
+	{
+		printf("oops id not found (bug in the application ?)\n");
+		return 0;
+	}
 	return id_table[value];
 }
 

@@ -11,21 +11,17 @@ static void unpack( )
 	if(func<OVERRIDE_BASE)
 		functable[func]();
 	else if(func==OVERRIDE_BASE)
-		fglFrustum();
-	else if(func==OVERRIDE_BASE+1)
-		fglGenTextures();
-	else if(func==OVERRIDE_BASE+2)
-		fglBindTexture();
-	else if(func==OVERRIDE_BASE+3)
-		fglTexImage2D();
-	else if(func==OVERRIDE_BASE+4)
-		fglTexSubImage2D();
-	else if(func==OVERRIDE_BASE+5)
-		fglBitmap();
-	else if(func==OVERRIDE_BASE+6)
 		fglXSwapBuffers();
-	else if(func==OVERRIDE_BASE+7)
-		segment_attach();
+	else if(func==OVERRIDE_BASE+1)
+		fglFrustum();
+	else if(func==OVERRIDE_BASE+2)
+		fglGenTextures();
+	else if(func==OVERRIDE_BASE+3)
+		fglBindTexture();
+	else if(func==OVERRIDE_BASE+4)
+		fglGenLists();
+	else if(func==OVERRIDE_BASE+5)
+		fglCallList();
 }
 
 void client_init()

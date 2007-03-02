@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 
 # libtoolT - Provide generalized library-building support services.
 # Generated automatically by  (GNU Glomp 0.0.1)
@@ -44,10 +44,10 @@ available_tags=" CXX"
 
 # ### BEGIN LIBTOOL CONFIG
 
-# Libtool was configured on host sinox:
+# Libtool was configured on host visu:
 
 # Shell to use when invoking shell scripts.
-SHELL="/bin/sh"
+SHELL="/bin/bash"
 
 # Whether or not to build shared libraries.
 build_libtool_libs=yes
@@ -66,12 +66,12 @@ fast_install=yes
 
 # The host system.
 host_alias=
-host=i686-pc-linux-gnu
+host=x86_64-unknown-linux-gnu
 host_os=linux-gnu
 
 # The build system.
 build_alias=
-build=i686-pc-linux-gnu
+build=x86_64-unknown-linux-gnu
 build_os=linux-gnu
 
 # An echo program that does not interpret backslashes.
@@ -84,6 +84,9 @@ AR_FLAGS="cru"
 # A C compiler.
 LTCC="gcc"
 
+# LTCC compiler flags.
+LTCFLAGS="-g -O2"
+
 # A language-specific compiler.
 CC="gcc"
 
@@ -91,10 +94,10 @@ CC="gcc"
 with_gcc=yes
 
 # An ERE matcher.
-EGREP="grep -E"
+EGREP="/bin/grep -E"
 
 # The linker used to build libraries.
-LD="/usr/bin/ld"
+LD="/usr/bin/ld -m elf_x86_64"
 
 # Whether we need hard or soft links.
 LN_S="ln -s"
@@ -198,7 +201,7 @@ soname_spec="\${libname}\${release}\${shared_ext}\$major"
 # Commands used to build and install an old-style archive.
 RANLIB="ranlib"
 old_archive_cmds="\$AR \$AR_FLAGS \$oldlib\$oldobjs\$old_deplibs~\$RANLIB \$oldlib"
-old_postinstall_cmds="\$RANLIB \$oldlib~chmod 644 \$oldlib"
+old_postinstall_cmds="chmod 644 \$oldlib~\$RANLIB \$oldlib"
 old_postuninstall_cmds=""
 
 # Create an old-style archive from a shared archive.
@@ -316,16 +319,16 @@ hardcode_automatic=no
 
 # Variables whose values should be saved in libtool wrapper scripts and
 # restored at relink time.
-variables_saved_for_relink="PATH  LD_RUN_PATH GCC_EXEC_PREFIX COMPILER_PATH LIBRARY_PATH"
+variables_saved_for_relink="PATH LD_LIBRARY_PATH LD_RUN_PATH GCC_EXEC_PREFIX COMPILER_PATH LIBRARY_PATH"
 
 # Whether libtool must link a program against all its dependency libraries.
-link_all_deplibs=unknown
+link_all_deplibs=no
 
 # Compile-time system search path for libraries
-sys_lib_search_path_spec=" /usr/lib/gcc/i586-mandriva-linux-gnu/4.1.1/ /usr/lib/gcc/i586-mandriva-linux-gnu/4.1.1/ /usr/lib/gcc/i586-mandriva-linux-gnu/4.1.1/../../../../i586-mandriva-linux-gnu/lib/i586-mandriva-linux-gnu/4.1.1/ /usr/lib/gcc/i586-mandriva-linux-gnu/4.1.1/../../../../i586-mandriva-linux-gnu/lib/ /usr/lib/gcc/i586-mandriva-linux-gnu/4.1.1/../../../i586-mandriva-linux-gnu/4.1.1/ /usr/lib/gcc/i586-mandriva-linux-gnu/4.1.1/../../../ /lib/i586-mandriva-linux-gnu/4.1.1/ /lib/ /usr/lib/i586-mandriva-linux-gnu/4.1.1/ /usr/lib/"
+sys_lib_search_path_spec=" /usr/lib/gcc/x86_64-linux-gnu/4.1.2/ /usr/lib/gcc/x86_64-linux-gnu/4.1.2/ /usr/lib/gcc/x86_64-linux-gnu/4.1.2/../../../../x86_64-linux-gnu/lib/x86_64-linux-gnu/4.1.2/ /usr/lib/gcc/x86_64-linux-gnu/4.1.2/../../../../x86_64-linux-gnu/lib/ /usr/lib/gcc/x86_64-linux-gnu/4.1.2/../../../x86_64-linux-gnu/4.1.2/ /usr/lib/gcc/x86_64-linux-gnu/4.1.2/../../../ /lib/x86_64-linux-gnu/4.1.2/ /lib/ /usr/lib/x86_64-linux-gnu/4.1.2/ /usr/lib/"
 
 # Run-time system search path for libraries
-sys_lib_dlsearch_path_spec="/lib /usr/lib /usr/lib/graphviz /usr/X11R6/lib /usr/lib/qt3/lib /usr/local/lib "
+sys_lib_dlsearch_path_spec="/lib /usr/lib /usr/X11R6/lib "
 
 # Fix the shell variable $srcfile for the compiler.
 fix_srcfile_path=""
@@ -6828,10 +6831,10 @@ build_old_libs=`case $build_libtool_libs in yes) $echo no;; *) $echo yes;; esac`
 # End:
 # ### BEGIN LIBTOOL TAG CONFIG: CXX
 
-# Libtool was configured on host sinox:
+# Libtool was configured on host visu:
 
 # Shell to use when invoking shell scripts.
-SHELL="/bin/sh"
+SHELL="/bin/bash"
 
 # Whether or not to build shared libraries.
 build_libtool_libs=yes
@@ -6850,12 +6853,12 @@ fast_install=yes
 
 # The host system.
 host_alias=
-host=i686-pc-linux-gnu
+host=x86_64-unknown-linux-gnu
 host_os=linux-gnu
 
 # The build system.
 build_alias=
-build=i686-pc-linux-gnu
+build=x86_64-unknown-linux-gnu
 build_os=linux-gnu
 
 # An echo program that does not interpret backslashes.
@@ -6868,6 +6871,9 @@ AR_FLAGS="cru"
 # A C compiler.
 LTCC="gcc"
 
+# LTCC compiler flags.
+LTCFLAGS="-g -O2"
+
 # A language-specific compiler.
 CC="g++"
 
@@ -6875,10 +6881,10 @@ CC="g++"
 with_gcc=yes
 
 # An ERE matcher.
-EGREP="grep -E"
+EGREP="/bin/grep -E"
 
 # The linker used to build libraries.
-LD="/usr/bin/ld"
+LD="/usr/bin/ld -m elf_x86_64"
 
 # Whether we need hard or soft links.
 LN_S="ln -s"
@@ -6982,7 +6988,7 @@ soname_spec="\${libname}\${release}\${shared_ext}\$major"
 # Commands used to build and install an old-style archive.
 RANLIB="ranlib"
 old_archive_cmds="\$AR \$AR_FLAGS \$oldlib\$oldobjs\$old_deplibs~\$RANLIB \$oldlib"
-old_postinstall_cmds="\$RANLIB \$oldlib~chmod 644 \$oldlib"
+old_postinstall_cmds="chmod 644 \$oldlib~\$RANLIB \$oldlib"
 old_postuninstall_cmds=""
 
 # Create an old-style archive from a shared archive.
@@ -7007,11 +7013,11 @@ striplib="strip --strip-unneeded"
 
 # Dependencies to place before the objects being linked to create a
 # shared library.
-predep_objects="/usr/lib/gcc/i586-mandriva-linux-gnu/4.1.1/../../../crti.o /usr/lib/gcc/i586-mandriva-linux-gnu/4.1.1/crtbeginS.o"
+predep_objects="/usr/lib/gcc/x86_64-linux-gnu/4.1.2/../../../../lib64/crti.o /usr/lib/gcc/x86_64-linux-gnu/4.1.2/crtbeginS.o"
 
 # Dependencies to place after the objects being linked to create a
 # shared library.
-postdep_objects="/usr/lib/gcc/i586-mandriva-linux-gnu/4.1.1/crtendS.o /usr/lib/gcc/i586-mandriva-linux-gnu/4.1.1/../../../crtn.o"
+postdep_objects="/usr/lib/gcc/x86_64-linux-gnu/4.1.2/crtendS.o /usr/lib/gcc/x86_64-linux-gnu/4.1.2/../../../../lib64/crtn.o"
 
 # Dependencies to place before the objects being linked to create a
 # shared library.
@@ -7023,7 +7029,7 @@ postdeps="-lstdc++ -lm -lgcc_s -lc -lgcc_s"
 
 # The library search path used internally by the compiler when linking
 # a shared library.
-compiler_lib_search_path="-L/usr/lib/gcc/i586-mandriva-linux-gnu/4.1.1 -L/usr/lib/gcc/i586-mandriva-linux-gnu/4.1.1 -L/usr/lib/gcc/i586-mandriva-linux-gnu/4.1.1/../../.."
+compiler_lib_search_path="-L/usr/lib/gcc/x86_64-linux-gnu/4.1.2 -L/usr/lib/gcc/x86_64-linux-gnu/4.1.2 -L/usr/lib/gcc/x86_64-linux-gnu/4.1.2/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64"
 
 # Method to check whether dependent libraries are shared objects.
 deplibs_check_method="pass_all"
@@ -7089,7 +7095,7 @@ hardcode_minus_L=no
 
 # Set to yes if using SHLIBPATH_VAR=DIR during linking hardcodes DIR into
 # the resulting binary.
-hardcode_shlibpath_var=
+hardcode_shlibpath_var=unsupported
 
 # Set to yes if building a shared library automatically hardcodes DIR into the library
 # and all subsequent libraries and executables linked against it.
@@ -7100,13 +7106,13 @@ hardcode_automatic=no
 variables_saved_for_relink="PATH LD_LIBRARY_PATH LD_RUN_PATH GCC_EXEC_PREFIX COMPILER_PATH LIBRARY_PATH"
 
 # Whether libtool must link a program against all its dependency libraries.
-link_all_deplibs=unknown
+link_all_deplibs=no
 
 # Compile-time system search path for libraries
-sys_lib_search_path_spec=" /usr/lib/gcc/i586-mandriva-linux-gnu/4.1.1/ /usr/lib/gcc/i586-mandriva-linux-gnu/4.1.1/ /usr/lib/gcc/i586-mandriva-linux-gnu/4.1.1/../../../../i586-mandriva-linux-gnu/lib/i586-mandriva-linux-gnu/4.1.1/ /usr/lib/gcc/i586-mandriva-linux-gnu/4.1.1/../../../../i586-mandriva-linux-gnu/lib/ /usr/lib/gcc/i586-mandriva-linux-gnu/4.1.1/../../../i586-mandriva-linux-gnu/4.1.1/ /usr/lib/gcc/i586-mandriva-linux-gnu/4.1.1/../../../ /lib/i586-mandriva-linux-gnu/4.1.1/ /lib/ /usr/lib/i586-mandriva-linux-gnu/4.1.1/ /usr/lib/"
+sys_lib_search_path_spec=" /usr/lib/gcc/x86_64-linux-gnu/4.1.2/ /usr/lib/gcc/x86_64-linux-gnu/4.1.2/ /usr/lib/gcc/x86_64-linux-gnu/4.1.2/../../../../x86_64-linux-gnu/lib/x86_64-linux-gnu/4.1.2/ /usr/lib/gcc/x86_64-linux-gnu/4.1.2/../../../../x86_64-linux-gnu/lib/ /usr/lib/gcc/x86_64-linux-gnu/4.1.2/../../../x86_64-linux-gnu/4.1.2/ /usr/lib/gcc/x86_64-linux-gnu/4.1.2/../../../ /lib/x86_64-linux-gnu/4.1.2/ /lib/ /usr/lib/x86_64-linux-gnu/4.1.2/ /usr/lib/"
 
 # Run-time system search path for libraries
-sys_lib_dlsearch_path_spec="/lib /usr/lib /usr/lib/graphviz /usr/X11R6/lib /usr/lib/qt3/lib /usr/local/lib "
+sys_lib_dlsearch_path_spec="/lib /usr/lib /usr/X11R6/lib "
 
 # Fix the shell variable $srcfile for the compiler.
 fix_srcfile_path=""

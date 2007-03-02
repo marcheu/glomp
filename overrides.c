@@ -102,7 +102,7 @@ void load_library(void)
  */
 void glXSwapBuffers(Display *dpy, GLXDrawable drawable)
 {
-	int fnum=OVERRIDE_BASE+6;
+	int fnum=OVERRIDE_BASE;
 	int fflags=0;
 
 	fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
@@ -150,7 +150,7 @@ extern GLXWindow glXCreateWindow(Display *dpy, GLXFBConfig config, Window win, c
 
 void glFrustum ( GLdouble p0 , GLdouble p1 , GLdouble p2 , GLdouble p3 , GLdouble p4 , GLdouble p5 )
 {
-	int fnum=OVERRIDE_BASE;
+	int fnum=OVERRIDE_BASE+1;
 	int fflags=0;
 	fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
 	fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
@@ -203,7 +203,7 @@ void fglFrustum()
 void glGenTextures ( GLsizei p0 , GLuint *p1 )
 {
 	int i;
-	int fnum=OVERRIDE_BASE+1;
+	int fnum=OVERRIDE_BASE+2;
 	int fflags=0;
 
 	fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
@@ -240,7 +240,7 @@ void fglGenTextures()
 void glBindTexture ( GLenum p0 , GLuint p1 )
 {
 
-  int fnum=OVERRIDE_BASE+2;
+  int fnum=OVERRIDE_BASE+3;
   int fflags=0;
 
   fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
@@ -263,6 +263,59 @@ void fglBindTexture()
   lib_glBindTexture ( p0 , p1 );//on utilise le vrai bind texture
 }
 
+GLuint glGenLists ( GLsizei p0 )
+{
+	int i;
+	int fnum=OVERRIDE_BASE+4;
+	int fflags=0;
+
+	fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
+	fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
+	fifo_output(&cmd_fifo,&p0,4);
+
+	GLuint ret=0;
+	for(i=0;i<p0;i++)
+	{
+		GLuint id=id_server_generate();
+		if (i==0)
+			ret=id;
+		fifo_output(&cmd_fifo,&id,4);
+	}
+
+	return ret;
+}
+
+void fglGenLists()
+{
+	int i;
+
+	GLsizei p0;
+	GLuint p1;
+	fifo_input(&cmd_fifo,&p0,4);
+	for(i=0;i<p0;i++)
+	{
+		GLuint local_id;
+		fifo_input(&cmd_fifo,&p1,4);
+		local_id=lib_glGenLists (1);
+		id_add(p1,local_id);
+	}
+}
+
+void glCallList (GLuint p0)
+{
+	int fnum=OVERRIDE_BASE+5;
+	int fflags=0;
+	fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
+	fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
+	fifo_output(&cmd_fifo,&p0,4);
+}
+
+void fglCallList ()
+{
+	GLuint p0;
+	fifo_input(&cmd_fifo,&p0,4);
+	lib_glCallList(id_translate(p0));
+}
 
 const GLubyte* glGetString( GLenum name )
 {
