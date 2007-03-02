@@ -19,7 +19,7 @@ int id_translate(int value);
 // generates an id
 int id_server_generate(id_type type);
 // tests if the id is of a given type
-GLboolean id_server_test_type(int id,id_type type);
+GLboolean id_server_test_type(GLuint id,id_type type);
 
 #endif
 

@@ -40,12 +40,10 @@ int id_server_generate(id_type type)
 	return ;
 }
 
-GLboolean id_server_test_type(int id,id_type type)
+GLboolean id_server_test_type(GLuint id,id_type type)
 {
 	// out of bounds means no such object
 	if (id>=id_server_table_size)
-		return GL_FALSE;
-	if (id<0)
 		return GL_FALSE;
 	// otherwise it has to match what we recorded in the table
 	return (id_server_table[id]==type);
