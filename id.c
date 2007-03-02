@@ -2,9 +2,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "id.h"
+#include "types.h"
 
 static int* id_table=NULL;
 static id_table_size=1;
+
+static id_type* id_server_table=NULL;
+static id_server_table_size=1;
 
 // adds an id to the table
 void id_add(int value,int translated_value)
@@ -28,11 +32,22 @@ int id_translate(int value)
 }
 
 // generates an id for the server
-int id_server_generate()
+int id_server_generate(id_type type)
 {
-	static int current=0;
-	current++;	// start at 1
-	return current;
+	id_server_table_size++;
+	id_server_table=(id_type*)realloc(id_server_table,id_server_table_size*sizeof(id_type));
+	id_server_table[id_server_table_size-1]=type;
+	return ;
 }
 
+GLboolean id_server_test_type(int id,id_type type)
+{
+	// out of bounds means no such object
+	if (id>=id_server_table_size)
+		return GL_FALSE;
+	if (id<0)
+		return GL_FALSE;
+	// otherwise it has to match what we recorded in the table
+	return (id_server_table[id]==type);
+}
 

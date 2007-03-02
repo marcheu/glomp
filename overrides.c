@@ -185,7 +185,7 @@ void glGenTextures ( GLsizei p0 , GLuint *p1 )
 
 	for(i=0;i<p0;i++)
 	{
-		GLuint id=id_server_generate();
+		GLuint id=id_server_generate(id_texture);
 		*p1=id;
 		fifo_output(&cmd_fifo,&id,4);
 		p1++;
@@ -209,6 +209,10 @@ void fglGenTextures()
 	}
 }
 
+GLboolean glIsTexture ( GLuint p0 )
+{
+	return id_server_test_type(p0,id_texture);
+}
 
 void glBindTexture ( GLenum p0 , GLuint p1 )
 {
@@ -249,7 +253,7 @@ GLuint glGenLists ( GLsizei p0 )
 	GLuint ret=0;
 	for(i=0;i<p0;i++)
 	{
-		GLuint id=id_server_generate();
+		GLuint id=id_server_generate(id_list);
 		if (i==0)
 			ret=id;
 		fifo_output(&cmd_fifo,&id,4);
@@ -272,6 +276,11 @@ void fglGenLists()
 		local_id=lib_glGenLists (1);
 		id_add(p1,local_id);
 	}
+}
+
+GLboolean glIsList (GLuint p0)
+{
+	return id_server_test_type(p0,id_list);
 }
 
 void glCallList (GLuint p0)
