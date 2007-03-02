@@ -17,31 +17,7 @@ static void (*lib_glFrustum) ( GLdouble left,
 			       GLdouble top,
 			       GLdouble zNear,
 			       GLdouble zFar	)=0;
-static void (*lib_glTexImage2D) ( GLenum target,
-			     GLint level,
-			     GLint internalformat,
-			     GLsizei width,
-			     GLsizei height,
-			     GLint border,
-			     GLenum format,
-			     GLenum type,
-			     const GLvoid *pixels )=0;
-static void (*lib_glTexSubImage2D) (GLenum target,
-				GLint level,
-				GLint xoffset,
-				GLint yoffset,
-				GLsizei	width,
-				GLsizei	height,
-				GLenum format,
-				GLenum type,
-				const GLvoid *pixels )=0;
-static void (*lib_glBitmap)( GLsizei width,
-			 GLsizei height,
-			 GLfloat xorig,
-			 GLfloat yorig,
-			 GLfloat xmove,
-			 GLfloat ymove,
-			     const GLubyte *bitmap )=0;
+
 static int (*lib_XSetStandardProperties)(
     Display*		/* display */,
     Window		/* w */,
@@ -82,9 +58,6 @@ void load_library(void)
   lib_glBindTexture = dlsym(lib_handle_libGL, "glBindTexture");    
   lib_glGenTextures = dlsym(lib_handle_libGL, "glGenTextures");    
   lib_glFrustum = dlsym(lib_handle_libGL, "glFrustum"); 
-  lib_glTexImage2D = dlsym(lib_handle_libGL, "glTexImage2D");
-  lib_glTexSubImage2D = dlsym(lib_handle_libGL, "glTexSubImage2D");
-  lib_glBitmap = dlsym(lib_handle_libGL, "glBitmap");
   
   /* intercept XSetStandardProperties */
   lib_handle_libX11 = dlopen("/usr/lib/libX11.so", RTLD_LAZY);
