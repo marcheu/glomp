@@ -1,7 +1,7 @@
 #include "overrides.h"
 #include "init.h"
 #include "id.h"
-#include "config.h"
+//#include "config.h"
 
 /* functions we implement ourselves */
 
@@ -83,7 +83,7 @@ void load_library(void)
   lib_glBindTexture = dlsym(lib_handle_libGL, "glBindTexture");
   lib_glGenTextures = dlsym(lib_handle_libGL, "glGenTextures");    
   lib_glFrustum = dlsym(lib_handle_libGL, "glFrustum"); 
-  lib_glGenList= dlsym(lib_handle_libGL, "glGenLists");
+  lib_glGenLists= dlsym(lib_handle_libGL, "glGenLists");
   lib_glCallList= dlsym(lib_handle_libGL, "glCallList");
   lib_glCallLists= dlsym(lib_handle_libGL, "glCallLists");
   lib_glCopyPixels= dlsym(lib_handle_libGL, "glCopyPixels");
@@ -356,8 +356,8 @@ void fglCallList ()
 const GLubyte* glGetString( GLenum name )
 {
 	const GLubyte* vendor="Vendor";
-	const GLubyte* renderer="Glomp " VERSION;
-	const GLubyte* version="1.2 Glomp " VERSION;
+	const GLubyte* renderer="Glomp " ;
+	const GLubyte* version="1.2 Glomp " ;
 	const GLubyte* extensions="";
 	switch(name)
 	{
@@ -394,7 +394,7 @@ void fglCallLists ()
 	fifo_input(&cmd_fifo,&p0,4);
 	fifo_input(&cmd_fifo,&p1,4);
 	p2=(GLvoid *)segment_attach();
-	lib_glCallList(p0,p1,p2);
+	lib_glCallLists(p0,p1,p2);
 }
 
 
@@ -414,7 +414,7 @@ void glCopyTexImage1D (GLenum target, GLint level, GLenum internalFormat, GLint 
 }
 void glCopyTexImage2D (GLenum target, GLint level, GLenum internalFormat, GLint x, GLint y, GLsizei width, GLsizei height, GLint border)
 {
-  lib_glCopyTexImage2D(target,level,internalFormat,x,y,width,heigth,border);
+  lib_glCopyTexImage2D(target,level,internalFormat,x,y,width,height,border);
 }
 void glCopyTexSubImage1D (GLenum target, GLint level, GLint xoffset, GLint x, GLint y, GLsizei width)
 {

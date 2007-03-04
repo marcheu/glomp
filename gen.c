@@ -36,12 +36,71 @@ typedef struct gl_type{
 gl_type;
 
 
-/*typedef struct gl_pixeltype{
-	char* name;
-	int 
-	int size;
-}
-gl_pixeltype;*/
+/*------tableau des fonction ne devant pas etre traite par le parseur xml---*/
+char * noParseFunction_table[]=
+{
+ "Frustum",
+ "GenTextures",
+ "IsTexture",
+ "BindTexture",
+ "GenLists",
+ "IsList",
+ "CallList",
+ "IsTextureEXT",
+ "CallLists",            //fonction du fichier gl.h
+ "CopyPixels",
+ "CopyTexImage1D",
+ "CopyTexImage2D",
+ "CopyTexSubImage1D",
+ "CopyTexSubImage2D",
+ "Flush",
+ "GetBooleanv",
+ "GetClipPlane",
+ "GetDoublev",
+ "GetError",
+ "GetFloatv",
+ "GetIntegerv",
+ "GetLightfv",
+ "GetLightiv",
+ "GetMapdv",
+ "GetMapfv",
+ "GetMapiv",
+ "GetMaterialfv",
+ "GetMaterialiv",
+ "GetPixelMapfv",
+ "GetPixelMapuiv",
+ "GetPixelMapusv",
+ "GetPointerv",
+ "GetPolygonStipple",
+ "GetString",          //pas xxx dans gl.h
+ "GetTexEnvfv",
+ "GetTexEnviv",
+ "GetTexGendv",
+ "GetTexGenfv",
+ "GetTexGeniv",
+ "GetTexImage",
+ "GetTexLevelParameterfv",
+ "GetTexLevelParameteriv",
+ "GetTexParameterfv",
+ "GetTexParameteriv",    //fin des fonction du fichier gl.h 
+ "GenQueries",      //fonction du fichier glext.h
+ "GenBuffers",
+ "GenProgramsARB",
+ "GenBuffersARB",
+ "GenQueriesARB",
+ "BindTextureEXT",
+ "GenTexturesEXT",
+ "GenFencesNV",
+ "BindProgramNV",
+ "GenProgramsNVv",
+ "GenFragmentShadersATI",
+ "BindFragmentShaderATI",
+ "BindVertexShaderEXT",
+ "GenVertexShadersEXT",
+ "GenOcclusionQueriesNV",
+ "IsOcclusionQueryNV",
+ NULL,
+};
 
 
 gl_type type_table[]=
@@ -122,33 +181,23 @@ gl_type type_table[]=
 };
 
 
-/*gl_pixeltype pixeltype_table[]=
+
+
+int isFonctionParse(char * name)
 {
-	{GL_UNSIGNED_BYTE,1}
-	{GL_BYTE,1}
-	{GL_BITMAP,0}
-	{GL_UNSIGNED_SHORT,2}
-	{GL_SHORT,2}
-	{GL_UNSIGNED_INT,4}
-	{GL_INT,4}
-	{GL_FLOAT,sizeof(float)}
-	{GL_UNSIGNED_BYTE_3_3_2,1}
-	{GL_UNSIGNED_BYTE_2_3_3_REV,1}
-	{GL_UNSIGNED_SHORT_5_6_5,2},
-	{GL_UNSIGNED_SHORT_5_6_5_REV,2},
-	{GL_UNSIGNED_SHORT_4_4_4_4,2},
-	{GL_UNSIGNED_SHORT_4_4_4_4_REV,2},
-	{GL_UNSIGNED_SHORT_5_5_5_1,2},
-	{GL_UNSIGNED_SHORT_1_5_5_5_REV,2},
-	{GL_UNSIGNED_INT_8_8_8_8,4},
-	{GL_UNSIGNED_INT_8_8_8_8_REV,4},
-	{GL_UNSIGNED_INT_10_10_10_2,4},
-	{GL_UNSIGNED_INT_2_10_10_10_REV.4},
-	{NULL,0},
-};*/
+	int i=0;
+	
+	if(name==NULL)
+	    return 1; 
 
-
-
+	while(noParseFunction_table[i]!=NULL)
+	{
+		if (strcmp(name,noParseFunction_table[i])==0)
+			return 0;
+		i++;
+	}
+	return 1;
+}
 
 
 
@@ -156,6 +205,7 @@ gl_type type_table[]=
 char* type_return(char* type)
 {
 	int i=0;
+
 	while(type_table[i].name!=NULL)
 	{
 		if (strcmp(type,type_table[i].name)==0)
@@ -284,12 +334,12 @@ int main()
 
 
 	fprintf(fout_c,"/* Auto-generated, do not edit ! */\n#include \""out_h_file"\"\n\n");
-	fprintf(fout_h,"/* Auto-generated, do not edit ! */\n#include \"fifo.h\"\n#include <GL/gl.h>\n#include <GL/glext.h>\n\n");
+	fprintf(fout_h,"/* Auto-generated, do not edit ! */\n#include \"fifo.h\"\n#include \"segment.h\"\n#include <GL/gl.h>\n#include <GL/glext.h>\n\n");
   
 	fprintf(fin_c,"/* Auto-generated, do not edit ! */\n#include \""in_h_file"\"\n\n");
 	fprintf(fin_c,"void init()\n{\n");
 
-	fprintf(fin_h,"/* Auto-generated, do not edit ! */\n#include \"fifo.h\"\n#include <GL/gl.h>\n#include <GL/glext.h>\n#include <GL/glx.h>\n#include <GL/glxext.h>\n\n");
+	fprintf(fin_h,"/* Auto-generated, do not edit ! */\n#include \"fifo.h\"\n#include \"segment.h\"\n#include <GL/gl.h>\n#include <GL/glext.h>\n#include <GL/glx.h>\n#include <GL/glxext.h>\n\n");
   
 	fprintf(ftmpc2,"void creertabfunc()\n{\n");
 
@@ -300,7 +350,7 @@ int main()
 	while (cur != NULL) 
 	{
 	    retourcategory = cur;
-	    if((!xmlStrcmp(cur->name, (const xmlChar *)"category")))
+	    if( (!xmlStrcmp(cur->name, (const xmlChar *)"category")) )
 	    {
 		cur = cur->xmlChildrenNode;
 		cur = cur->next;		
@@ -308,7 +358,7 @@ int main()
 		while (cur != NULL)
 		{
 		    retour=cur;
-		    if ((!xmlStrcmp(cur->name, (const xmlChar *)"function"))) 
+		    if ((!xmlStrcmp(cur->name, (const xmlChar *)"function")) && isFonctionParse(xmlGetProp(cur,"name")) ) 
 		    {
 			cur = cur->xmlChildrenNode;
 			if(cur->next!=NULL)
@@ -350,6 +400,9 @@ int main()
 			
 			np=-1;                    
 
+			
+			if(!xmlStrcmp(cur->name, (const xmlChar *)"return"))
+			    cur = cur->next->next;
 
 			/*---parametre de la fonction---*/
 	 		while((!xmlStrcmp(cur->name, (const xmlChar *)"param")))
@@ -462,8 +515,8 @@ int main()
 				fprintf(fout_c,"\tint size;\n");
 			fprintf(fout_c,"\tint fnum=%d;\n",fnum);
 			fprintf(fout_c,"\tint fflags=0;\n");
-			fprintf(fout_c,"\tfifo_outpout(&cmd_fifo,&fnum,sizeof(fnum));\n");
-			fprintf(fout_c,"\tfifo_outpout(&cmd_fifo,&fflags,sizeof(fflags));\n");
+			fprintf(fout_c,"\tfifo_output(&cmd_fifo,&fnum,sizeof(fnum));\n");
+			fprintf(fout_c,"\tfifo_output(&cmd_fifo,&fflags,sizeof(fflags));\n");
 			fprintf(fout_h,");\n");
 			for(i=0;i<=np;i++)
 			{
@@ -479,30 +532,30 @@ int main()
 				}
 				else fprintf(fout_c,"\tsize=%s*size_pixel(%s);\n",img_width[i],img_type[i]);
 
-			    	fprintf(fout_c,"\tsegment_create(%s,size);\n",nameparam[i]);
-				fprintf(ftmpc,"\t%s=segment_attach();\n",nameparam[i]);
+			    	fprintf(fout_c,"\tsegment_create((char *)%s,size);\n",nameparam[i]);
+				fprintf(ftmpc,"\t%s=(%s)segment_attach();\n",nameparam[i],type_remove_const(type[np]));
 			    }
 			    else if(param_attrib[i][0]==1)
 			    {   
-				fprintf(fout_c,"\tfifo_outpout(&cmd_fifo,%s,%d);\n",nameparam[i],
+				fprintf(fout_c,"\tfifo_output(&cmd_fifo,%s,%d);\n",nameparam[i],
 											type_size(type[i])*count[i]);
 				fprintf(ftmpc,"\tfifo_input(&cmd_fifo,%s,%d);\n",nameparam[i],type_size(type[i])*count[i]);
 			    }
 			    else if(param_attrib[i][0]==2)
 			    {   
-				fprintf(fout_c,"\tfifo_outpout(&cmd_fifo,%s,%d*%s);\n",nameparam[i],
+				fprintf(fout_c,"\tfifo_output(&cmd_fifo,%s,%d*%s);\n",nameparam[i],
 										       type_size(type[i]),countchar[i]);
 				fprintf(ftmpc,"\tfifo_input(&cmd_fifo,%s,%d*%s);\n",nameparam[i],
 										    type_size(type[i]),countchar[i]);
 			    }
 			    else if(param_attrib[i][1]==1)
 			    {   
-				fprintf(fout_c,"\tfifo_outpout(&cmd_fifo,%s,%d);\n",nameparam[i],type_size(type[i]));
+				fprintf(fout_c,"\tfifo_output(&cmd_fifo,%s,%d);\n",nameparam[i],type_size(type[i]));
 				fprintf(ftmpc,"\tfifo_input(&cmd_fifo,%s,%d);\n",nameparam[i],type_size(type[i]));
 			    }
 			    else
 			    {
-				fprintf(fout_c,"\tfifo_outpout(&cmd_fifo,&%s,%d);\n",nameparam[i],type_size(type[i]));
+				fprintf(fout_c,"\tfifo_output(&cmd_fifo,&%s,%d);\n",nameparam[i],type_size(type[i]));
 				fprintf(ftmpc,"\tfifo_input(&cmd_fifo,&%s,%d);\n",nameparam[i],type_size(type[i]));
 			    }
 			}
