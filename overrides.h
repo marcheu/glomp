@@ -15,6 +15,23 @@ void fglXSwapBuffers();
 void fglGenLists();
 void fglCallList();
 void fglCallLists();
+void fglBindTextureEXT();
 void fglGenTexturesEXT();
-void fglGenTexturesEXT();
+void fglGenQueries();
+void fglGenBuffers();
+void fglBindBuffer();
+void fglGenProgramsARB();
+void fglBindProgramARB();
+void fglGenBuffersARB();
+void fglBindBufferARB();
+void fglGenQueriesARB();
+void fglGenFencesNV();
+void fglGenProgramsNV();
+void fglBindProgramNV();
+void fglGenOcclusionQueriesNV();
+void fglGenRenderbuffersEXT();
+void fglBindRenderbufferEXT();
+void fglGenFramebuffersEXT();
+void fglBindFramebufferEXT();
+
 #endif

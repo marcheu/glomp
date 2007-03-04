@@ -10,6 +10,9 @@ typedef enum
 	id_list,
 	id_program,
 	id_occlusion_query,
+	id_buffer,
+	id_fence,
+	id_fragment
 }id_type;
 
 // adds an id to the table

@@ -40,6 +40,22 @@ static void (*lib_glCopyTexSubImage2D) (GLenum target, GLint level, GLint xoffse
 static void (*lib_glFlush) (void);
 static void (*lib_glBindTextureEXT) ( GLenum p0 , GLuint p1 )=0;
 static void (*lib_glGenTexturesEXT) ( GLsizei p0 , GLuint *p1 )=0;
+static void (*lib_glGenQueries) ( GLsizei p0 , GLuint *p1 )=0;
+static void (*lib_glBindBuffer) ( GLenum p0 , GLuint p1 )=0;
+static void (*lib_glGenBuffers) ( GLsizei p0 , GLuint *p1 )=0;
+static void (*lib_glBindProgramARB) ( GLenum p0 , GLuint p1 )=0;
+static void (*lib_glGenProgramsARB) ( GLsizei p0 , GLuint *p1 )=0;
+static void (*lib_glBindBufferARB) ( GLenum p0 , GLuint p1 )=0;
+static void (*lib_glGenBuffersARB) ( GLsizei p0 , GLuint *p1 )=0;
+static void (*lib_glGenQueriesARB) ( GLsizei p0 , GLuint *p1 )=0;
+static void (*lib_glGenFencesNV) ( GLsizei p0 , GLuint *p1 )=0;
+static void (*lib_glBindProgramNV) ( GLenum p0 , GLuint p1 )=0;
+static void (*lib_glGenProgramsNV) ( GLsizei p0 , GLuint *p1 )=0;
+static void (*lib_glGenOcclusionQueriesNV) ( GLsizei p0 , GLuint *p1 )=0;
+static void (*lib_glBindRenderbufferEXT) ( GLenum p0 , GLuint p1 )=0;
+static void (*lib_glGenRenderbuffersEXT) ( GLsizei p0 , GLuint *p1 )=0;
+static void (*lib_glBindFramebufferEXT) ( GLenum p0 , GLuint p1 )=0;
+static void (*lib_glGenFramebuffersEXT) ( GLsizei p0 , GLuint *p1 )=0;
 
 
 /* library interception variables */
@@ -64,7 +80,7 @@ void load_library(void)
   /* intercept library GL function */
   lib_glXSwapBuffers = dlsym(lib_handle_libGL, "glXSwapBuffers");
   lib_glXCreateWindow = dlsym(lib_handle_libGL, "glXCreateWindow");   
-  lib_glBindTexture = dlsym(lib_handle_libGL, "glBindTexture");    
+  lib_glBindTexture = dlsym(lib_handle_libGL, "glBindTexture");
   lib_glGenTextures = dlsym(lib_handle_libGL, "glGenTextures");    
   lib_glFrustum = dlsym(lib_handle_libGL, "glFrustum"); 
   lib_glGenList= dlsym(lib_handle_libGL, "glGenLists");
@@ -80,6 +96,22 @@ void load_library(void)
   /*les extensions*/
   lib_glBindTextureEXT = dlsym(lib_handle_libGL, "glBindTextureEXT");    
   lib_glGenTexturesEXT = dlsym(lib_handle_libGL, "glGenTexturesEXT");
+  lib_glGenQueries = dlsym(lib_handle_libGL, "glGenQueries"); 
+  lib_glBindBuffer = dlsym(lib_handle_libGL, "glBindBuffer");    
+  lib_glGenBuffers = dlsym(lib_handle_libGL, "glGenBuffers");
+  lib_glBindProgramARB = dlsym(lib_handle_libGL, "glBindProgramARB");    
+  lib_glGenProgramsARB = dlsym(lib_handle_libGL, "glGenProgramsARB");
+  lib_glBindBufferARB = dlsym(lib_handle_libGL, "glBindBufferARB");    
+  lib_glGenBuffersARB = dlsym(lib_handle_libGL, "glGenBuffersARB");
+  lib_glGenQueriesARB = dlsym(lib_handle_libGL, "glGenQueriesARB"); 
+  lib_glGenFencesNV = dlsym(lib_handle_libGL, "glGenFencesARB"); 
+  lib_glBindProgramNV = dlsym(lib_handle_libGL, "glBindProgramNV");    
+  lib_glGenProgramsNV = dlsym(lib_handle_libGL, "glGenProgramsNV");
+  lib_glGenQueriesARB = dlsym(lib_handle_libGL, "glGenOcclusionQueriesNV");
+  lib_glBindRenderbufferEXT = dlsym(lib_handle_libGL, "glBindRenderbufferEXT"); 
+  lib_glGenRenderbuffersEXT = dlsym(lib_handle_libGL, "glGenRenderbuffersEXT");
+  lib_glBindFramebufferEXT = dlsym(lib_handle_libGL, "glBindFramebufferEXT"); 
+  lib_glGenFramebuffersEXT = dlsym(lib_handle_libGL, "glGenFramebuffersEXT");
 
   /* intercept XSetStandardProperties */
   lib_handle_libX11 = dlopen("/usr/lib/libX11.so", RTLD_LAZY);
@@ -476,3 +508,589 @@ void fglBindTextureEXT()
 }
 
 /*fin des fonction EXt de texturing*/
+
+void glGenQueries ( GLsizei p0 , GLuint *p1 )
+{
+	int i;
+	int fnum=OVERRIDE_BASE+9;
+	int fflags=0;
+
+	fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
+	fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
+	fifo_output(&cmd_fifo,&p0,4);
+
+	for(i=0;i<p0;i++)
+	{
+		GLuint id=id_server_generate(id_occlusion_query);
+		*p1=id;
+		fifo_output(&cmd_fifo,&id,4);
+		p1++;
+	}
+
+}
+
+void fglGenQueries()
+{
+	int i;
+
+	GLsizei p0;
+	GLuint p1;
+	fifo_input(&cmd_fifo,&p0,4);
+	for(i=0;i<p0;i++)
+	{
+		GLuint local_id;
+		fifo_input(&cmd_fifo,&p1,4);
+		lib_glGenQueries ( p0 , &local_id );
+		id_add(p1,local_id);
+	}
+}
+
+GLboolean glIsQuery ( GLuint p0 )
+{
+	return id_server_test_type(p0,id_occlusion_query);
+}
+
+/*debut des buffer de glext*/
+void glGenBuffers ( GLsizei p0 , GLuint *p1 )
+{
+	int i;
+	int fnum=OVERRIDE_BASE+10;
+	int fflags=0;
+
+	fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
+	fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
+	fifo_output(&cmd_fifo,&p0,4);
+
+	for(i=0;i<p0;i++)
+	{
+		GLuint id=id_server_generate(id_buffer);
+		*p1=id;
+		fifo_output(&cmd_fifo,&id,4);
+		p1++;
+	}
+
+}
+
+void fglGenBuffers()
+{
+	int i;
+
+	GLsizei p0;
+	GLuint p1;
+	fifo_input(&cmd_fifo,&p0,4);
+	for(i=0;i<p0;i++)
+	{
+		GLuint local_id;
+		fifo_input(&cmd_fifo,&p1,4);
+		lib_glGenBuffers ( p0 , &local_id );
+		id_add(p1,local_id);
+	}
+}
+
+GLboolean glIsBuffer ( GLuint p0 )
+{
+	return id_server_test_type(p0,id_buffer);
+}
+
+void glBindBuffer ( GLenum p0 , GLuint p1 )
+{
+
+  int fnum=OVERRIDE_BASE+11;
+  int fflags=0;
+
+  fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
+  fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
+  fifo_output(&cmd_fifo,&p0,4);
+  fifo_output(&cmd_fifo,&p1,4);
+  return ;
+  
+}
+void fglBindBuffer()
+{
+  GLenum p0;
+  GLuint p1;
+  fifo_input(&cmd_fifo,&p0,4);
+  fifo_input(&cmd_fifo,&p1,4);
+  
+  p1=id_translate(p1);
+  
+  lib_glBindBuffer ( p0 , p1 );//on utilise le vrai bind buffer
+}
+/*fin des buffer*/
+
+/*debut des ProgramARB*/
+void glGenProgramsARB ( GLsizei p0 , GLuint *p1 )
+{
+	int i;
+	int fnum=OVERRIDE_BASE+12;
+	int fflags=0;
+
+	fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
+	fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
+	fifo_output(&cmd_fifo,&p0,4);
+
+	for(i=0;i<p0;i++)
+	{
+		GLuint id=id_server_generate(id_program);
+		*p1=id;
+		fifo_output(&cmd_fifo,&id,4);
+		p1++;
+	}
+
+}
+
+void fglGenProgramsARB()
+{
+	int i;
+
+	GLsizei p0;
+	GLuint p1;
+	fifo_input(&cmd_fifo,&p0,4);
+	for(i=0;i<p0;i++)
+	{
+		GLuint local_id;
+		fifo_input(&cmd_fifo,&p1,4);
+		lib_glGenProgramsARB ( p0 , &local_id );
+		id_add(p1,local_id);
+	}
+}
+
+void glBindProgramARB ( GLenum p0 , GLuint p1 )
+{
+
+  int fnum=OVERRIDE_BASE+13;
+  int fflags=0;
+
+  fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
+  fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
+  fifo_output(&cmd_fifo,&p0,4);
+  fifo_output(&cmd_fifo,&p1,4);
+  return ;
+  
+}
+void fglBindProgramARB()
+{
+  GLenum p0;
+  GLuint p1;
+  fifo_input(&cmd_fifo,&p0,4);
+  fifo_input(&cmd_fifo,&p1,4);
+  
+  p1=id_translate(p1);
+  
+  lib_glBindProgramARB ( p0 , p1 );//on utilise le vrai bind program
+}
+
+GLboolean glIsProgramARB ( GLuint p0 )
+{
+	return id_server_test_type(p0,id_program);
+}
+
+/*fin des ProgramARB*/
+
+/*debut des bufferARB de glext*/
+void glGenBuffersARB ( GLsizei p0 , GLuint *p1 )
+{
+	int i;
+	int fnum=OVERRIDE_BASE+14;
+	int fflags=0;
+
+	fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
+	fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
+	fifo_output(&cmd_fifo,&p0,4);
+
+	for(i=0;i<p0;i++)
+	{
+		GLuint id=id_server_generate(id_buffer);
+		*p1=id;
+		fifo_output(&cmd_fifo,&id,4);
+		p1++;
+	}
+
+}
+
+void fglGenBuffersARB()
+{
+	int i;
+
+	GLsizei p0;
+	GLuint p1;
+	fifo_input(&cmd_fifo,&p0,4);
+	for(i=0;i<p0;i++)
+	{
+		GLuint local_id;
+		fifo_input(&cmd_fifo,&p1,4);
+		lib_glGenBuffersARB ( p0 , &local_id );
+		id_add(p1,local_id);
+	}
+}
+
+GLboolean glIsBufferARB ( GLuint p0 )
+{
+	return id_server_test_type(p0,id_buffer);
+}
+
+void glBindBufferARB ( GLenum p0 , GLuint p1 )
+{
+
+  int fnum=OVERRIDE_BASE+15;
+  int fflags=0;
+
+  fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
+  fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
+  fifo_output(&cmd_fifo,&p0,4);
+  fifo_output(&cmd_fifo,&p1,4);
+  return ;
+  
+}
+void fglBindBufferARB()
+{
+  GLenum p0;
+  GLuint p1;
+  fifo_input(&cmd_fifo,&p0,4);
+  fifo_input(&cmd_fifo,&p1,4);
+  
+  p1=id_translate(p1);
+  
+  lib_glBindBufferARB ( p0 , p1 );//on utilise le vrai bind bufferARB
+}
+/*fin des bufferARB*/
+
+void glGenQueriesARB ( GLsizei p0 , GLuint *p1 )
+{
+	int i;
+	int fnum=OVERRIDE_BASE+16;
+	int fflags=0;
+
+	fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
+	fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
+	fifo_output(&cmd_fifo,&p0,4);
+
+	for(i=0;i<p0;i++)
+	{
+		GLuint id=id_server_generate(id_occlusion_query);
+		*p1=id;
+		fifo_output(&cmd_fifo,&id,4);
+		p1++;
+	}
+
+}
+
+void fglGenQueriesARB()
+{
+	int i;
+
+	GLsizei p0;
+	GLuint p1;
+	fifo_input(&cmd_fifo,&p0,4);
+	for(i=0;i<p0;i++)
+	{
+		GLuint local_id;
+		fifo_input(&cmd_fifo,&p1,4);
+		lib_glGenQueriesARB ( p0 , &local_id );
+		id_add(p1,local_id);
+	}
+}
+
+GLboolean glIsQueryARB ( GLuint p0 )
+{
+	return id_server_test_type(p0,id_occlusion_query);
+}
+
+/*fonction fenceNV*/
+
+void glGenFencesNV ( GLsizei p0 , GLuint *p1 )
+{
+	int i;
+	int fnum=OVERRIDE_BASE+17;
+	int fflags=0;
+
+	fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
+	fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
+	fifo_output(&cmd_fifo,&p0,4);
+
+	for(i=0;i<p0;i++)
+	{
+		GLuint id=id_server_generate(id_fence);
+		*p1=id;
+		fifo_output(&cmd_fifo,&id,4);
+		p1++;
+	}
+
+}
+
+void fglGenFencesNV()
+{
+	int i;
+
+	GLsizei p0;
+	GLuint p1;
+	fifo_input(&cmd_fifo,&p0,4);
+	for(i=0;i<p0;i++)
+	{
+		GLuint local_id;
+		fifo_input(&cmd_fifo,&p1,4);
+		lib_glGenFencesNV ( p0 , &local_id );
+		id_add(p1,local_id);
+	}
+}
+
+GLboolean glIsFenceNV ( GLuint p0 )
+{
+	return id_server_test_type(p0,id_fence);
+}
+
+
+
+/*fin de fenceNV*/
+
+/*programNV*/
+void glGenProgramsNV ( GLsizei p0 , GLuint *p1 )
+{
+	int i;
+	int fnum=OVERRIDE_BASE+18;
+	int fflags=0;
+
+	fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
+	fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
+	fifo_output(&cmd_fifo,&p0,4);
+
+	for(i=0;i<p0;i++)
+	{
+		GLuint id=id_server_generate(id_program);
+		*p1=id;
+		fifo_output(&cmd_fifo,&id,4);
+		p1++;
+	}
+
+}
+
+void fglGenProgramsNV()
+{
+	int i;
+
+	GLsizei p0;
+	GLuint p1;
+	fifo_input(&cmd_fifo,&p0,4);
+	for(i=0;i<p0;i++)
+	{
+		GLuint local_id;
+		fifo_input(&cmd_fifo,&p1,4);
+		lib_glGenProgramsNV ( p0 , &local_id );
+		id_add(p1,local_id);
+	}
+}
+
+void glBindProgramNV ( GLenum p0 , GLuint p1 )
+{
+
+  int fnum=OVERRIDE_BASE+19;
+  int fflags=0;
+
+  fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
+  fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
+  fifo_output(&cmd_fifo,&p0,4);
+  fifo_output(&cmd_fifo,&p1,4);
+  return ;
+  
+}
+void fglBindProgramNV()
+{
+  GLenum p0;
+  GLuint p1;
+  fifo_input(&cmd_fifo,&p0,4);
+  fifo_input(&cmd_fifo,&p1,4);
+  
+  p1=id_translate(p1);
+  
+  lib_glBindProgramNV ( p0 , p1 );//on utilise le vrai bind program
+}
+
+
+GLboolean glIsProgramNV ( GLuint p0 )
+{
+	return id_server_test_type(p0,id_program);
+}
+/*fin programNV*/
+
+/*NV occlusion query*/
+
+void glGenOcclusionQueriesNV ( GLsizei p0 , GLuint *p1 )
+{
+	int i;
+	int fnum=OVERRIDE_BASE+20;
+	int fflags=0;
+
+	fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
+	fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
+	fifo_output(&cmd_fifo,&p0,4);
+
+	for(i=0;i<p0;i++)
+	{
+		GLuint id=id_server_generate(id_occlusion_query);
+		*p1=id;
+		fifo_output(&cmd_fifo,&id,4);
+		p1++;
+	}
+
+}
+
+void fglGenOcclusionQueriesNV()
+{
+	int i;
+
+	GLsizei p0;
+	GLuint p1;
+	fifo_input(&cmd_fifo,&p0,4);
+	for(i=0;i<p0;i++)
+	{
+		GLuint local_id;
+		fifo_input(&cmd_fifo,&p1,4);
+		lib_glGenOcclusionQueriesNV ( p0 , &local_id );
+		id_add(p1,local_id);
+	}
+}
+
+GLboolean glIsOcclusionQueryNV ( GLuint p0 )
+{
+	return id_server_test_type(p0,id_occlusion_query);
+}
+
+/*fin des requete d occlusion NV*/
+
+
+
+/*debut des bufferEXT*/
+void glGenRenderbuffersEXT ( GLsizei p0 , GLuint *p1 )
+{
+	int i;
+	int fnum=OVERRIDE_BASE+21;
+	int fflags=0;
+
+	fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
+	fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
+	fifo_output(&cmd_fifo,&p0,4);
+
+	for(i=0;i<p0;i++)
+	{
+		GLuint id=id_server_generate(id_buffer);
+		*p1=id;
+		fifo_output(&cmd_fifo,&id,4);
+		p1++;
+	}
+
+}
+
+void fglGenRenderbuffersEXT()
+{
+	int i;
+
+	GLsizei p0;
+	GLuint p1;
+	fifo_input(&cmd_fifo,&p0,4);
+	for(i=0;i<p0;i++)
+	{
+		GLuint local_id;
+		fifo_input(&cmd_fifo,&p1,4);
+		lib_glGenRenderbuffersEXT ( p0 , &local_id );
+		id_add(p1,local_id);
+	}
+}
+
+GLboolean glIsRenderbufferEXT ( GLuint p0 )
+{
+	return id_server_test_type(p0,id_buffer);
+}
+
+void glBindRenderbufferEXT ( GLenum p0 , GLuint p1 )
+{
+
+  int fnum=OVERRIDE_BASE+22;
+  int fflags=0;
+
+  fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
+  fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
+  fifo_output(&cmd_fifo,&p0,4);
+  fifo_output(&cmd_fifo,&p1,4);
+  return ;
+  
+}
+void fglBindRenderbufferEXT()
+{
+  GLenum p0;
+  GLuint p1;
+  fifo_input(&cmd_fifo,&p0,4);
+  fifo_input(&cmd_fifo,&p1,4);
+  
+  p1=id_translate(p1);
+  
+  lib_glBindRenderbufferEXT ( p0 , p1 );//on utilise le vrai bind buffer
+}
+
+
+void glGenFramebuffersEXT ( GLsizei p0 , GLuint *p1 )
+{
+	int i;
+	int fnum=OVERRIDE_BASE+23;
+	int fflags=0;
+
+	fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
+	fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
+	fifo_output(&cmd_fifo,&p0,4);
+
+	for(i=0;i<p0;i++)
+	{
+		GLuint id=id_server_generate(id_buffer);
+		*p1=id;
+		fifo_output(&cmd_fifo,&id,4);
+		p1++;
+	}
+
+}
+
+void fglGenFramebuffersEXT()
+{
+	int i;
+
+	GLsizei p0;
+	GLuint p1;
+	fifo_input(&cmd_fifo,&p0,4);
+	for(i=0;i<p0;i++)
+	{
+		GLuint local_id;
+		fifo_input(&cmd_fifo,&p1,4);
+		lib_glGenFramebuffersEXT ( p0 , &local_id );
+		id_add(p1,local_id);
+	}
+}
+
+GLboolean glIsFramebufferEXT ( GLuint p0 )
+{
+	return id_server_test_type(p0,id_buffer);
+}
+
+void glBindFramebufferEXT ( GLenum p0 , GLuint p1 )
+{
+
+  int fnum=OVERRIDE_BASE+24;
+  int fflags=0;
+
+  fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
+  fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
+  fifo_output(&cmd_fifo,&p0,4);
+  fifo_output(&cmd_fifo,&p1,4);
+  return ;
+  
+}
+void fglBindFramebufferEXT()
+{
+  GLenum p0;
+  GLuint p1;
+  fifo_input(&cmd_fifo,&p0,4);
+  fifo_input(&cmd_fifo,&p1,4);
+  
+  p1=id_translate(p1);
+  
+  lib_glBindFramebufferEXT ( p0 , p1 );//on utilise le vrai bind buffer
+}
+
+/*fin des bufferEXT*/

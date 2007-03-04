@@ -27,7 +27,41 @@ static void unpack( )
 	else if(func==OVERRIDE_BASE+7)
 		fglGenTexturesEXT();
 	else if(func==OVERRIDE_BASE+8)
-		fglGenTexturesEXT();
+		fglBindTextureEXT();
+	else if(func==OVERRIDE_BASE+9)
+		fglGenQueries();
+	else if(func==OVERRIDE_BASE+10)
+		fglGenBuffers();
+	else if(func==OVERRIDE_BASE+11)
+		fglBindBuffer();
+	else if(func==OVERRIDE_BASE+12)
+		fglGenProgramsARB();
+	else if(func==OVERRIDE_BASE+13)
+		fglBindProgramARB();
+	else if(func==OVERRIDE_BASE+14)
+		fglGenBuffersARB();
+	else if(func==OVERRIDE_BASE+15)
+		fglBindBufferARB();
+	else if(func==OVERRIDE_BASE+16)
+		fglGenQueriesARB();
+	else if(func==OVERRIDE_BASE+17)
+		fglGenFencesNV();
+	else if(func==OVERRIDE_BASE+18)
+		fglGenProgramsNV();
+	else if(func==OVERRIDE_BASE+19)
+		fglBindProgramNV();
+	else if(func==OVERRIDE_BASE+20)
+		fglGenOcclusionQueriesNV();
+	else if(func==OVERRIDE_BASE+21)
+		fglGenRenderbuffersEXT();
+	else if(func==OVERRIDE_BASE+22)
+		fglBindRenderbufferEXT();
+	else if(func==OVERRIDE_BASE+23)
+		fglGenFramebuffersEXT();
+	else if(func==OVERRIDE_BASE+24)
+		fglBindFramebufferEXT();
+
+
 }
 
 void client_init()
