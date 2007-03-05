@@ -32,8 +32,7 @@ typedef struct gl_type{
 	char* name;
 	char* default_return_value;
 	int size;
-}
-gl_type;
+}gl_type;
 
 
 /*------tableau des fonction ne devant pas etre traite par le parseur xml---*/
@@ -268,34 +267,6 @@ char * type_remove_etoile(char * type)
         return returntype;
 }
 
-/*donne la taille du type de pixel utiliser par une fonction*/
-/*int typepixel_size(char* type)
-{
-	int i=0;
-	int j=0;
-
-	while(pixeltype_table[i].name!=NULL)
-	{
-		if (strcmp(type,pixeltype_table[i].name)==0)
-			return pixeltype_table[i].size; 
-		i++;
-	}
-	
-	i=0;
-
-	while( strcmp(type,nameparam[i])!=0)
-	   i++
-
-	while(pixeltype_table[j].name!=NULL)
-	{
-		if (strcmp(,pixeltype_table[j].name)==0)
-			return pixeltype_table[j].size; 
-		j++;
-	}
-
-	return 0;
-}*/
-
 
 int main()
 {
@@ -308,6 +279,8 @@ int main()
 
         FILE * fout_c=fopen(out_c_file,"wb");
 	FILE * fout_h=fopen(out_h_file,"wb");
+	FILE * fout_c2=fopen("fout_c2","w+b");
+
 	FILE * fin_c=fopen(in_c_file,"wb");
 	FILE * fin_h=fopen(in_h_file,"wb");
 	FILE * ftmpc=fopen("tmpc","w+b");
@@ -317,12 +290,14 @@ int main()
     for(i=0;i<50;i++)
     {
 	type[i]=malloc(sizeof(char)*50);
+	
 	nameparam[i]=malloc(sizeof(char)*50);
 	img_width[i]=malloc(sizeof(char)*50);
 	img_height[i]=malloc(sizeof(char)*50);
 	img_depth[i]=malloc(sizeof(char)*50);
 	img_type[i]=malloc(sizeof(char)*50);
 	countchar[i]=malloc(sizeof(char)*50);
+	variable_param[i]=malloc(sizeof(char)*50);
     }
 
 	return_type=malloc(sizeof(char)*50);
@@ -353,7 +328,11 @@ int main()
 
 
 	fprintf(fout_c,"/* Auto-generated, do not edit ! */\n#include \""out_h_file"\"\n\n");
+	fprintf(fout_c,"gl_type type_table[]=\n{\n");
 	fprintf(fout_h,"/* Auto-generated, do not edit ! */\n#include \"fifo.h\"\n#include \"segment.h\"\n#include <GL/gl.h>\n#include <GL/glext.h>\n\n");
+	fprintf(fout_h,"typedef struct gl_type{\n\tint name;\n\tint size;\n}gl_type;\n\n\n");
+	
+
   
 	fprintf(fin_c,"/* Auto-generated, do not edit ! */\n#include \""in_h_file"\"\n\n");
 	fprintf(fin_c,"void init()\n{\n");
@@ -377,7 +356,19 @@ int main()
 		while (cur != NULL)
 		{
 		    retour=cur;
-		    if ( (!xmlStrcmp(cur->name, (const xmlChar *)"function")) && 
+		    if( (!xmlStrcmp(cur->name, (const xmlChar *)"enum")) )
+		    {
+			attrib=xmlGetProp(cur, "count");
+			if(attrib!=NULL)
+			{
+			    attrib=xmlGetProp(cur, "name");
+			    fprintf(fout_c,"\t{GL_%s,",attrib);
+			    attrib=xmlGetProp(cur, "count");
+			    fprintf(fout_c,"%d},\n",atoi(attrib));
+			}
+                    }
+
+		    else if ( (!xmlStrcmp(cur->name, (const xmlChar *)"function")) && 
                          isFonctionParse(xmlGetProp(cur,"name")) && 
                          remove_getfunction(xmlGetProp(cur,"name"))) 
 		    {
@@ -395,19 +386,19 @@ int main()
 			{
 			    attrib = xmlGetProp(cur, "type");
 			    strcpy(return_type,attrib);
-			    fprintf(fout_c,"%s ",attrib);
+			    fprintf(fout_c2,"%s ",attrib);
 			    fprintf(fout_h,"%s ",attrib);
 			}
 			else
 			{
-			    fprintf(fout_c,"void ");
+			    fprintf(fout_c2,"void ");
 			    fprintf(fout_h,"void ");
 			    strcpy(return_type,"void");
 			}
 			cur = retour;
 
 			attrib = xmlGetProp(cur, "name");
-			fprintf(fout_c,"gl%s(",attrib);
+			fprintf(fout_c2,"gl%s(",attrib);
 			fprintf(fout_h,"gl%s(",attrib);
 			fprintf(fin_c,"\tglfunctable[%d]=(__GLXextFuncPtr)glXGetProcAddressARB(\"gl%s\");\n",fnum,attrib);
 			fprintf(ftmpc,"void fgl%s()\n{\n",attrib);
@@ -434,7 +425,7 @@ int main()
 			    strcpy(nameparam[np],attrib);
 
 			    attrib = xmlGetProp(cur, "type");
-			    fprintf(fout_c,"%s %s,",attrib,nameparam[np]);
+			    fprintf(fout_c2,"%s %s,",attrib,nameparam[np]);
 			    fprintf(fout_h,"%s,",attrib);
 			    strcpy(type[np],attrib);
 
@@ -466,7 +457,7 @@ int main()
 			    attrib=xmlGetProp(cur, "variable_param");
 			    if( attrib!=NULL)
 			    {
-			        
+			        strcpy(variable_param[np],attrib);
 				param_attrib[np][1]=1;
 			    }
 			    else param_attrib[np][1]=0;
@@ -528,16 +519,16 @@ int main()
 
 			if(np!=-1)
 			{
-			    fseek(fout_c,-1,SEEK_CUR);
+			    fseek(fout_c2,-1,SEEK_CUR);
 			    fseek(fout_h,-1,SEEK_CUR);
 			}
-			fprintf(fout_c,")\n{\n");
-			if(param_attrib[np][2]==1)
-				fprintf(fout_c,"\tint size;\n");
-			fprintf(fout_c,"\tint fnum=%d;\n",fnum);
-			fprintf(fout_c,"\tint fflags=0;\n");
-			fprintf(fout_c,"\tfifo_output(&cmd_fifo,&fnum,sizeof(fnum));\n");
-			fprintf(fout_c,"\tfifo_output(&cmd_fifo,&fflags,sizeof(fflags));\n");
+			fprintf(fout_c2,")\n{\n");
+			if(param_attrib[np][2]==1  || param_attrib[np][1]==1)
+				fprintf(fout_c2,"\tint size;\n");
+			fprintf(fout_c2,"\tint fnum=%d;\n",fnum);
+			fprintf(fout_c2,"\tint fflags=0;\n");
+			fprintf(fout_c2,"\tfifo_output(&cmd_fifo,&fnum,sizeof(fnum));\n");
+			fprintf(fout_c2,"\tfifo_output(&cmd_fifo,&fflags,sizeof(fflags));\n");
 			fprintf(fout_h,");\n");
 			for(i=0;i<=np;i++)
 			{
@@ -546,45 +537,45 @@ int main()
 				if(param_attrib[i][3]==1)
 				{
 				    if(param_attrib[i][4]==1)
-					fprintf(fout_c,"\tsize=%s*%s*%s*size_pixel(%s);\n",img_width[i],img_height[i],
+					fprintf(fout_c2,"\tsize=%s*%s*%s*sizeGLenum(%s);\n",img_width[i],img_height[i],
 											   img_depth[i],img_type[i]);
-				    else fprintf(fout_c,"\tsize=%s*%s*size_pixel(%s);\n",img_width[i],
+				    else fprintf(fout_c2,"\tsize=%s*%s*sizeGLenum(%s);\n",img_width[i],
 											 img_height[i],img_type[i]);
 				}
-				else fprintf(fout_c,"\tsize=%s*size_pixel(%s);\n",img_width[i],img_type[i]);
+				else fprintf(fout_c2,"\tsize=%s*sizeGLenum(%s);\n",img_width[i],img_type[i]);
 
-			    	fprintf(fout_c,"\tsegment_create((char *)%s,size);\n",nameparam[i]);
+			    	fprintf(fout_c2,"\tsegment_create((char *)%s,size);\n",nameparam[i]);
 				fprintf(ftmpc,"\t%s=(%s)segment_attach();\n",nameparam[i],type_remove_const(type[np]));
 			    }
 			    else if(param_attrib[i][0]==1)
 			    {   
-				fprintf(fout_c,"\tfifo_output(&cmd_fifo,%s,%d);\n",nameparam[i],
+				fprintf(fout_c2,"\tfifo_output(&cmd_fifo,%s,%d);\n",nameparam[i],
 											type_size(type[i])*count[i]);
 				fprintf(ftmpc,"\tfifo_input(&cmd_fifo,%s,%d);\n",nameparam[i],type_size(type[i])*count[i]);
 			    }
 			    else if(param_attrib[i][0]==2)
 			    {   
-				fprintf(fout_c,"\tfifo_output(&cmd_fifo,%s,%d*%s);\n",nameparam[i],
+				fprintf(fout_c2,"\tfifo_output(&cmd_fifo,%s,%d*%s);\n",nameparam[i],
 										       type_size(type[i]),countchar[i]);
 				fprintf(ftmpc,"\tfifo_input(&cmd_fifo,%s,%d*%s);\n",nameparam[i],
 										    type_size(type[i]),countchar[i]);
 			    }
 			    else if(param_attrib[i][1]==1)
-			    {   
-				fprintf(fout_c,"\tfifo_output(&cmd_fifo,%s,%d);\n",nameparam[i],type_size(type[i]));
+			    {   fprintf(fout_c2,"\tsize=sizeGLenum(%s);\n",variable_param[i]);
+				fprintf(fout_c2,"\tfifo_output(&cmd_fifo,%s,%d);\n",nameparam[i],type_size(type[i]));
 				fprintf(ftmpc,"\tfifo_input(&cmd_fifo,%s,%d);\n",nameparam[i],type_size(type[i]));
 			    }
 			    else
 			    {
-				fprintf(fout_c,"\tfifo_output(&cmd_fifo,&%s,%d);\n",nameparam[i],type_size(type[i]));
+				fprintf(fout_c2,"\tfifo_output(&cmd_fifo,&%s,%d);\n",nameparam[i],type_size(type[i]));
 				fprintf(ftmpc,"\tfifo_input(&cmd_fifo,&%s,%d);\n",nameparam[i],type_size(type[i]));
 			    }
 			}
 	
 			
 
-			fprintf(fout_c,"\treturn %s;\n",type_return(return_type));
-			fprintf(fout_c,"}\n\n");
+			fprintf(fout_c2,"\treturn %s;\n",type_return(return_type));
+			fprintf(fout_c2,"}\n\n");
 	
 			fprintf(ftmpc,"\t((%s (*)(",return_type);
 			for(i=0;i<=np;i++)
@@ -626,7 +617,8 @@ int main()
 	    cur = cur->next;
 	}//fin while final
 
-
+	
+	fprintf(fout_c,"};\n\n");
         fprintf(fin_c,"}\n\n");
 
 	fprintf(fin_h,"\n__GLXextFuncPtr glfunctable[%d];\n",fnum);
@@ -636,8 +628,12 @@ int main()
 
         rewind(ftmpc);
 	rewind(ftmpc2);  
-
+	rewind(fout_c2);
   
+	while(fgets(buffer,2048,fout_c2)!=NULL)
+		fputs(buffer,fout_c);
+
+
 
 	while(fgets(buffer,2048,ftmpc)!=NULL)
 		fputs(buffer,fin_c); 
@@ -648,6 +644,7 @@ int main()
 	fputc('\n',fin_h);
 
 	fclose(fout_c);
+	fclose(fout_c2);
 	fclose(fout_h);
 	fclose(fin_c);
 	fclose(fin_h);
