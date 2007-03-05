@@ -56,7 +56,7 @@ static void (*lib_glBindRenderbufferEXT) ( GLenum p0 , GLuint p1 )=0;
 static void (*lib_glGenRenderbuffersEXT) ( GLsizei p0 , GLuint *p1 )=0;
 static void (*lib_glBindFramebufferEXT) ( GLenum p0 , GLuint p1 )=0;
 static void (*lib_glGenFramebuffersEXT) ( GLsizei p0 , GLuint *p1 )=0;
-
+static void (*lib_glDeleteTextures) ( GLsizei p0 , GLuint *p1 )=0;
 
 /* library interception variables */
 static void* lib_handle_libGL = 0;
@@ -92,6 +92,7 @@ void load_library(void)
   lib_glCopyTexSubImage1D= dlsym(lib_handle_libGL, "glCopyTexSubImage1D");
   lib_glCopyTexSubImage2D= dlsym(lib_handle_libGL, "glCopyTexSubImage2D");
   lib_glFlush= dlsym(lib_handle_libGL, "glFlush");
+  lib_glDeleteTextures= dlsym(lib_handle_libGL, "glDeleteTextures");
 
   /*les extensions*/
   lib_glBindTextureEXT = dlsym(lib_handle_libGL, "glBindTextureEXT");    
@@ -1094,3 +1095,43 @@ void fglBindFramebufferEXT()
 }
 
 /*fin des bufferEXT*/
+
+
+/*les fonctions delete*/
+void glDeleteTextures (GLsizei p0, const GLuint * p1)
+{
+	int i;
+	int fnum=OVERRIDE_BASE+25;
+	int fflags=0;
+
+	fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
+	fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
+	fifo_output(&cmd_fifo,&p0,4);
+
+	for(i=0;i<p0;i++)
+	{
+		fifo_output(&cmd_fifo,&p1,4);
+		p1++;
+		
+	}
+  
+  
+}
+
+void fglDeleteTextures()
+{
+	int i;
+
+	GLsizei p0;
+	GLuint p1;
+	fifo_input(&cmd_fifo,&p0,4);
+	for(i=0;i<p0;i++)
+	{
+		GLuint local_id;
+		fifo_input(&cmd_fifo,&p1,4);
+		id=id_translate(p1);
+		lib_glDeleteTextures ( p0 , &id);
+		
+	}
+}
+

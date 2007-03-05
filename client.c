@@ -60,7 +60,8 @@ static void unpack( )
 		fglGenFramebuffersEXT();
 	else if(func==OVERRIDE_BASE+24)
 		fglBindFramebufferEXT();
-
+	else if(func==OVERRIDE_BASE+25)
+		fglDeleteTextures();
 
 }
 
