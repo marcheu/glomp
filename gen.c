@@ -25,7 +25,8 @@ char * img_width[50];
 char * img_height[50];
 char * img_depth[50];
 char * img_type[50];
-int param_attrib[50][6];   // [0]=count [1]=variable_param [2]=img_width [3]=img_height [4]=img_depth [5]=img_type
+int param_attrib[50][7];   // [0]=count [1]=variable_param [2]=img_width 
+			   //[3]=img_height [4]=img_depth [5]=img_type [6]=
 
 
 typedef struct gl_type{
@@ -369,8 +370,8 @@ int main()
                     }
 
 		    else if ( (!xmlStrcmp(cur->name, (const xmlChar *)"function")) && 
-                         isFonctionParse(xmlGetProp(cur,"name")) && 
-                         remove_getfunction(xmlGetProp(cur,"name"))) 
+                         isFonctionParse(xmlGetProp(cur,"name")) 
+                         /*remove_getfunction(xmlGetProp(cur,"name"))*/) 
 		    {
 			cur = cur->xmlChildrenNode;
 			if(cur->next!=NULL)
@@ -381,7 +382,8 @@ int main()
 			    if(cur->next->next==NULL)
 				break;
 			    cur = cur->next->next;
-			}
+			}			
+
 			if(!xmlStrcmp(cur->name, (const xmlChar *)"return"))
 			{
 			    attrib = xmlGetProp(cur, "type");
@@ -438,6 +440,7 @@ int main()
 				{
 				    count[np]=atoi(attrib);
 				    param_attrib[np][0]=1;
+				    strcpy(countchar[np],attrib);
 				}
 				else 
 				{
@@ -446,11 +449,7 @@ int main()
 				}
 
 			    }
-			    else 
-			    {
-				count[np]=0;
-				param_attrib[np][0]=0;
-			    }
+			    else param_attrib[np][0]=0;
 
 
 			    /*verification de presence de l'attribut variable_param*/
@@ -498,14 +497,20 @@ int main()
 				param_attrib[np][5]=1;
 			    }
 			    else param_attrib[np][5]=0;
-			    
+
+			    /*verification de presence de l'attribut output*/
+			    attrib=xmlGetProp(cur, "output");
+			    if( attrib!=NULL)
+			    {
+				param_attrib[np][6]=1;
+			    }
+			    else param_attrib[np][6]=0;
 
 
-			    if(param_attrib[np][0]==1 || param_attrib[np][1]==1)
+			    if(param_attrib[np][0]==1)
 				fprintf(ftmpc,"\t%s %s[%d];\n",type_remove_etoile(type_remove_const(type[np])),
 											nameparam[np],count[np]);
-			    else //if(param_attrib[np][2]==0)
-				fprintf(ftmpc,"\t%s %s;\n",type_remove_const(type[np]),nameparam[np]);
+			    else fprintf(ftmpc,"\t%s %s;\n",type_remove_const(type[np]),nameparam[np]);
 
 
 
@@ -523,8 +528,20 @@ int main()
 			    fseek(fout_h,-1,SEEK_CUR);
 			}
 			fprintf(fout_c2,")\n{\n");
-			if(param_attrib[np][2]==1  || param_attrib[np][1]==1)
-				fprintf(fout_c2,"\tint size;\n");
+			for(i=0;i<=np;i++)
+			{
+				if(param_attrib[i][2]==1)
+				{
+				    fprintf(fout_c2,"\tint size;\n");
+				    break;
+				}
+				else if(param_attrib[i][1]==1 || param_attrib[i][0]>0) 
+				{
+				    fprintf(fout_c2,"\tint size;\n");
+				    fprintf(ftmpc,"\tint size;\n");
+				    break;
+				}
+			}
 			fprintf(fout_c2,"\tint fnum=%d;\n",fnum);
 			fprintf(fout_c2,"\tint fflags=0;\n");
 			fprintf(fout_c2,"\tfifo_output(&cmd_fifo,&fnum,sizeof(fnum));\n");
@@ -532,7 +549,41 @@ int main()
 			fprintf(fout_h,");\n");
 			for(i=0;i<=np;i++)
 			{
-			    if(param_attrib[i][2]==1)
+				
+			    if(param_attrib[i][6]==1)
+			    {
+				if(param_attrib[i][2]==1)
+				{
+				    if(param_attrib[i][3]==1)
+				    {
+					if(param_attrib[i][4]==1)
+					    fprintf(fout_c2,"\tsize=%s*%s*%s*sizeGLenum(%s);\n",img_width[i],img_height[i],
+						    					        img_depth[i],img_type[i]);
+					else fprintf(fout_c2,"\tsize=%s*%s*sizeGLenum(%s);\n",img_width[i],
+											      img_height[i],img_type[i]);
+				    }
+				    else fprintf(fout_c2,"\tsize=%s*sizeGLenum(%s);\n",img_width[i],img_type[i]);
+
+				    //fprintf(ftmpc,"\twrite_segment(size);\n",nameparam[i],type_remove_const(type[np]));
+				}
+			        else if(param_attrib[i][0]>2)
+			        {   
+				    fprintf(fout_c2,"\tsize=%d*%s;\n",type_size(type[i]),countchar[i]);
+				    fprintf(ftmpc,"\tsize=%d*%s;\n",type_size(type[i]),countchar[i]);
+			        }
+			        else if(param_attrib[i][1]==1)
+			        {   
+				    fprintf(fout_c2,"\tsize=sizeGLenum(%s)*%d;\n",variable_param[i],type_size(type[i]));
+				    fprintf(ftmpc,"\tsize=sizeGLenum(%s)*%d;\n",variable_param[i],type_size(type[i]));
+				}
+
+				    fprintf(fout_c2,"\tfifo_flush(&cmd_fifo);\n");
+				    fprintf(fout_c2,"\tsem_wait(semadr);\n");
+			    	    fprintf(fout_c2,"\t%s=read_segment(size);\n",nameparam[i]);
+			    }
+			
+
+			    else if(param_attrib[i][2]==1)
 			    {
 				if(param_attrib[i][3]==1)
 				{
@@ -547,23 +598,29 @@ int main()
 			    	fprintf(fout_c2,"\tsegment_create((char *)%s,size);\n",nameparam[i]);
 				fprintf(ftmpc,"\t%s=(%s)segment_attach();\n",nameparam[i],type_remove_const(type[np]));
 			    }
-			    else if(param_attrib[i][0]==1)
+			    /*else if(param_attrib[i][0]==1)
 			    {   
 				fprintf(fout_c2,"\tfifo_output(&cmd_fifo,%s,%d);\n",nameparam[i],
-											type_size(type[i])*count[i]);
+										    type_size(type[i])*count[i]);
 				fprintf(ftmpc,"\tfifo_input(&cmd_fifo,%s,%d);\n",nameparam[i],type_size(type[i])*count[i]);
-			    }
-			    else if(param_attrib[i][0]==2)
+			    }*/
+			    else if(param_attrib[i][0]>2)
 			    {   
-				fprintf(fout_c2,"\tfifo_output(&cmd_fifo,%s,%d*%s);\n",nameparam[i],
+				fprintf(fout_c2,"\tsize=%d*%s;\n",type_size(type[i]),countchar[i]);
+				fprintf(ftmpc,"\tsize=%d*%s;\n",type_size(type[i]),countchar[i]);
+
+				fprintf(fout_c2,"\tfifo_output(&cmd_fifo,%s,size);\n",nameparam[i],
 										       type_size(type[i]),countchar[i]);
-				fprintf(ftmpc,"\tfifo_input(&cmd_fifo,%s,%d*%s);\n",nameparam[i],
+				fprintf(ftmpc,"\tfifo_input(&cmd_fifo,%s,size);\n",nameparam[i],
 										    type_size(type[i]),countchar[i]);
 			    }
 			    else if(param_attrib[i][1]==1)
-			    {   fprintf(fout_c2,"\tsize=sizeGLenum(%s);\n",variable_param[i]);
-				fprintf(fout_c2,"\tfifo_output(&cmd_fifo,%s,%d);\n",nameparam[i],type_size(type[i]));
-				fprintf(ftmpc,"\tfifo_input(&cmd_fifo,%s,%d);\n",nameparam[i],type_size(type[i]));
+			    {   
+				fprintf(fout_c2,"\tsize=sizeGLenum(%s)*%d;\n",variable_param[i],type_size(type[i]));
+				fprintf(ftmpc,"\tsize=sizeGLenum(%s)*%d;\n",variable_param[i],type_size(type[i]));
+
+				fprintf(fout_c2,"\tfifo_output(&cmd_fifo,%s,size);\n",nameparam[i]);		     
+				fprintf(ftmpc,"\tfifo_input(&cmd_fifo,%s,size);\n",nameparam[i]);
 			    }
 			    else
 			    {
@@ -577,6 +634,7 @@ int main()
 			fprintf(fout_c2,"\treturn %s;\n",type_return(return_type));
 			fprintf(fout_c2,"}\n\n");
 	
+
 			fprintf(ftmpc,"\t((%s (*)(",return_type);
 			for(i=0;i<=np;i++)
 			    fprintf(ftmpc,"%s,",type_remove_const(type[i]));
@@ -586,26 +644,31 @@ int main()
 			fprintf(ftmpc,"))glfunctable[%d])(",fnum);                
 			for(i=0;i<=np;i++)
 			{
-			    if(count[i]!=0)
-				fprintf(ftmpc,"(%s)",type_remove_const(type[np]));
-			    fprintf(ftmpc,"%s,",nameparam[i]);
+			    if(param_attrib[i][0]>0)
+			    	fprintf(ftmpc,"(%s)",type_remove_const(type[np]));
+			    if(param_attrib[i][6]==1)
+				fprintf(ftmpc,"shmadr,",nameparam[i]);
+			    else fprintf(ftmpc,"%s,",nameparam[i]);
 			}
 
 			if(np!=-1)
 			    fseek(ftmpc,-1,SEEK_CUR);
 			fprintf(ftmpc,");\n\n");
 
-			for(i=0;i<np;i++)
-			    if(param_attrib[i][2]==1)
+
+			for(i=0;i<=np;i++)
+			    if(param_attrib[i][2]==1 && param_attrib[i][6]==0)
 				fprintf(ftmpc,"\tsegment_delete();\n");
+
+			for(i=0;i<=np;i++)
+				if(param_attrib[i][6]==1)
+				{
+				    fprintf(ftmpc,"\tif(num_client==0)\n");			
+				    fprintf(ftmpc,"\t\tsem_post(semadr);\n",nameparam[i]);
+				}
 
 			fprintf(ftmpc,"}\n\n");
 
-			
-
-
-
-			
 	
 			fnum++;
 		    }//fin if function
