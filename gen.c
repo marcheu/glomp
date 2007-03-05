@@ -362,8 +362,8 @@ int main()
 			attrib=xmlGetProp(cur, "count");
 			if(attrib!=NULL)
 			{
-			    attrib=xmlGetProp(cur, "name");
-			    fprintf(fout_c,"\t{GL_%s,",attrib);
+			    attrib=xmlGetProp(cur, "value");
+			    fprintf(fout_c,"\t{%s,",attrib);
 			    attrib=xmlGetProp(cur, "count");
 			    fprintf(fout_c,"%d},\n",atoi(attrib));
 			}
@@ -436,17 +436,17 @@ int main()
 			    attrib=xmlGetProp(cur, "count");
 			    if( attrib!=NULL)
 			    {
-				if(atoi(attrib)!=0)
+				/*if(atoi(attrib)!=0)
 				{
 				    count[np]=atoi(attrib);
 				    param_attrib[np][0]=1;
 				    strcpy(countchar[np],attrib);
 				}
 				else 
-				{
+				{*/
 				    strcpy(countchar[np],attrib);
-				    param_attrib[np][0]=2;
-				}
+				    param_attrib[np][0]=1;
+				/*}*/
 
 			    }
 			    else param_attrib[np][0]=0;
@@ -507,12 +507,13 @@ int main()
 			    else param_attrib[np][6]=0;
 
 
-			    if(param_attrib[np][0]==1)
+			    /*if(param_attrib[np][0]==1)
 				fprintf(ftmpc,"\t%s %s[%d];\n",type_remove_etoile(type_remove_const(type[np])),
 											nameparam[np],count[np]);
-			    else fprintf(ftmpc,"\t%s %s;\n",type_remove_const(type[np]),nameparam[np]);
+			    else fprintf(ftmpc,"\t%s %s;\n",type_remove_const(type[np]),nameparam[np]);*/
 
-
+			    if( (param_attrib[np][0]==0 && param_attrib[np][1]==0) ||  param_attrib[np][2]==1)
+				fprintf(ftmpc,"\t%s %s;\n",type_remove_const(type[np]),nameparam[np]);
 
 			    if(cur->next->next==NULL)
 				break;
@@ -566,15 +567,15 @@ int main()
 
 				    //fprintf(ftmpc,"\twrite_segment(size);\n",nameparam[i],type_remove_const(type[np]));
 				}
-			        else if(param_attrib[i][0]>2)
+			        else if(param_attrib[i][0]==1)
 			        {   
 				    fprintf(fout_c2,"\tsize=%d*%s;\n",type_size(type[i]),countchar[i]);
-				    fprintf(ftmpc,"\tsize=%d*%s;\n",type_size(type[i]),countchar[i]);
+				    //fprintf(ftmpc,"\tsize=%d*%s;\n",type_size(type[i]),countchar[i]);
 			        }
 			        else if(param_attrib[i][1]==1)
 			        {   
 				    fprintf(fout_c2,"\tsize=sizeGLenum(%s)*%d;\n",variable_param[i],type_size(type[i]));
-				    fprintf(ftmpc,"\tsize=sizeGLenum(%s)*%d;\n",variable_param[i],type_size(type[i]));
+				    //fprintf(ftmpc,"\tsize=sizeGLenum(%s)*%d;\n",variable_param[i],type_size(type[i]));
 				}
 
 				    fprintf(fout_c2,"\tfifo_flush(&cmd_fifo);\n");
@@ -596,7 +597,7 @@ int main()
 				else fprintf(fout_c2,"\tsize=%s*sizeGLenum(%s);\n",img_width[i],img_type[i]);
 
 			    	fprintf(fout_c2,"\tsegment_create((char *)%s,size);\n",nameparam[i]);
-				fprintf(ftmpc,"\t%s=(%s)segment_attach();\n",nameparam[i],type_remove_const(type[np]));
+				fprintf(ftmpc,"\t%s=(%s)segment_attach();\n",nameparam[i],type_remove_const(type[i]));
 			    }
 			    /*else if(param_attrib[i][0]==1)
 			    {   
@@ -604,8 +605,10 @@ int main()
 										    type_size(type[i])*count[i]);
 				fprintf(ftmpc,"\tfifo_input(&cmd_fifo,%s,%d);\n",nameparam[i],type_size(type[i])*count[i]);
 			    }*/
-			    else if(param_attrib[i][0]>2)
+			    else if(param_attrib[i][0]==1)
 			    {   
+				fprintf(ftmpc,"\t%s %s[%s];\n",type_remove_etoile(type_remove_const(type[i])),
+											nameparam[i],countchar[i]);
 				fprintf(fout_c2,"\tsize=%d*%s;\n",type_size(type[i]),countchar[i]);
 				fprintf(ftmpc,"\tsize=%d*%s;\n",type_size(type[i]),countchar[i]);
 
@@ -616,9 +619,14 @@ int main()
 			    }
 			    else if(param_attrib[i][1]==1)
 			    {   
+				fprintf(ftmpc,"\t%s %s[sizeGLenum(%s)];\n",type_remove_etoile(type_remove_const(type[i])),
+											nameparam[i],variable_param[i]);
 				fprintf(fout_c2,"\tsize=sizeGLenum(%s)*%d;\n",variable_param[i],type_size(type[i]));
 				fprintf(ftmpc,"\tsize=sizeGLenum(%s)*%d;\n",variable_param[i],type_size(type[i]));
 
+				fprintf(ftmpc,"\t%s %s[%s];\n",type_remove_etoile(type_remove_const(type[i])),
+											nameparam[i],countchar[i]);
+				
 				fprintf(fout_c2,"\tfifo_output(&cmd_fifo,%s,size);\n",nameparam[i]);		     
 				fprintf(ftmpc,"\tfifo_input(&cmd_fifo,%s,size);\n",nameparam[i]);
 			    }
@@ -645,7 +653,7 @@ int main()
 			for(i=0;i<=np;i++)
 			{
 			    if(param_attrib[i][0]>0)
-			    	fprintf(ftmpc,"(%s)",type_remove_const(type[np]));
+			    	fprintf(ftmpc,"(%s)",type_remove_const(type[i]));
 			    if(param_attrib[i][6]==1)
 				fprintf(ftmpc,"shmadr,",nameparam[i]);
 			    else fprintf(ftmpc,"%s,",nameparam[i]);
@@ -719,7 +727,7 @@ int main()
 	for(i=0;i<50;i++)
 		free(type[i]);
 
-	system("rm -f tmpc tmpc2");
+	system("rm -f tmpc tmpc2 fout_c2 ");
 
 	return;
 }
