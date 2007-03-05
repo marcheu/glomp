@@ -1134,4 +1134,3 @@ void fglDeleteTextures()
 		
 	}
 }
-
