@@ -18,8 +18,8 @@ char * type[50];
 char * return_type,* buffer;
 
 char * nameparam[50];
-int count[50];
-char * countchar[50];
+//int count[50];
+char * count[50];
 char * variable_param[50];
 char * img_width[50];
 char * img_height[50];
@@ -66,7 +66,7 @@ char * noParseFunction_table[]=
  "CopyTexSubImage1D",
  "CopyTexSubImage2D",
  "Flush",
- "GetBooleanv",
+ /*"GetBooleanv",
  "GetClipPlane",
  "GetDoublev",
  "GetError",
@@ -94,7 +94,7 @@ char * noParseFunction_table[]=
  "GetTexLevelParameterfv",
  "GetTexLevelParameteriv",
  "GetTexParameterfv",
- "GetTexParameteriv",    //fin des fonction du fichier gl.h 
+ "GetTexParameteriv",*/    //fin des fonction du fichier gl.h 
  "GenQueries",      //fonction du fichier glext.h
  "GenBuffers",
  "GenProgramsARB",
@@ -297,7 +297,7 @@ int main()
 	img_height[i]=malloc(sizeof(char)*50);
 	img_depth[i]=malloc(sizeof(char)*50);
 	img_type[i]=malloc(sizeof(char)*50);
-	countchar[i]=malloc(sizeof(char)*50);
+	count[i]=malloc(sizeof(char)*50);
 	variable_param[i]=malloc(sizeof(char)*50);
     }
 
@@ -436,18 +436,8 @@ int main()
 			    attrib=xmlGetProp(cur, "count");
 			    if( attrib!=NULL)
 			    {
-				/*if(atoi(attrib)!=0)
-				{
-				    count[np]=atoi(attrib);
+				    strcpy(count[np],attrib);
 				    param_attrib[np][0]=1;
-				    strcpy(countchar[np],attrib);
-				}
-				else 
-				{*/
-				    strcpy(countchar[np],attrib);
-				    param_attrib[np][0]=1;
-				/*}*/
-
 			    }
 			    else param_attrib[np][0]=0;
 
@@ -512,8 +502,9 @@ int main()
 											nameparam[np],count[np]);
 			    else fprintf(ftmpc,"\t%s %s;\n",type_remove_const(type[np]),nameparam[np]);*/
 
-			    if( (param_attrib[np][0]==0 && param_attrib[np][1]==0) ||  param_attrib[np][2]==1)
-				fprintf(ftmpc,"\t%s %s;\n",type_remove_const(type[np]),nameparam[np]);
+			    if( (param_attrib[np][0]==0 && param_attrib[np][1]==0) ||  
+				 param_attrib[np][2]==1 || param_attrib[np][6]==1)
+				     fprintf(ftmpc,"\t%s %s;\n",type_remove_const(type[np]),nameparam[np]);
 
 			    if(cur->next->next==NULL)
 				break;
@@ -531,12 +522,12 @@ int main()
 			fprintf(fout_c2,")\n{\n");
 			for(i=0;i<=np;i++)
 			{
-				if(param_attrib[i][2]==1)
+				if(param_attrib[i][2]==1 || param_attrib[i][6]==1)
 				{
 				    fprintf(fout_c2,"\tint size;\n");
 				    break;
 				}
-				else if(param_attrib[i][1]==1 || param_attrib[i][0]>0) 
+				else if(param_attrib[i][1]==1 || param_attrib[i][0]==1) 
 				{
 				    fprintf(fout_c2,"\tint size;\n");
 				    fprintf(ftmpc,"\tint size;\n");
@@ -569,8 +560,8 @@ int main()
 				}
 			        else if(param_attrib[i][0]==1)
 			        {   
-				    fprintf(fout_c2,"\tsize=%d*%s;\n",type_size(type[i]),countchar[i]);
-				    //fprintf(ftmpc,"\tsize=%d*%s;\n",type_size(type[i]),countchar[i]);
+				    fprintf(fout_c2,"\tsize=%d*%s;\n",type_size(type[i]),count[i]);
+				    //fprintf(ftmpc,"\tsize=%d*%s;\n",type_size(type[i]),count[i]);
 			        }
 			        else if(param_attrib[i][1]==1)
 			        {   
@@ -608,14 +599,14 @@ int main()
 			    else if(param_attrib[i][0]==1)
 			    {   
 				fprintf(ftmpc,"\t%s %s[%s];\n",type_remove_etoile(type_remove_const(type[i])),
-											nameparam[i],countchar[i]);
-				fprintf(fout_c2,"\tsize=%d*%s;\n",type_size(type[i]),countchar[i]);
-				fprintf(ftmpc,"\tsize=%d*%s;\n",type_size(type[i]),countchar[i]);
+											nameparam[i],count[i]);
+				fprintf(fout_c2,"\tsize=%d*%s;\n",type_size(type[i]),count[i]);
+				fprintf(ftmpc,"\tsize=%d*%s;\n",type_size(type[i]),count[i]);
 
 				fprintf(fout_c2,"\tfifo_output(&cmd_fifo,%s,size);\n",nameparam[i],
-										       type_size(type[i]),countchar[i]);
+										       type_size(type[i]),count[i]);
 				fprintf(ftmpc,"\tfifo_input(&cmd_fifo,%s,size);\n",nameparam[i],
-										    type_size(type[i]),countchar[i]);
+										    type_size(type[i]),count[i]);
 			    }
 			    else if(param_attrib[i][1]==1)
 			    {   
@@ -625,7 +616,7 @@ int main()
 				fprintf(ftmpc,"\tsize=sizeGLenum(%s)*%d;\n",variable_param[i],type_size(type[i]));
 
 				fprintf(ftmpc,"\t%s %s[%s];\n",type_remove_etoile(type_remove_const(type[i])),
-											nameparam[i],countchar[i]);
+											nameparam[i],count[i]);
 				
 				fprintf(fout_c2,"\tfifo_output(&cmd_fifo,%s,size);\n",nameparam[i]);		     
 				fprintf(ftmpc,"\tfifo_input(&cmd_fifo,%s,size);\n",nameparam[i]);
@@ -652,7 +643,7 @@ int main()
 			fprintf(ftmpc,"))glfunctable[%d])(",fnum);                
 			for(i=0;i<=np;i++)
 			{
-			    if(param_attrib[i][0]>0)
+			    if(param_attrib[i][0]==1 || param_attrib[i][1]==1 || param_attrib[i][2]==1)
 			    	fprintf(ftmpc,"(%s)",type_remove_const(type[i]));
 			    if(param_attrib[i][6]==1)
 				fprintf(ftmpc,"shmadr,",nameparam[i]);
@@ -727,7 +718,7 @@ int main()
 	for(i=0;i<50;i++)
 		free(type[i]);
 
-	system("rm -f tmpc tmpc2 fout_c2 ");
+	system("rm -f tmpc tmpc2 fout_c2");
 
 	return;
 }
