@@ -58,6 +58,7 @@ static void (*lib_glBindFramebufferEXT) ( GLenum p0 , GLuint p1 )=0;
 static void (*lib_glGenFramebuffersEXT) ( GLsizei p0 , GLuint *p1 )=0;
 static void (*lib_glDeleteTextures) ( GLsizei p0 , GLuint *p1 )=0;
 static void (*lib_glFlush) ()=0;
+static void (*lib_glFinish) ()=0;
 
 /* library interception variables */
 static void* lib_handle_libGL = 0;
@@ -95,6 +96,7 @@ void load_library(void)
   lib_glFlush= dlsym(lib_handle_libGL, "glFlush");
   lib_glDeleteTextures= dlsym(lib_handle_libGL, "glDeleteTextures");
   lib_glFlush= dlsym(lib_handle_libGL, "glFlush");
+  lib_glFinish= dlsym(lib_handle_libGL, "glFinish");
 
   /*les extensions*/
   lib_glBindTextureEXT = dlsym(lib_handle_libGL, "glBindTextureEXT");    
@@ -1104,7 +1106,7 @@ void fglFlush()
 }
 
 /*glFlush à n'utiliser que sur le maitre ? -> donc pas de fifo*/
-void glFlush(void){
+void glFinish(void){
   int fnum=OVERRIDE_BASE+26;
   int fflags=0;
   fifo_flush(&cmd_fifo);
@@ -1112,7 +1114,7 @@ void glFlush(void){
   fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
 }
 
-void fglFlush()
+void fglFinish()
 {
   lib_glFinish();
 }
