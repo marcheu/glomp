@@ -57,6 +57,7 @@ static void (*lib_glGenRenderbuffersEXT) ( GLsizei p0 , GLuint *p1 )=0;
 static void (*lib_glBindFramebufferEXT) ( GLenum p0 , GLuint p1 )=0;
 static void (*lib_glGenFramebuffersEXT) ( GLsizei p0 , GLuint *p1 )=0;
 static void (*lib_glDeleteTextures) ( GLsizei p0 , GLuint *p1 )=0;
+static void (*lib_glFlush) ()=0;
 
 /* library interception variables */
 static void* lib_handle_libGL = 0;
@@ -93,6 +94,7 @@ void load_library(void)
   lib_glCopyTexSubImage2D= dlsym(lib_handle_libGL, "glCopyTexSubImage2D");
   lib_glFlush= dlsym(lib_handle_libGL, "glFlush");
   lib_glDeleteTextures= dlsym(lib_handle_libGL, "glDeleteTextures");
+  lib_glFlush= dlsym(lib_handle_libGL, "glFlush");
 
   /*les extensions*/
   lib_glBindTextureEXT = dlsym(lib_handle_libGL, "glBindTextureEXT");    
@@ -357,7 +359,7 @@ void fglCallList ()
 const GLubyte* glGetString( GLenum name )
 {
 	const GLubyte* vendor="Vendor";
-	const GLubyte* renderer="Glomp " ;
+	const GLubyte* renderer="Glomp ";
 	const GLubyte* version="1.2 Glomp " ;
 	const GLubyte* extensions="";
 	switch(name)
@@ -427,17 +429,6 @@ void glCopyTexSubImage2D (GLenum target, GLint level, GLint xoffset, GLint yoffs
 }
 
 /*fin des copyTex*/
-
-
-
-/*glFlush à n'utiliser que sur le maitre ? -> donc pas de fifo*/
-void glFlush(void){
-  glFlush();
-}
-
-
-
-
 
 
 
@@ -1097,11 +1088,27 @@ void fglBindFramebufferEXT()
 /*fin des bufferEXT*/
 
 
+
+/*glFlush à n'utiliser que sur le maitre ? -> donc pas de fifo*/
+void glFlush(void){
+  int fnum=OVERRIDE_BASE+25;
+  int fflags=0;
+  glFlush();
+  fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
+  fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
+}
+
+void fglFlush()
+{
+  lib_glFlush();
+}
+
+
 /*les fonctions delete*/
 void glDeleteTextures (GLsizei p0, const GLuint * p1)
 {
 	int i;
-	int fnum=OVERRIDE_BASE+25;
+	int fnum=OVERRIDE_BASE+26;
 	int fflags=0;
 
 	fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
