@@ -193,6 +193,13 @@ gl_type type_table[]=
 };
 
 
+int remove_getfunction(char * name)
+{
+	if(!strncmp(name,"Get",3))
+		return 0;
+	else return 1;
+}
+
 
 
 int isFonctionParse(char * name)
@@ -370,7 +377,9 @@ int main()
 		while (cur != NULL)
 		{
 		    retour=cur;
-		    if ((!xmlStrcmp(cur->name, (const xmlChar *)"function")) && isFonctionParse(xmlGetProp(cur,"name")) ) 
+		    if ( (!xmlStrcmp(cur->name, (const xmlChar *)"function")) && 
+                         isFonctionParse(xmlGetProp(cur,"name")) && 
+                         remove_getfunction(xmlGetProp(cur,"name"))) 
 		    {
 			cur = cur->xmlChildrenNode;
 			if(cur->next!=NULL)
