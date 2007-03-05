@@ -1093,7 +1093,7 @@ void fglBindFramebufferEXT()
 void glFlush(void){
   int fnum=OVERRIDE_BASE+25;
   int fflags=0;
-  glFlush();
+  lib_glFlush();
   fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
   fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
 }
@@ -1103,12 +1103,26 @@ void fglFlush()
   lib_glFlush();
 }
 
+/*glFlush à n'utiliser que sur le maitre ? -> donc pas de fifo*/
+void glFlush(void){
+  int fnum=OVERRIDE_BASE+26;
+  int fflags=0;
+  fifo_flush(&cmd_fifo);
+  fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
+  fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
+}
+
+void fglFlush()
+{
+  lib_glFinish();
+}
+
 
 /*les fonctions delete*/
 void glDeleteTextures (GLsizei p0, const GLuint * p1)
 {
 	int i;
-	int fnum=OVERRIDE_BASE+26;
+	int fnum=OVERRIDE_BASE+27;
 	int fflags=0;
 
 	fifo_output(&cmd_fifo,&fnum,sizeof(fnum));

@@ -35,4 +35,5 @@ void fglGenFramebuffersEXT();
 void fglBindFramebufferEXT();
 void fglDeleteTextures();
 void fglFlush();
+void fglFinish();
 #endif

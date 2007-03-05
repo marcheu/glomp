@@ -63,6 +63,8 @@ static void unpack( )
   else if(func==OVERRIDE_BASE+25)
     fglFlush();
   else if(func==OVERRIDE_BASE+26)
+    fglFinish();
+  else if(func==OVERRIDE_BASE+27)
     fglDeleteTextures();
 
 }
