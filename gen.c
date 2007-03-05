@@ -39,6 +39,18 @@ gl_type;
 /*------tableau des fonction ne devant pas etre traite par le parseur xml---*/
 char * noParseFunction_table[]=
 {
+ "IsQuery",
+ "IsBuffer",
+ "BindBuffer",
+ "BindProgramARB",
+ "IsProgramARB",
+ "IsBufferARB",
+ "BindBufferARB",
+ "IsQueryARB",
+ "IsFenceNV",
+ "IsProgramNV",
+ "DeleteTextures",
+ "GenProgramsNV",
  "Frustum",
  "GenTextures",
  "IsTexture",
