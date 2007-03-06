@@ -36,4 +36,16 @@ void fglBindFramebufferEXT();
 void fglDeleteTextures();
 void fglFlush();
 void fglFinish();
+void fglDeleteQueries();
+void fglDeleteBuffers();
+void fglDeleteProgramARB();
+void fglDeleteBuffersARB();
+void fglDeleteQueriesARB();
+void fglDeleteTexturesEXT();
+void fglDeleteFencesNV();
+void fglDeleteProgramsNV();
+void fglDeleteOcclusionQueriesNV();
+void fglDeleteRenderbuffersEXT();
+void fglDeleteFramebuffersEXT();
+
 #endif

@@ -66,7 +66,28 @@ static void unpack( )
     fglFinish();
   else if(func==OVERRIDE_BASE+27)
     fglDeleteTextures();
-
+  else if(func==OVERRIDE_BASE+28)
+    fglDeleteQueries();
+  else if(func==OVERRIDE_BASE+29)
+    fglDeleteBuffers();
+  else if(func==OVERRIDE_BASE+30)
+    fglDeleteProgramsARB();
+  else if(func==OVERRIDE_BASE+31)
+    fglDeleteBuffersARB();
+  else if(func==OVERRIDE_BASE+32)
+    fglDeleteQueriesARB();
+  else if(func==OVERRIDE_BASE+33)
+    fglDeleteTexturesEXT();
+  else if(func==OVERRIDE_BASE+34)
+    fglDeleteFencesNV();
+  else if(func==OVERRIDE_BASE+35)
+    fglDeleteProgramsNV();
+  else if(func==OVERRIDE_BASE+36)
+    fglDeleteOcclusionQueriesNV();
+  else if(func==OVERRIDE_BASE+37)
+    fglDeleteRenderbuffersEXT();
+  else if(func==OVERRIDE_BASE+37)
+    fglDeleteFramebuffersEXT();
 }
 
 void client_init()

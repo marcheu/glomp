@@ -59,6 +59,17 @@ static void (*lib_glGenFramebuffersEXT) ( GLsizei p0 , GLuint *p1 )=0;
 static void (*lib_glDeleteTextures) ( GLsizei p0 , GLuint *p1 )=0;
 static void (*lib_glFlush) ()=0;
 static void (*lib_glFinish) ()=0;
+static void (*lib_glDeleteQueries) ( GLsizei p0 , GLuint *p1 )=0;
+static void (*lib_glDeleteBuffers) ( GLsizei p0 , GLuint *p1 )=0;
+static void (*lib_glDeleteProgramsARB) ( GLsizei p0 , GLuint *p1 )=0;
+static void (*lib_glDeleteBuffersARB) ( GLsizei p0 , GLuint *p1 )=0;
+static void (*lib_glDeleteQueriesARB) ( GLsizei p0 , GLuint *p1 )=0;
+static void (*lib_glDeleteTexturesEXT) ( GLsizei p0 , GLuint *p1 )=0;
+static void (*lib_glDeleteFencesNV) ( GLsizei p0 , GLuint *p1 )=0;
+static void (*lib_glDeleteProgramsNV) ( GLsizei p0 , GLuint *p1 )=0;
+static void (*lib_glDeleteOcclusionQueriesNV) ( GLsizei p0 , GLuint *p1 )=0;
+static void (*lib_glDeleteRenderbuffersEXT) ( GLsizei p0 , GLuint *p1 )=0;
+static void (*lib_glDeleteFramebuffersEXT) ( GLsizei p0 , GLuint *p1 )=0;
 
 /* library interception variables */
 static void* lib_handle_libGL = 0;
@@ -112,11 +123,22 @@ void load_library(void)
   lib_glGenFencesNV = dlsym(lib_handle_libGL, "glGenFencesARB"); 
   lib_glBindProgramNV = dlsym(lib_handle_libGL, "glBindProgramNV");    
   lib_glGenProgramsNV = dlsym(lib_handle_libGL, "glGenProgramsNV");
-  lib_glGenQueriesARB = dlsym(lib_handle_libGL, "glGenOcclusionQueriesNV");
+  lib_glGenOcclusionQueriesNV = dlsym(lib_handle_libGL, "glGenOcclusionQueriesNV");
   lib_glBindRenderbufferEXT = dlsym(lib_handle_libGL, "glBindRenderbufferEXT"); 
   lib_glGenRenderbuffersEXT = dlsym(lib_handle_libGL, "glGenRenderbuffersEXT");
   lib_glBindFramebufferEXT = dlsym(lib_handle_libGL, "glBindFramebufferEXT"); 
   lib_glGenFramebuffersEXT = dlsym(lib_handle_libGL, "glGenFramebuffersEXT");
+  lib_glDeleteQueries= dlsym(lib_handle_libGL, "glDeleteQueries");
+  lib_glDeleteBuffers= dlsym(lib_handle_libGL, "glDeleteBuffers");
+  lib_glDeleteProgramsARB = dlsym(lib_handle_libGL, "glDeleteProgramsARB");
+  lib_glDeleteBuffersARB= dlsym(lib_handle_libGL, "glDeleteBuffersARB");
+  lib_glDeleteQueriesARB= dlsym(lib_handle_libGL, "glDeleteQueriesARB");
+  lib_glDeleteTexturesEXT= dlsym(lib_handle_libGL, "glDeleteTexturesEXT");
+  lib_glDeleteFencesNV= dlsym(lib_handle_libGL, "glDeleteFencesNV");
+  lib_glDeleteProgramsNV = dlsym(lib_handle_libGL, "glDeleteProgramsNV");
+  lib_glDeleteOcclusionQueriesNV = dlsym(lib_handle_libGL, "glDeleteOcclusionQueriesNV");
+  lib_glDeleteRenderbuffersEXT = dlsym(lib_handle_libGL, "glDeleteRenderbuffersEXT");
+  lib_glDeleteFramebuffersEXT = dlsym(lib_handle_libGL, "glDeleteFramebuffersEXT");
 
   /* intercept XSetStandardProperties */
   lib_handle_libX11 = dlopen("/usr/lib/libX11.so", RTLD_LAZY);
@@ -1136,11 +1158,8 @@ void glDeleteTextures (GLsizei p0, const GLuint * p1)
 		fifo_output(&cmd_fifo,&p1,4);
 		p1++;
 		
-	}
-  
-  
+	}  
 }
-
 void fglDeleteTextures()
 {
 	int i;
@@ -1154,6 +1173,385 @@ void fglDeleteTextures()
 		fifo_input(&cmd_fifo,&p1,4);
 		id=id_translate(p1);
 		lib_glDeleteTextures ( p0 , &id);
+		
+	}
+}
+/*deleteQuery*/
+void glDeleteQueries (GLsizei p0, const GLuint * p1)
+{
+	int i;
+	int fnum=OVERRIDE_BASE+28;
+	int fflags=0;
+
+	fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
+	fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
+	fifo_output(&cmd_fifo,&p0,4);
+
+	for(i=0;i<p0;i++)
+	{
+		fifo_output(&cmd_fifo,&p1,4);
+		p1++;
+		
+	}  
+}
+void fglDeleteQueries()
+{
+	int i;
+
+	GLsizei p0;
+	GLuint p1;
+	fifo_input(&cmd_fifo,&p0,4);
+	for(i=0;i<p0;i++)
+	{
+		GLuint local_id;
+		fifo_input(&cmd_fifo,&p1,4);
+		id=id_translate(p1);
+		lib_glDeleteQueries ( p0 , &id);
+		
+	}
+}
+void glDeleteBuffers (GLsizei p0, const GLuint * p1)
+{
+	int i;
+	int fnum=OVERRIDE_BASE+29;
+	int fflags=0;
+
+	fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
+	fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
+	fifo_output(&cmd_fifo,&p0,4);
+
+	for(i=0;i<p0;i++)
+	{
+		fifo_output(&cmd_fifo,&p1,4);
+		p1++;
+		
+	}  
+}
+void fglDeleteBuffers()
+{
+	int i;
+
+	GLsizei p0;
+	GLuint p1;
+	fifo_input(&cmd_fifo,&p0,4);
+	for(i=0;i<p0;i++)
+	{
+		GLuint local_id;
+		fifo_input(&cmd_fifo,&p1,4);
+		id=id_translate(p1);
+		lib_glDeleteBuffers ( p0 , &id);
+		
+	}
+}
+void glDeleteProgramsARB (GLsizei p0, const GLuint * p1)
+{
+	int i;
+	int fnum=OVERRIDE_BASE+30;
+	int fflags=0;
+
+	fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
+	fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
+	fifo_output(&cmd_fifo,&p0,4);
+
+	for(i=0;i<p0;i++)
+	{
+		fifo_output(&cmd_fifo,&p1,4);
+		p1++;
+		
+	}  
+}
+void fglDeleteProgramsARB()
+{
+	int i;
+
+	GLsizei p0;
+	GLuint p1;
+	fifo_input(&cmd_fifo,&p0,4);
+	for(i=0;i<p0;i++)
+	{
+		GLuint local_id;
+		fifo_input(&cmd_fifo,&p1,4);
+		id=id_translate(p1);
+		lib_glDeleteProgramsARB ( p0 , &id);
+		
+	}
+}
+
+
+void glDeleteBuffersARB (GLsizei p0, const GLuint * p1)
+{
+	int i;
+	int fnum=OVERRIDE_BASE+31;
+	int fflags=0;
+
+	fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
+	fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
+	fifo_output(&cmd_fifo,&p0,4);
+
+	for(i=0;i<p0;i++)
+	{
+		fifo_output(&cmd_fifo,&p1,4);
+		p1++;
+		
+	}  
+}
+void fglDeleteBuffersARB()
+{
+	int i;
+
+	GLsizei p0;
+	GLuint p1;
+	fifo_input(&cmd_fifo,&p0,4);
+	for(i=0;i<p0;i++)
+	{
+		GLuint local_id;
+		fifo_input(&cmd_fifo,&p1,4);
+		id=id_translate(p1);
+		lib_glDeleteBuffersARB ( p0 , &id);
+		
+	}
+}
+
+
+void glDeleteQueriesARB (GLsizei p0, const GLuint * p1)
+{
+	int i;
+	int fnum=OVERRIDE_BASE+32;
+	int fflags=0;
+
+	fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
+	fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
+	fifo_output(&cmd_fifo,&p0,4);
+
+	for(i=0;i<p0;i++)
+	{
+		fifo_output(&cmd_fifo,&p1,4);
+		p1++;
+		
+	}  
+}
+void fglDeleteQueriesARB()
+{
+	int i;
+
+	GLsizei p0;
+	GLuint p1;
+	fifo_input(&cmd_fifo,&p0,4);
+	for(i=0;i<p0;i++)
+	{
+		GLuint local_id;
+		fifo_input(&cmd_fifo,&p1,4);
+		id=id_translate(p1);
+		lib_glDeleteQueriesARB ( p0 , &id);
+		
+	}
+}
+
+
+void glDeleteTexturesEXT (GLsizei p0, const GLuint * p1)
+{
+	int i;
+	int fnum=OVERRIDE_BASE+33;
+	int fflags=0;
+
+	fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
+	fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
+	fifo_output(&cmd_fifo,&p0,4);
+
+	for(i=0;i<p0;i++)
+	{
+		fifo_output(&cmd_fifo,&p1,4);
+		p1++;
+		
+	}  
+}
+void fglDeleteTexturesEXT()
+{
+	int i;
+
+	GLsizei p0;
+	GLuint p1;
+	fifo_input(&cmd_fifo,&p0,4);
+	for(i=0;i<p0;i++)
+	{
+		GLuint local_id;
+		fifo_input(&cmd_fifo,&p1,4);
+		id=id_translate(p1);
+		lib_glDeleteTexturesEXT ( p0 , &id);
+		
+	}
+}
+
+void glDeleteFencesNV (GLsizei p0, const GLuint * p1)
+{
+	int i;
+	int fnum=OVERRIDE_BASE+34;
+	int fflags=0;
+
+	fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
+	fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
+	fifo_output(&cmd_fifo,&p0,4);
+
+	for(i=0;i<p0;i++)
+	{
+		fifo_output(&cmd_fifo,&p1,4);
+		p1++;
+		
+	}  
+}
+void fglDeleteFencesNV()
+{
+	int i;
+
+	GLsizei p0;
+	GLuint p1;
+	fifo_input(&cmd_fifo,&p0,4);
+	for(i=0;i<p0;i++)
+	{
+		GLuint local_id;
+		fifo_input(&cmd_fifo,&p1,4);
+		id=id_translate(p1);
+		lib_glDeleteFencesNV ( p0 , &id);
+		
+	}
+}
+
+void glDeleteProgramsNV (GLsizei p0, const GLuint * p1)
+{
+	int i;
+	int fnum=OVERRIDE_BASE+35;
+	int fflags=0;
+
+	fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
+	fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
+	fifo_output(&cmd_fifo,&p0,4);
+
+	for(i=0;i<p0;i++)
+	{
+		fifo_output(&cmd_fifo,&p1,4);
+		p1++;
+		
+	}  
+}
+void fglDeleteProgramsNV()
+{
+	int i;
+
+	GLsizei p0;
+	GLuint p1;
+	fifo_input(&cmd_fifo,&p0,4);
+	for(i=0;i<p0;i++)
+	{
+		GLuint local_id;
+		fifo_input(&cmd_fifo,&p1,4);
+		id=id_translate(p1);
+		lib_glDeleteProgramsNV ( p0 , &id);
+		
+	}
+}
+
+
+void glDeleteOcclusionQueriesNV (GLsizei p0, const GLuint * p1)
+{
+	int i;
+	int fnum=OVERRIDE_BASE+36;
+	int fflags=0;
+
+	fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
+	fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
+	fifo_output(&cmd_fifo,&p0,4);
+
+	for(i=0;i<p0;i++)
+	{
+		fifo_output(&cmd_fifo,&p1,4);
+		p1++;
+		
+	}  
+}
+void fglDeleteOcclusionQueriesNV()
+{
+	int i;
+
+	GLsizei p0;
+	GLuint p1;
+	fifo_input(&cmd_fifo,&p0,4);
+	for(i=0;i<p0;i++)
+	{
+		GLuint local_id;
+		fifo_input(&cmd_fifo,&p1,4);
+		id=id_translate(p1);
+		lib_glDeleteOcclusionQueriesNV ( p0 , &id);
+		
+	}
+}
+
+
+
+void glDeleteRenderbuffersEXT (GLsizei p0, const GLuint * p1)
+{
+	int i;
+	int fnum=OVERRIDE_BASE+37;
+	int fflags=0;
+
+	fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
+	fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
+	fifo_output(&cmd_fifo,&p0,4);
+
+	for(i=0;i<p0;i++)
+	{
+		fifo_output(&cmd_fifo,&p1,4);
+		p1++;
+		
+	}  
+}
+void fglDeleteRenderbuffersEXT()
+{
+	int i;
+
+	GLsizei p0;
+	GLuint p1;
+	fifo_input(&cmd_fifo,&p0,4);
+	for(i=0;i<p0;i++)
+	{
+		GLuint local_id;
+		fifo_input(&cmd_fifo,&p1,4);
+		id=id_translate(p1);
+		lib_glDeleteRenderbuffersEXT ( p0 , &id);
+		
+	}
+}
+
+
+void glDeleteFramebuffersEXT (GLsizei p0, const GLuint * p1)
+{
+	int i;
+	int fnum=OVERRIDE_BASE+38;
+	int fflags=0;
+
+	fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
+	fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
+	fifo_output(&cmd_fifo,&p0,4);
+
+	for(i=0;i<p0;i++)
+	{
+		fifo_output(&cmd_fifo,&p1,4);
+		p1++;
+		
+	}  
+}
+void fglDeleteFramebuffersEXT()
+{
+	int i;
+
+	GLsizei p0;
+	GLuint p1;
+	fifo_input(&cmd_fifo,&p0,4);
+	for(i=0;i<p0;i++)
+	{
+		GLuint local_id;
+		fifo_input(&cmd_fifo,&p1,4);
+		id=id_translate(p1);
+		lib_glDeleteFramebuffersEXT ( p0 , &id);
 		
 	}
 }
