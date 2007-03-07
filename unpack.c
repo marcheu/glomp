@@ -30,6 +30,7 @@ gl_pixeltype pixeltype_table[]=
 	{GL_UNSIGNED_INT_8_8_8_8_REV,4},
 	{GL_UNSIGNED_INT_10_10_10_2,4},
 	{GL_UNSIGNED_INT_2_10_10_10_REV,4},
+	{GL_HALF_FLOAT_ARB,2},
 	{0,0},
 };
 

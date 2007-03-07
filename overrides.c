@@ -37,7 +37,6 @@ static void (*lib_glCopyTexImage1D) (GLenum target, GLint level, GLenum internal
 static void (*lib_glCopyTexImage2D) (GLenum target, GLint level, GLenum internalFormat, GLint x, GLint y, GLsizei width, GLsizei height, GLint border)=0;
 static void (*lib_glCopyTexSubImage1D) (GLenum target, GLint level, GLint xoffset, GLint x, GLint y, GLsizei width)=0;
 static void (*lib_glCopyTexSubImage2D) (GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint x, GLint y, GLsizei width, GLsizei height)=0;
-static void (*lib_glFlush) (void);
 static void (*lib_glBindTextureEXT) ( GLenum p0 , GLuint p1 )=0;
 static void (*lib_glGenTexturesEXT) ( GLsizei p0 , GLuint *p1 )=0;
 static void (*lib_glGenQueries) ( GLsizei p0 , GLuint *p1 )=0;
@@ -104,7 +103,6 @@ void load_library(void)
   lib_glCopyTexImage2D= dlsym(lib_handle_libGL, "glCopyTexImage2D");
   lib_glCopyTexSubImage1D= dlsym(lib_handle_libGL, "glCopyTexSubImage1D");
   lib_glCopyTexSubImage2D= dlsym(lib_handle_libGL, "glCopyTexSubImage2D");
-  lib_glFlush= dlsym(lib_handle_libGL, "glFlush");
   lib_glDeleteTextures= dlsym(lib_handle_libGL, "glDeleteTextures");
   lib_glFlush= dlsym(lib_handle_libGL, "glFlush");
   lib_glFinish= dlsym(lib_handle_libGL, "glFinish");
