@@ -5,6 +5,8 @@
 #include "segment.h"
 #include "init.h"
 
+char* shmadr;
+
 typedef struct segmat
 {
 	int key;
@@ -68,5 +70,18 @@ void segment_delete()
 	}
 	seglist=NULL;
 }
+
+
+
+int segment_create_retour()
+{
+
+	shmadr=shmat(shmget(IPC_PRIVATE,4080,0666|IPC_CREAT),0,0);
+	sem_init(semadr,0,0);
+
+}
+
+
+
 
 

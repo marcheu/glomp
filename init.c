@@ -17,8 +17,8 @@ int nbcarte;//nombre de GPU dispo
 
 int width,height;//taille de l'ecran
 
-void **shmadr_fenetre1,**shmadr_fenetre2;
-sem_t **semadrfen_in,**semadrfen_out;
+
+
 int fenetreactive=0;
 
 void init()
@@ -38,17 +38,8 @@ void init()
 	}
 
 
-	shmadr_fenetre1=malloc(sizeof(void *)*nbcarte);
-	shmadr_fenetre2=malloc(sizeof(void *)*nbcarte);
-	semadrfen_in=malloc(sizeof(sem_t *)*nbcarte);
-	semadrfen_out=malloc(sizeof(sem_t *)*nbcarte);
 
-	/*creation de la shm des fenetre des differentes cartes*/
-	for(i=0;i<nbcarte;i++)
-	{
-		shmadr_fenetre1[i]=creershm_fenetre();
-		shmadr_fenetre2[i]=creershm_fenetre();
-	}
+	createAllFen();
 
 	// initially everyone has the same load
 	// FIXME : make this a shm ?

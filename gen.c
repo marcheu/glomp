@@ -52,50 +52,50 @@ char * noParseFunction_table[]=
  "IsOcclusionQueryNV",
  "IsRenderbufferEXT",
  "IsFramebufferEXT",
- "glBindTexture",
- "glGenTextures",   
- "glFrustum",
- "glGenLists",
- "glCallList",
- "glCallLists",
- "glCopyPixels",
- "glCopyTexImage1D",
- "glCopyTexImage2D",
- "glCopyTexSubImage1D",
- "glCopyTexSubImage2D",
- "glFlush",
- "glDeleteTextures",
- "glFlush",
- "glFinish",
- "glBindTextureEXT",  
- "glGenTexturesEXT",
- "glGenQueries",
- "glBindBuffer",    
- "glGenBuffers",
- "glBindProgramARB",    
- "glGenProgramsARB",
- "glBindBufferARB",
- "glGenBuffersARB",
- "glGenQueriesARB",
- "glGenFencesARB",
- "glBindProgramNV"
- "glGenProgramsNV",
- "glGenOcclusionQueriesNV",
- "glBindRenderbufferEXT",
- "glGenRenderbuffersEXT",
- "glBindFramebufferEXT",
- "glGenFramebuffersEXT",
- "glDeleteQueries",
- "glDeleteBuffers",
- "glDeleteProgramsARB",
- "glDeleteBuffersARB",
- "glDeleteQueriesARB",
- "glDeleteTexturesEXT",
- "glDeleteFencesNV",
- "glDeleteProgramsNV",
- "glDeleteOcclusionQueriesNV",
- "glDeleteRenderbuffersEXT",
- "glDeleteFramebuffersEXT",
+ "BindTexture",
+ "GenTextures",   
+ "Frustum",
+ "GenLists",
+ "CallList",
+ "CallLists",
+ "CopyPixels",
+ "CopyTexImage1D",
+ "CopyTexImage2D",
+ "CopyTexSubImage1D",
+ "CopyTexSubImage2D",
+ "Flush",
+ "DeleteTextures",
+ "Flush",
+ "Finish",
+ "BindTextureEXT",  
+ "GenTexturesEXT",
+ "GenQueries",
+ "BindBuffer",    
+ "GenBuffers",
+ "BindProgramARB",    
+ "GenProgramsARB",
+ "BindBufferARB",
+ "GenBuffersARB",
+ "GenQueriesARB",
+ "GenFencesARB",
+ "BindProgramNV"
+ "GenProgramsNV",
+ "GenOcclusionQueriesNV",
+ "BindRenderbufferEXT",
+ "GenRenderbuffersEXT",
+ "BindFramebufferEXT",
+ "GenFramebuffersEXT",
+ "DeleteQueries",
+ "DeleteBuffers",
+ "DeleteProgramsARB",
+ "DeleteBuffersARB",
+ "DeleteQueriesARB",
+ "DeleteTexturesEXT",
+ "DeleteFencesNV",
+ "DeleteProgramsNV",
+ "DeleteOcclusionQueriesNV",
+ "DeleteRenderbuffersEXT",
+ "DeleteFramebuffersEXT",
  /*"GetBooleanv",
  "GetClipPlane",
  "GetDoublev",
@@ -585,7 +585,7 @@ int main()
 
 				    fprintf(fout_c2,"\tfifo_flush(&cmd_fifo);\n");
 				    fprintf(fout_c2,"\tsem_wait(semadr);\n");
-			    	    fprintf(fout_c2,"\t%s=read_segment(sizep);\n",nameparam[i]);
+			    	    fprintf(fout_c2,"\tmemcpy(%s,shmadr,sizep);\n",nameparam[i]);
 			    }
 			
 
@@ -647,6 +647,15 @@ int main()
 			fprintf(fout_c2,"\treturn %s;\n",type_return(return_type));
 			fprintf(fout_c2,"}\n\n");
 	
+			for(i=0;i<=np;i++){
+			  
+			    if(param_attrib[i][6]==1)
+			    {
+			       fprintf(ftmpc,"\tif(client_num==0)\n\t{\n\t");
+			       break;
+			    }
+			}
+			
 
 			fprintf(ftmpc,"\t((%s (*)(",return_type);
 			for(i=0;i<=np;i++)
@@ -666,7 +675,7 @@ int main()
 
 			if(np!=-1)
 			    fseek(ftmpc,-1,SEEK_CUR);
-			fprintf(ftmpc,");\n\n");
+			fprintf(ftmpc,");\n");
 
 
 			for(i=0;i<=np;i++)
@@ -674,11 +683,8 @@ int main()
 				fprintf(ftmpc,"\tsegment_delete();\n");
 
 			for(i=0;i<=np;i++)
-				if(param_attrib[i][6]==1)
-				{
-				    fprintf(ftmpc,"\tif(num_client==0)\n");			
-				    fprintf(ftmpc,"\t\tsem_post(semadr);\n",nameparam[i]);
-				}
+				if(param_attrib[i][6]==1)			
+				    fprintf(ftmpc,"\t\tsem_post(semadr);\n\t}\n",nameparam[i]);
 
 			fprintf(ftmpc,"}\n\n");
 

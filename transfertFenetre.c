@@ -7,15 +7,26 @@
 *mais qu'elle l'envoie au processus maitre qui lui va les afficher 
 */
 int i;
-
+void **shmadr_fenetre1,**shmadr_fenetre2;
 //creer le segment de memoire partage qui va contenir toute l'image
 //c'est a dire les nbcarte pBuffer
+void createAllFen(){
+	/*creation de la shm des fenetre des differentes cartes*/
+	shmadr_fenetre1=malloc(sizeof(void *)*nbcarte);
+	shmadr_fenetre2=malloc(sizeof(void *)*nbcarte);
+	for(i=0;i<nbcarte;i++)
+	{
+		shmadr_fenetre1[i]=creershm_fenetre();
+		shmadr_fenetre2[i]=creershm_fenetre();
+	}
+}
+
+
 void * creershm_fenetre()
 {
 
   int shmid;
   void * shmadr;
-
    shmid = shmget(IPC_PRIVATE,width*height*4,0666|IPC_CREAT);
    shmadr = shmat(shmid,0,0);
    return shmadr;
