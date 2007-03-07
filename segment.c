@@ -5,7 +5,8 @@
 #include "segment.h"
 #include "init.h"
 
-char* shmadr;
+//char* shmadr;
+//sem_t * semadr
 
 typedef struct segmat
 {

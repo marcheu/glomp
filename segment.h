@@ -1,8 +1,9 @@
 #ifndef _SEGMENT_H_
 #define _SEGMENT_H_
+#include <semaphore.h>
 
-extern char* shmadr;
-extern sem_t * semadr;
+char* shmadr;
+sem_t * semadr;
 
 // creer le segment et ecrit dans la fifo
 int segment_create(char* p,int size);

@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include "init.h"
@@ -6,6 +7,7 @@
 #include "server.h"
 #include "overrides.h"
 #include "transfertFenetre.h"
+
 
 // FIXME deplacer ca dans dewrapped.h
 extern void creertabfunc();
@@ -21,9 +23,10 @@ int width,height;//taille de l'ecran
 
 int fenetreactive=0;
 
-void init()
+void initGlobal()
 {
 	int i;
+initPointers();
 
 	// figure out the number of clients
 	Display* dpy = XOpenDisplay("");

@@ -56,6 +56,8 @@ void lire_fenetre()
 
 void ecrire_fenetre()
 {
+int * heightclient;
+heightclient = malloc(sizeof(int)*nbcarte);
    if(fenetreactive==0)  
      for(i=0;i<nbcarte;i++)
      {

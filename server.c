@@ -1,16 +1,13 @@
-#include <GL/gl.h>
-#include <GL/glext.h>
-#include <GL/glx.h>
-#include <GL/glxext.h>
+#include "server.h"
 
 
 int sizeGLenum(GLenum type)
 {
 	int i=0;
 
-	while(type_table[i].type!=0)
+	while(type_table[i].name!=0)
 	{
-		if (type==type_table[i].type)
+		if (type==type_table[i].name)
 			return type_table[i].size; 
 		i++;
 	}

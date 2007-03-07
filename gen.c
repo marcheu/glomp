@@ -96,6 +96,23 @@ char * noParseFunction_table[]=
  "DeleteOcclusionQueriesNV",
  "DeleteRenderbuffersEXT",
  "DeleteFramebuffersEXT",
+ "GetString",
+ "GenProgramsNV",
+ "GenFencesNV",
+ "BindProgramNV",
+/*on en vire elle serve pas ...*/
+"CompressedTexImage3DARB",
+"CompressedTexImage2DARB",
+"CompressedTexImage1DARB",
+"CompressedTexSubImage3DARB",
+"CompressedTexSubImage2DARB",
+"CompressedTexSubImage1DARB",
+"ProgramStringARB",
+/*et dans wrapped pb*/
+"GetMapdv",
+"GetMapfv",
+"GetMapiv",
+"GetTexImage",
  /*"GetBooleanv",
  "GetClipPlane",
  "GetDoublev",
@@ -350,7 +367,7 @@ int main()
 
   
 	fprintf(fin_c,"/* Auto-generated, do not edit ! */\n#include \""in_h_file"\"\n\n");
-	fprintf(fin_c,"void init()\n{\n");
+	fprintf(fin_c,"void initPointers()\n{\n");
 
 	fprintf(fin_h,"/* Auto-generated, do not edit ! */\n#include \"fifo.h\"\n#include \"segment.h\"\n#include <GL/gl.h>\n#include <GL/glext.h>\n#include <GL/glx.h>\n#include <GL/glxext.h>\n\n");
   
@@ -629,9 +646,11 @@ int main()
 				fprintf(fout_c2,"\tsizep=sizeGLenum(%s)*%d;\n",variable_param[i],type_size(type[i]));
 				fprintf(ftmpc,"\tsizep=sizeGLenum(%s)*%d;\n",variable_param[i],type_size(type[i]));
 
-				fprintf(ftmpc,"\t%s %s[%s];\n",type_remove_etoile(type_remove_const(type[i])),
-											nameparam[i],count[i]);
-				
+				//fprintf(ftmpc,"\t%s %s[%s];\n",type_remove_etoile(type_remove_const(type[i])),
+				//						nameparam[i],count[i]);
+				//DEBUG				
+
+
 				fprintf(fout_c2,"\tfifo_output(&cmd_fifo,%s,sizep);\n",nameparam[i]);		     
 				fprintf(ftmpc,"\tfifo_input(&cmd_fifo,%s,sizep);\n",nameparam[i]);
 			    }
@@ -666,7 +685,8 @@ int main()
 			fprintf(ftmpc,"))glfunctable[%d])(",fnum);                
 			for(i=0;i<=np;i++)
 			{
-			    if(param_attrib[i][0]==1 || param_attrib[i][1]==1 || param_attrib[i][2]==1)
+			    if(param_attrib[i][0]==1 || param_attrib[i][1]==1 || param_attrib[i][2]==1 || 
+			                                                         param_attrib[i][6]==1   )
 			    	fprintf(ftmpc,"(%s)",type_remove_const(type[i]));
 			    if(param_attrib[i][6]==1)
 				fprintf(ftmpc,"shmadr,",nameparam[i]);
@@ -682,10 +702,11 @@ int main()
 			    if(param_attrib[i][2]==1 && param_attrib[i][6]==0)
 				fprintf(ftmpc,"\tsegment_delete();\n");
 
-			for(i=0;i<=np;i++)
-				if(param_attrib[i][6]==1)			
-				    fprintf(ftmpc,"\t\tsem_post(semadr);\n\t}\n",nameparam[i]);
-
+			for(i=0;i<=np;i++) //DEBUG2
+					     if(param_attrib[i][6]==1){		       
+					       fprintf(ftmpc,"\t\tsem_post(semadr);\n\t}\n",nameparam[i]);break;
+					     }
+			
 			fprintf(ftmpc,"}\n\n");
 
 	

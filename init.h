@@ -6,8 +6,9 @@
 #include <GL/glx.h>
 #include <GL/glxext.h>
 #include <dlfcn.h>
-#include <stdlib.h>
+
 #include "fifo.h"
+
 
 
 
