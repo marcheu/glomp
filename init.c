@@ -25,8 +25,9 @@ int fenetreactive=0;
 
 void initGlobal()
 {
-	int i;
-initPointers();
+  if(DEBUG){printf("JE RENTRE DANS INIT\n"); }
+  int i;
+  initPointers();
 
 	// figure out the number of clients
 	Display* dpy = XOpenDisplay("");
@@ -40,9 +41,13 @@ initPointers();
 		nbcarte=atoi(force);
 	}
 
+  if(DEBUG){printf("J ai fait un bout de INIT\n"); }
 
-
+  
 	createAllFen();
+
+  if(DEBUG){printf("J ai fait un bout de INIT et createallfeneter\n"); }
+  segment_create_retour();
 
 	// initially everyone has the same load
 	// FIXME : make this a shm ?
@@ -67,6 +72,9 @@ initPointers();
 		}
 	}
 
+
+  if(DEBUG){printf("J ai presque fini INIT\n"); }
+
 	// initialize
 	if (client_num==nbcarte)
 		server_init();
@@ -79,5 +87,7 @@ initPointers();
 	// the server exits this ; the clients don't
 	if (client_num<nbcarte)
 		exit(0);
+
+
 } 
 

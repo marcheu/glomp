@@ -68,6 +68,10 @@ static void (*lib_glDeleteOcclusionQueriesNV) ( GLsizei p0 , GLuint *p1 )=0;
 static void (*lib_glDeleteRenderbuffersEXT) ( GLsizei p0 , GLuint *p1 )=0;
 static void (*lib_glDeleteFramebuffersEXT) ( GLsizei p0 , GLuint *p1 )=0;
 
+static Window (*lib_XCreateWindow)(Display *display, Window parent, int x, int y,
+              unsigned int width, unsigned int height, unsigned int border_width, int depth, unsigned int class, Visual *visual,
+              unsigned long valuemask, XSetWindowAttributes *attributes)=0;
+
 /* library interception variables */
 static void* lib_handle_libGL = 0;
 static void* lib_handle_libX11 = 0;
@@ -142,6 +146,7 @@ void load_library(void)
   if (!lib_handle_libX11){perror("lib");exit(0);}
 
   lib_XSetStandardProperties = dlsym(lib_handle_libX11, "XSetStandardProperties");
+  lib_XCreateWindow = dlsym(lib_handle_libX11, "XCreateWindow");
 }
 
 
@@ -190,10 +195,21 @@ int XSetStandardProperties(
   lib_XSetStandardProperties(dpy,w,name,icon_string,icon_pixmap,argv,argc,hints  );
 
 }
+extern GLXWindow XCreateWindow(Display *display, Window parent, int x, int y,
+              unsigned int width, unsigned int height, unsigned int border_width, int depth, unsigned int class, Visual *visual,
+              unsigned long valuemask, XSetWindowAttributes *attribute)
+{
+  if(DEBUG){printf("XCREATEWIN !!!!\n"); }
 
+	initGlobal();
+	lib_XCreateWindow(display, parent, x, y,width, height, border_width,depth,class,visual,valuemask, attribute);
+}
 
 extern GLXWindow glXCreateWindow(Display *dpy, GLXFBConfig config, Window win, const int *attrib_list)
 {
+  if(DEBUG){printf("GLXCREATEWIN !!!!\n"); }
+  printf("GLXCREATEWIN !!!!\n");
+
 	initGlobal();
 	lib_glXCreateWindow(dpy,config,win,attrib_list);
 }

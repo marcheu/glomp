@@ -1,9 +1,4 @@
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
 #include "segment.h"
-#include "init.h"
 
 //char* shmadr;
 //sem_t * semadr

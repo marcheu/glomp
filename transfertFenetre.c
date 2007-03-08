@@ -21,6 +21,14 @@ void createAllFen(){
 	shmadr_fenetre2=malloc(sizeof(void *)*nbcarte);
 	semadrfen_in=malloc(sizeof(sem_t *)*nbcarte);
 	semadrfen_out=malloc(sizeof(sem_t *)*nbcarte);
+	for(i=0;i<nbcarte;i++){
+	semadrfen_in[i]=malloc(sizeof(sem_t ));
+	semadrfen_out[i]=malloc(sizeof(sem_t ));
+	
+	  
+	}
+	
+
 
 	client_load=malloc(sizeof(int)*nbcarte);
 
@@ -28,11 +36,16 @@ void createAllFen(){
 	{
 		shmadr_fenetre1[i]=creershm_fenetre();
 		shmadr_fenetre2[i]=creershm_fenetre();
-		sem_init(semadrfen_in[i],0,0);
-		sem_init(semadrfen_out[i],0,2);
+ if(DEBUG){printf("sh/em %d 1er init !!\n",i); }
+ 
+
+ sem_init(semadrfen_in[i],0,0);
+ if(DEBUG){printf("sh/em %d  2eme init !!\n",i); }
+ sem_init(semadrfen_out[i],0,2);
 
 
 	}
+  if(DEBUG){printf("FIN DE CREATEALLFEN !!\n"); }
 }
 
 

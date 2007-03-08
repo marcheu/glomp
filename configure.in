@@ -135,6 +135,7 @@ fi
 dnl ----------------------
 dnl  Bibliothèques et cie
 dnl ----------------------
+LIBS="$LIBS -lpthread"
 
 
 dnl -------------------
