@@ -18,11 +18,8 @@ extern int nbcarte;//nombre de GPU dispo
 
 extern int width,height;//taille de la zone
 
-extern int* client_load;
 
 
-extern sem_t **semadrfen_in;
-extern sem_t **semadrfen_out;
 extern int fenetreactive;
 
 

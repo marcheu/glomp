@@ -1,6 +1,4 @@
-#include "overrides.h"
-#include "init.h"
-#include "id.h"
+#include"overrides.h"
 //#include "config.h"
 
 /* functions we implement ourselves */
@@ -196,7 +194,7 @@ int XSetStandardProperties(
 
 extern GLXWindow glXCreateWindow(Display *dpy, GLXFBConfig config, Window win, const int *attrib_list)
 {
-	init();
+	initGlobal();
 	lib_glXCreateWindow(dpy,config,win,attrib_list);
 }
 

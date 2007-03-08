@@ -5,6 +5,7 @@
 #include <GL/glext.h>
 #include <libxml/xmlmemory.h>
 #include <libxml/parser.h>
+#include "init.h"
 
 #define out_c_file "wrapped.c"
 #define out_h_file "wrapped.h"
@@ -551,6 +552,8 @@ int main()
 			    fseek(fout_h,-1,SEEK_CUR);
 			}
 			fprintf(fout_c2,")\n{\n");
+			
+
 			for(i=0;i<=np;i++)
 			{
 				if(param_attrib[i][2]==1 || param_attrib[i][6]==1)
@@ -566,6 +569,7 @@ int main()
 				}
 			}
 			fprintf(fout_c2,"\tint fnum=%d;\n",fnum);
+			fprintf(fout_c2,"\n\tif(DEBUG){printf(\"fnum = %%d\",fnum);}\n");
 			fprintf(fout_c2,"\tint fflags=0;\n");
 			fprintf(fout_c2,"\tfifo_output(&cmd_fifo,&fnum,sizeof(fnum));\n");
 			fprintf(fout_c2,"\tfifo_output(&cmd_fifo,&fflags,sizeof(fflags));\n");
@@ -628,7 +632,7 @@ int main()
 				fprintf(ftmpc,"\tfifo_input(&cmd_fifo,%s,%d);\n",nameparam[i],type_size(type[i])*count[i]);
 			    }*/
 			    else if(param_attrib[i][0]==1)
-			    {   
+		    {   
 				fprintf(ftmpc,"\t%s %s[%s];\n",type_remove_etoile(type_remove_const(type[i])),
 											nameparam[i],count[i]);
 				fprintf(fout_c2,"\tsizep=%d*%s;\n",type_size(type[i]),count[i]);

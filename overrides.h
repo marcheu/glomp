@@ -1,7 +1,10 @@
 #ifndef _OVERRIDES_H_
 #define _OVERRIDES_H_
+#include <stdlib.h>
 
-#include"init.h"
+#include "init.h"
+#include "id.h"
+#include "transfertFenetre.h"
 
 #define OVERRIDE_BASE 8000
 

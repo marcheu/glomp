@@ -8,16 +8,30 @@
 */
 int i;
 void **shmadr_fenetre1,**shmadr_fenetre2;
+sem_t **semadrfen_in;
+sem_t **semadrfen_out;
+
+int* client_load;//pour calculer la charge de travaille de chaque GPU ...
+
 //creer le segment de memoire partage qui va contenir toute l'image
 //c'est a dire les nbcarte pBuffer
 void createAllFen(){
 	/*creation de la shm des fenetre des differentes cartes*/
 	shmadr_fenetre1=malloc(sizeof(void *)*nbcarte);
 	shmadr_fenetre2=malloc(sizeof(void *)*nbcarte);
+	semadrfen_in=malloc(sizeof(sem_t *)*nbcarte);
+	semadrfen_out=malloc(sizeof(sem_t *)*nbcarte);
+
+	client_load=malloc(sizeof(int)*nbcarte);
+
 	for(i=0;i<nbcarte;i++)
 	{
 		shmadr_fenetre1[i]=creershm_fenetre();
 		shmadr_fenetre2[i]=creershm_fenetre();
+		sem_init(semadrfen_in[i],0,0);
+		sem_init(semadrfen_out[i],0,2);
+
+
 	}
 }
 
@@ -40,7 +54,8 @@ void lire_fenetre()
     sem_wait(semadrfen_out[client_num]);
     int totalload=0;
     for(i=0;i<nbcarte;i++)
-	    totalload+=client_load[i];
+	client_load[i]=1;
+	    //totalload+=client_load[i];
     int heightclient=(double)client_load[client_num]/(double)totalload*height;
 
     if(fenetreactive==0)
@@ -49,7 +64,7 @@ void lire_fenetre()
     sem_post(semadrfen_in[client_num]);
     fenetreactive=(fenetreactive+1)%2;
 
-} 
+}
 
 
 //lecrture depuis le segment de memoire pour ecriture dans le buffer d'affichage
