@@ -9,6 +9,7 @@
 
 #include "fifo.h"
 
+#define DEBUG 1
 
 
 
