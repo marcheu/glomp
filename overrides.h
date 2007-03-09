@@ -9,6 +9,10 @@
 #define OVERRIDE_BASE 8000
 
 
+
+
+
+
 void load_library(void);
 
 void fglFrustum();

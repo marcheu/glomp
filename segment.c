@@ -73,6 +73,8 @@ int segment_create_retour()
 {
 
 	shmadr=shmat(shmget(IPC_PRIVATE,4080,0666|IPC_CREAT),0,0);
+	semadr=malloc(sizeof(sem_t));
+	
 	sem_init(semadr,0,0);
 
 }

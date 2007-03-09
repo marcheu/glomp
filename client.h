@@ -4,6 +4,7 @@
 #include "dewrapped.h"
 #include "overrides.h"
 #include "fifo.h"
+#include "pbuffer.h"
 
 
 void client_init();

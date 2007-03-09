@@ -23,9 +23,10 @@ int width,height;//taille de l'ecran
 
 int fenetreactive=0;
 
+
+/*DEBUGGER*/
 void initGlobal()
 {
-  if(DEBUG){printf("JE RENTRE DANS INIT\n"); }
   int i;
   initPointers();
 
@@ -41,12 +42,8 @@ void initGlobal()
 		nbcarte=atoi(force);
 	}
 
-  if(DEBUG){printf("J ai fait un bout de INIT\n"); }
-
   
 	createAllFen();
-
-  if(DEBUG){printf("J ai fait un bout de INIT et createallfeneter\n"); }
   segment_create_retour();
 
 	// initially everyone has the same load
@@ -72,9 +69,7 @@ void initGlobal()
 		}
 	}
 
-
-  if(DEBUG){printf("J ai presque fini INIT\n"); }
-
+	printf("je suis%d\n",client_num);
 	// initialize
 	if (client_num==nbcarte)
 		server_init();

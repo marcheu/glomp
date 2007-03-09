@@ -15,6 +15,7 @@ int* client_load;//pour calculer la charge de travaille de chaque GPU ...
 
 //creer le segment de memoire partage qui va contenir toute l'image
 //c'est a dire les nbcarte pBuffer
+//DEBUGGER !
 void createAllFen(){
 	/*creation de la shm des fenetre des differentes cartes*/
 	shmadr_fenetre1=malloc(sizeof(void *)*nbcarte);
@@ -36,16 +37,14 @@ void createAllFen(){
 	{
 		shmadr_fenetre1[i]=creershm_fenetre();
 		shmadr_fenetre2[i]=creershm_fenetre();
- if(DEBUG){printf("sh/em %d 1er init !!\n",i); }
  
-
  sem_init(semadrfen_in[i],0,0);
- if(DEBUG){printf("sh/em %d  2eme init !!\n",i); }
+ 
  sem_init(semadrfen_out[i],0,2);
 
 
 	}
-  if(DEBUG){printf("FIN DE CREATEALLFEN !!\n"); }
+  
 }
 
 
@@ -64,6 +63,7 @@ void * creershm_fenetre()
 //vu qu'il y a une recipoie vers un shm, ceci doit etre proteger (ici avec un semaphore)
 void lire_fenetre()
 {
+  if(DEBUG){printf("JE COMMENCE LIRE FENETRE %d!!\n",client_num);}
     sem_wait(semadrfen_out[client_num]);
     int totalload=0;
     for(i=0;i<nbcarte;i++)
@@ -89,16 +89,20 @@ heightclient = malloc(sizeof(int)*nbcarte);
    if(fenetreactive==0)  
      for(i=0;i<nbcarte;i++)
      {
-        glRasterPos2i(0,heightclient[i]);
+        lib_glRasterPos2i(0,heightclient[i]);
+
+	if(DEBUG){printf("J SUIS AVANT LE SEM WAIT !!\n");}	
         sem_wait(semadrfen_in[i]);
-        glDrawPixels(width,heightclient[i],GL_BGRA,GL_UNSIGNED_INT_8_8_8_8_REV,shmadr_fenetre1[i]);
+	if(DEBUG){printf("J vais faire  UN DRAW !!\n");}
+        lib_glDrawPixels(width,heightclient[i],GL_BGRA,GL_UNSIGNED_INT_8_8_8_8_REV,shmadr_fenetre1[i]);
+	if(DEBUG){printf("J AI FAIT UN DRAW !!\n");}
         sem_post(semadrfen_out[i]);
      } 
    else for(i=0;i<nbcarte;i++)
         {
-          glRasterPos2i(0,heightclient[i]);
+          lib_glRasterPos2i(0,heightclient[i]);
           sem_wait(semadrfen_in[i]);
-          glDrawPixels(width,heightclient[i],GL_BGRA,GL_UNSIGNED_INT_8_8_8_8_REV,shmadr_fenetre2[i]);
+          lib_glDrawPixels(width,heightclient[i],GL_BGRA,GL_UNSIGNED_INT_8_8_8_8_REV,shmadr_fenetre2[i]);
           sem_post(semadrfen_out[i]);
         } 
 

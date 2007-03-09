@@ -67,6 +67,10 @@ static void (*lib_glDeleteProgramsNV) ( GLsizei p0 , GLuint *p1 )=0;
 static void (*lib_glDeleteOcclusionQueriesNV) ( GLsizei p0 , GLuint *p1 )=0;
 static void (*lib_glDeleteRenderbuffersEXT) ( GLsizei p0 , GLuint *p1 )=0;
 static void (*lib_glDeleteFramebuffersEXT) ( GLsizei p0 , GLuint *p1 )=0;
+void (*lib_glRasterPos2i)( GLint x,GLint y )=0;
+
+
+
 
 static Window (*lib_XCreateWindow)(Display *display, Window parent, int x, int y,
               unsigned int width, unsigned int height, unsigned int border_width, int depth, unsigned int class, Visual *visual,
@@ -139,6 +143,10 @@ void load_library(void)
   lib_glDeleteOcclusionQueriesNV = dlsym(lib_handle_libGL, "glDeleteOcclusionQueriesNV");
   lib_glDeleteRenderbuffersEXT = dlsym(lib_handle_libGL, "glDeleteRenderbuffersEXT");
   lib_glDeleteFramebuffersEXT = dlsym(lib_handle_libGL, "glDeleteFramebuffersEXT");
+  lib_glRasterPos2i = dlsym(lib_handle_libGL, "glRasterPos2i");
+
+
+
 
   /* intercept XSetStandardProperties */
   lib_handle_libX11 = dlopen("/usr/lib/libX11.so", RTLD_LAZY);
@@ -147,6 +155,7 @@ void load_library(void)
 
   lib_XSetStandardProperties = dlsym(lib_handle_libX11, "XSetStandardProperties");
   lib_XCreateWindow = dlsym(lib_handle_libX11, "XCreateWindow");
+  
 }
 
 
@@ -160,11 +169,19 @@ void glXSwapBuffers(Display *dpy, GLXDrawable drawable)
 	int fnum=OVERRIDE_BASE;
 	int fflags=0;
 
+	if(DEBUG){printf("JE RENTRE DANS SWAP !!!\n");}
+	
+
 	fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
 	fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
 	fifo_flush(&cmd_fifo);
+
+	if(DEBUG){printf("JE avant ECRIREFENETRE!!!\n");}
 	ecrire_fenetre();//si on est dans le maitre, on recupere les buffers
+	if(DEBUG){printf("JE APRES ECRIREFEN!!!\n");}
 	lib_glXSwapBuffers(dpy, drawable);//et on utilise la vrai fonction swapbuffer
+	if(DEBUG){printf("JE sort de  SWAP !!!\n");}
+
 }
 
 void fglXSwapBufferes()
@@ -1567,3 +1584,8 @@ void fglDeleteFramebuffersEXT()
 		
 	}
 }
+
+
+
+
+

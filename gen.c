@@ -436,6 +436,7 @@ int main()
 			fprintf(fout_h,"gl%s(",attrib);
 			fprintf(fin_c,"\tglfunctable[%d]=(__GLXextFuncPtr)glXGetProcAddressARB(\"gl%s\");\n",fnum,attrib);
 			fprintf(ftmpc,"void fgl%s()\n{\n",attrib);
+			if(DEBUG)fprintf(ftmpc,"printf(\"jsuis client fnum=%d\\n\");",fnum);
 			fprintf(ftmpc2,"\tfunctable[%d]=&fgl%s;\n",fnum,attrib);
 	 		fprintf(fin_h,"void fgl%s();\n",attrib);
                   
@@ -569,7 +570,7 @@ int main()
 				}
 			}
 			fprintf(fout_c2,"\tint fnum=%d;\n",fnum);
-			fprintf(fout_c2,"\n\tif(DEBUG){printf(\"fnum = %%d\",fnum);}\n");
+			//fprintf(fout_c2,"\n\tif(DEBUG){printf(\"fnum = %%d\\n\",fnum);}\n");
 			fprintf(fout_c2,"\tint fflags=0;\n");
 			fprintf(fout_c2,"\tfifo_output(&cmd_fifo,&fnum,sizeof(fnum));\n");
 			fprintf(fout_c2,"\tfifo_output(&cmd_fifo,&fflags,sizeof(fflags));\n");

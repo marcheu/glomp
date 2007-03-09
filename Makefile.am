@@ -11,7 +11,7 @@ wrapped.c: gen
 dewrapped.c: gen
 	@./gen
 
-libGL_la_SOURCES = dewrapped.c wrapped.c id.c fifo.c client.c segment.c init.c overrides.c server.c transfertFenetre.c
+libGL_la_SOURCES = dewrapped.c wrapped.c id.c fifo.c client.c segment.c init.c overrides.c server.c transfertFenetre.c pbuffer.c
 
 wrapped.o: wrapped.c
 

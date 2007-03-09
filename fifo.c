@@ -55,6 +55,9 @@ void fifo_output(fifo* f,const void* data, int size)
 /* reads data from the fifo */
 void fifo_input(fifo* f,void* data,int size )
 {
+  if(DEBUG)printf("le client %d est dans la fifo\n",client_num);
+  
+
 	if (f->idx+size<=f->size)
 	{
 		uint32_t* h=(uint32_t*)f->msgbuf.mtext;

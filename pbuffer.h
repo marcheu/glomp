@@ -2,8 +2,10 @@
 #define _PBUFFER_H_
 
 #include "init.h"
+#include <stdlib.h>
+#include <stdio.h>
 
-extern int creerpbuffer(int width,int height);
+int creerpbuffer(int,int);
 
 #endif
 

@@ -6,6 +6,7 @@ static void unpack( )
   int flags;
   fifo_input(&cmd_fifo,&func,4);
   fifo_input(&cmd_fifo,&flags,4);
+  if(DEBUG)fprintf(stderr,"fnum:%d\n",func);
   if(func<OVERRIDE_BASE)
     functable[func]();
   else if(func==OVERRIDE_BASE)
@@ -90,12 +91,17 @@ static void unpack( )
 
 void client_init()
 {
+ 
   // create the pbuffer
-  if (creerpbuffer(width,height)) {
+  if (!creerpbuffer(width,height)) {
     printf("Error:couldn't create pbuffer");
     exit(0);
   }
-  creertabfunc();
+
+  printf("client init PRESKE ok %d\n",client_num);
+  creertabfunc();/*il y a un pb ici car la fonction n'est pas declarer dans dewarped.h*/
+  printf("client init ok %d\n",client_num);
+  
 }
 
 void client_run()
