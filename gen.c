@@ -5,7 +5,9 @@
 #include <GL/glext.h>
 #include <libxml/xmlmemory.h>
 #include <libxml/parser.h>
-#include "init.h"
+//#include "init.h"
+
+#define DEBUG 1
 
 #define out_c_file "wrapped.c"
 #define out_h_file "wrapped.h"
@@ -372,6 +374,8 @@ int main()
 
 	fprintf(fin_h,"/* Auto-generated, do not edit ! */\n#include \"fifo.h\"\n#include \"segment.h\"\n#include <GL/gl.h>\n#include <GL/glext.h>\n#include <GL/glx.h>\n#include <GL/glxext.h>\n\n");
   
+	fprintf(fin_h,"void creertabfunc();\n\n");//provient de init  (a l'orrigine)
+
 	fprintf(ftmpc2,"void creertabfunc()\n{\n");
 
          

@@ -10,7 +10,7 @@
 
 
 // FIXME deplacer ca dans dewrapped.h
-extern void creertabfunc();
+//extern void creertabfunc();
 
 
 int client_num;//numeros du client, va nous permettre de selectionner les processus
@@ -29,7 +29,7 @@ void initGlobal()
 {
   int i;
   initPointers();
-
+  creertabfunc();
 	// figure out the number of clients
 	Display* dpy = XOpenDisplay("");
 	nbcarte=ScreenCount(dpy);
