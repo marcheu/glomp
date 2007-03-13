@@ -364,7 +364,7 @@ int main()
 
 	fprintf(fout_c,"/* Auto-generated, do not edit ! */\n#include \""out_h_file"\"\n\n");
 	fprintf(fout_c,"gl_type type_table[]=\n{\n");
-	fprintf(fout_h,"/* Auto-generated, do not edit ! */\n#include \"fifo.h\"\n#include \"segment.h\"\n#include <GL/gl.h>\n#include <GL/glext.h>\n\n");
+	fprintf(fout_h,"/* Auto-generated, do not edit ! */\n#include \"fifo.h\"\n#include \"segment.h\"\n#include <GL/gl.h>\n#include <GL/glext.h>\n#include \"overrides.h\"\n\n");
 	fprintf(fout_h,"typedef struct gl_type{\n\tint name;\n\tint size;\n}gl_type;\n\n\n");
 	
 
@@ -372,7 +372,7 @@ int main()
 	fprintf(fin_c,"/* Auto-generated, do not edit ! */\n#include \""in_h_file"\"\n\n");
 	fprintf(fin_c,"void initPointers()\n{\n");
 
-	fprintf(fin_h,"/* Auto-generated, do not edit ! */\n#include \"fifo.h\"\n#include \"segment.h\"\n#include <GL/gl.h>\n#include <GL/glext.h>\n#include <GL/glx.h>\n#include <GL/glxext.h>\n\n");
+	fprintf(fin_h,"/* Auto-generated, do not edit ! */\n#include \"fifo.h\"\n#include \"segment.h\"\n#include <GL/gl.h>\n#include <GL/glext.h>\n#include <GL/glx.h>\n#include <GL/glxext.h>\n#include \"client.h\"\n\n");
   
 	fprintf(fin_h,"void creertabfunc();\n\n");//provient de init  (a l'orrigine)
 
@@ -438,7 +438,7 @@ int main()
 			attrib = xmlGetProp(cur, "name");
 			fprintf(fout_c2,"gl%s(",attrib);
 			fprintf(fout_h,"gl%s(",attrib);
-			fprintf(fin_c,"\tglfunctable[%d]=(__GLXextFuncPtr)glXGetProcAddressARB(\"gl%s\");\n",fnum,attrib);
+			fprintf(fin_c,"\tglfunctable[%d]=(__GLXextFuncPtr)lib_glXGetProcAddressARB(\"gl%s\");\n",fnum,attrib);
 			fprintf(ftmpc,"void fgl%s()\n{\n",attrib);
 			if(DEBUG)fprintf(ftmpc,"printf(\"jsuis client fnum=%d\\n\");",fnum);
 			fprintf(ftmpc2,"\tfunctable[%d]=&fgl%s;\n",fnum,attrib);

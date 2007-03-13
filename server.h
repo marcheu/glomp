@@ -8,7 +8,7 @@
 #include "wrapped.h"
 
 extern gl_type type_table[];
-void server_run();
+extern void server_run();
 
 #endif
 

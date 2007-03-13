@@ -16,13 +16,13 @@ typedef enum
 }id_type;
 
 // adds an id to the table
-void id_add(int value,int translated_value);
+extern void id_add(int value,int translated_value);
 // translates an id
-int id_translate(int value);
+extern int id_translate(int value);
 // generates an id
-int id_server_generate(id_type type);
+extern int id_server_generate(id_type type);
 // tests if the id is of a given type
-GLboolean id_server_test_type(GLuint id,id_type type);
+extern GLboolean id_server_test_type(GLuint id,id_type type);
 
 #endif
 

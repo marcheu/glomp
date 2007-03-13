@@ -7,6 +7,19 @@
 #include<semaphore.h>
 
 extern void (*lib_glRasterPos2i)( GLint x,GLint y );
+extern void (*lib_glDrawPixels)( GLsizei width,
+				GLsizei height,
+				GLenum format,
+				GLenum type,
+				const GLvoid *pixels );
+extern void (*lib_glReadPixels)( GLint x,
+				GLint y,
+				GLsizei width,
+				GLsizei height,
+				GLenum format,
+				GLenum type,
+				GLvoid *pixels );
+
 
 extern int* client_load;
 
@@ -16,9 +29,9 @@ extern void **shmadr_fenetre2;
 //extern sem_t **semadrfen_in;
 //extern sem_t **semadrfen_out;
 
-void * creershm_fenetre();
-void lire_fenetre();
-void ecrire_fenetre();
+extern void * creershm_fenetre();
+extern void lire_fenetre();
+extern void ecrire_fenetre();
 
 
 

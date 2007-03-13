@@ -1,6 +1,7 @@
 #include"overrides.h"
 //#include "config.h"
 
+int width,height;//taille de l'ecran
 /* functions we implement ourselves */
 
 static void (*lib_glXSwapBuffers)(Display *dpy, GLXDrawable drawable)=0;
@@ -68,7 +69,18 @@ static void (*lib_glDeleteOcclusionQueriesNV) ( GLsizei p0 , GLuint *p1 )=0;
 static void (*lib_glDeleteRenderbuffersEXT) ( GLsizei p0 , GLuint *p1 )=0;
 static void (*lib_glDeleteFramebuffersEXT) ( GLsizei p0 , GLuint *p1 )=0;
 void (*lib_glRasterPos2i)( GLint x,GLint y )=0;
-
+void (*lib_glDrawPixels)( GLsizei width,
+			  GLsizei height,
+			  GLenum format,
+			  GLenum type,
+			  const GLvoid *pixels );
+void (*lib_glReadPixels)( GLint x,
+			  GLint y,
+			  GLsizei width,
+			  GLsizei height,
+			  GLenum format,
+			  GLenum type,
+			  GLvoid *pixels );
 
 
 
@@ -144,8 +156,8 @@ void load_library(void)
   lib_glDeleteRenderbuffersEXT = dlsym(lib_handle_libGL, "glDeleteRenderbuffersEXT");
   lib_glDeleteFramebuffersEXT = dlsym(lib_handle_libGL, "glDeleteFramebuffersEXT");
   lib_glRasterPos2i = dlsym(lib_handle_libGL, "glRasterPos2i");
-
-
+  lib_glDrawPixels = dlsym(lib_handle_libGL, "glDrawPixels");
+  lib_glReadPixels = dlsym(lib_handle_libGL, "glReadPixels");
 
 
   /* intercept XSetStandardProperties */
@@ -184,8 +196,9 @@ void glXSwapBuffers(Display *dpy, GLXDrawable drawable)
 
 }
 
-void fglXSwapBufferes()
+void fglXSwapBuffers()
 {
+	if(DEBUG){printf("fXSWAP !!! %d \n",client_num);}
 	lire_fenetre();
 }
 
@@ -213,21 +226,24 @@ int XSetStandardProperties(
 
 }
 extern GLXWindow XCreateWindow(Display *display, Window parent, int x, int y,
-              unsigned int width, unsigned int height, unsigned int border_width, int depth, unsigned int class, Visual *visual,
-              unsigned long valuemask, XSetWindowAttributes *attribute)
+			       unsigned int width, unsigned int height, unsigned int border_width, int depth, unsigned int class, Visual *visual,
+			       unsigned long valuemask, XSetWindowAttributes *attribute)
 {
   if(DEBUG){printf("XCREATEWIN !!!!\n"); }
+  
+  //initGlobal(); CMON DEBUG
+  lib_XCreateWindow(display, parent, x, y,width, height, border_width,depth,class,visual,valuemask, attribute);
+  //initGlobal();  
+  //fprintf(stdout,"finXCREATEWIN !!!!\n");
+  
 
-	initGlobal();
-	lib_XCreateWindow(display, parent, x, y,width, height, border_width,depth,class,visual,valuemask, attribute);
 }
 
 extern GLXWindow glXCreateWindow(Display *dpy, GLXFBConfig config, Window win, const int *attrib_list)
 {
   if(DEBUG){printf("GLXCREATEWIN !!!!\n"); }
-  printf("GLXCREATEWIN !!!!\n");
 
-	initGlobal();
+	//initGlobal();
 	lib_glXCreateWindow(dpy,config,win,attrib_list);
 }
 
@@ -1584,6 +1600,7 @@ void fglDeleteFramebuffersEXT()
 		
 	}
 }
+
 
 
 

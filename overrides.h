@@ -9,7 +9,7 @@
 #define OVERRIDE_BASE 8000
 
 
-
+extern int width,height;//taille de la zone
 
 
 

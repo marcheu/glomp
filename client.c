@@ -1,12 +1,19 @@
 
 #include "client.h"
-static void unpack( )
+
+PFNGLXGETPROCADDRESSARBPROC lib_glXGetProcAddressARB;
+static void* lib_handle_libGL = 0;
+
+
+void unpack( )
 {
   int func;
   int flags;
+  if(DEBUG){printf("!!!!!!!\t%d\n",client_num);}
   fifo_input(&cmd_fifo,&func,4);
+  if(DEBUG){printf("???????\t%d\n",client_num);}
   fifo_input(&cmd_fifo,&flags,4);
-  if(DEBUG)fprintf(stderr,"fnum:%d\n",func);
+  if(DEBUG)printf("CLIENT :fnum:%d\n",func);
   if(func<OVERRIDE_BASE)
     functable[func]();
   else if(func==OVERRIDE_BASE)
@@ -89,25 +96,32 @@ static void unpack( )
     fglDeleteFramebuffersEXT();
 }
 
+
 void client_init()
 {
- 
+  
+ lib_handle_libGL = dlopen("/usr/lib/libGL.so", RTLD_LAZY);
+
+  lib_glXGetProcAddressARB = dlsym(lib_handle_libGL, "glXGetProcAddressARB");
+
+  //extern void (*glXGetProcAddressARB(const GLubyte *procName))(void);
+  
+  initPointers();
+
+  creertabfunc();
+
+
   // create the pbuffer
   if (!creerpbuffer(width,height)) {
     printf("Error:couldn't create pbuffer");
     exit(0);
   }
 
-  printf("client init PRESKE ok %d\n",client_num);
-  creertabfunc();/*il y a un pb ici car la fonction n'est pas declarer dans dewarped.h*/
-  printf("client init ok %d\n",client_num);
   
+  printf("client init OKI %d\n",client_num);
+ return; 
 }
 
-void client_run()
-{
-  // main loop
-  while(1)
-    unpack();
-}
+
+
 

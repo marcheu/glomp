@@ -64,7 +64,7 @@ void * creershm_fenetre()
 void lire_fenetre()
 {
   if(DEBUG){printf("JE COMMENCE LIRE FENETRE %d!!\n",client_num);}
-    sem_wait(semadrfen_out[client_num]);
+  sem_wait(semadrfen_in[client_num]);
     int totalload=0;
     for(i=0;i<nbcarte;i++)
 	client_load[i]=1;
@@ -73,10 +73,11 @@ void lire_fenetre()
 
     if(fenetreactive==0)
       glReadPixels(0,0,width,heightclient,GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, shmadr_fenetre1[client_num]);
-    else glReadPixels(0,0,width,heightclient,GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, shmadr_fenetre2[client_num]);
-    sem_post(semadrfen_in[client_num]);
+    else
+      glReadPixels(0,0,width,heightclient,GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, shmadr_fenetre2[client_num]);
+    sem_post(semadrfen_out[client_num]);
     fenetreactive=(fenetreactive+1)%2;
-
+    
 }
 
 
@@ -91,22 +92,25 @@ heightclient = malloc(sizeof(int)*nbcarte);
      {
         lib_glRasterPos2i(0,heightclient[i]);
 
-	if(DEBUG){printf("J SUIS AVANT LE SEM WAIT !!\n");}	
-        sem_wait(semadrfen_in[i]);
+	if(DEBUG){printf("J SUIS AVANT LE SEM WAIT !! %d\n",client_num);}
+	sem_wait(semadrfen_in[i]);
 	if(DEBUG){printf("J vais faire  UN DRAW !!\n");}
         lib_glDrawPixels(width,heightclient[i],GL_BGRA,GL_UNSIGNED_INT_8_8_8_8_REV,shmadr_fenetre1[i]);
 	if(DEBUG){printf("J AI FAIT UN DRAW !!\n");}
-        sem_post(semadrfen_out[i]);
+	sem_post(semadrfen_out[i]);
      } 
    else for(i=0;i<nbcarte;i++)
         {
+	  //if(DEBUG){printf("COUCOU!! %d \n",client_num);}
+
           lib_glRasterPos2i(0,heightclient[i]);
           sem_wait(semadrfen_in[i]);
           lib_glDrawPixels(width,heightclient[i],GL_BGRA,GL_UNSIGNED_INT_8_8_8_8_REV,shmadr_fenetre2[i]);
-          sem_post(semadrfen_out[i]);
+          sem_post(semadrfen_in[i]);
         } 
 
    fenetreactive=(fenetreactive+1)%2;
    free(heightclient);
+	if(DEBUG){printf("fin ECRIREFEN !!\n");}
 }  
 

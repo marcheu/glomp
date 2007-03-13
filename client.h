@@ -7,7 +7,13 @@
 #include "pbuffer.h"
 
 
-void client_init();
-void client_run();
+extern PFNGLXGETPROCADDRESSARBPROC lib_glXGetProcAddressARB;
+
+
+extern void unpack();
+extern void client_init();
+//extern void GLOMPclient_run();
+
+
 #endif
 
