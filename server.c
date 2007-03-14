@@ -20,5 +20,9 @@ int sizeGLenum(GLenum type)
 void server_init()
 {
 	load_library();
+	//	while(1){
+	//;
+	//}
+	
 }
 

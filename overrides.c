@@ -168,6 +168,9 @@ void load_library(void)
   lib_XSetStandardProperties = dlsym(lib_handle_libX11, "XSetStandardProperties");
   lib_XCreateWindow = dlsym(lib_handle_libX11, "XCreateWindow");
   
+
+  printf("Je suis %d, j'ai chargé les lib !!\n",client_num);
+  
 }
 
 
@@ -220,21 +223,38 @@ int XSetStandardProperties(
   width=hints->width;
   height=hints->height;
   
+  // create the pbuffer
+  /* if (!creerpbuffer(width,height)) {
+    printf("Error:couldn't create pbuffer");
+    exit(0);
+    }*/
  
   //on relance la fonction
   lib_XSetStandardProperties(dpy,w,name,icon_string,icon_pixmap,argv,argc,hints  );
 
 }
 extern GLXWindow XCreateWindow(Display *display, Window parent, int x, int y,
-			       unsigned int width, unsigned int height, unsigned int border_width, int depth, unsigned int class, Visual *visual,
+			       unsigned int width2, unsigned int height2, unsigned int border_width, int depth, unsigned int class, Visual *visual,
 			       unsigned long valuemask, XSetWindowAttributes *attribute)
 {
   if(DEBUG){printf("XCREATEWIN !!!!\n"); }
   
-  //initGlobal(); CMON DEBUG
-  lib_XCreateWindow(display, parent, x, y,width, height, border_width,depth,class,visual,valuemask, attribute);
-  //initGlobal();  
-  //fprintf(stdout,"finXCREATEWIN !!!!\n");
+  //initGlobal();// CMON DEBUG
+  lib_XCreateWindow(display, parent, x, y,width2, height2, border_width,depth,class,visual,valuemask, attribute);
+  //initGlobal();
+
+  //recupere les tailles
+  width=width2;
+  height=height2;
+  
+  // create the pbuffer
+  if (!creerpbuffer(width,height)) {
+    printf("Error:couldn't create pbuffer");
+    exit(0);
+  }
+
+  
+  fprintf(stdout,"finXCREATEWIN !!!!\n");
   
 
 }
@@ -242,6 +262,7 @@ extern GLXWindow XCreateWindow(Display *display, Window parent, int x, int y,
 extern GLXWindow glXCreateWindow(Display *dpy, GLXFBConfig config, Window win, const int *attrib_list)
 {
   if(DEBUG){printf("GLXCREATEWIN !!!!\n"); }
+
 
 	//initGlobal();
 	lib_glXCreateWindow(dpy,config,win,attrib_list);

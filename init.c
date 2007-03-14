@@ -14,7 +14,7 @@
 
 
 int client_num;//numeros du client, va nous permettre de selectionner les processus
-//les fils de 0 a nbcarte-1, le pere = nbcarre
+//les fils de 0 a nbcarte-1, le pere = nbcarte
 int nbcarte;//nombre de GPU dispo
 
 
@@ -24,11 +24,12 @@ int fenetreactive=0;
 /**/
 static void GLOMPclient_run()
 {
-    // main loop
-     while(1){ 
-   printf("FUCK DA FUNC !!!!!!\n");
-      unpack();
-      }
+
+  // main loop
+  while(1){ 
+    //    printf("FUCK DA FUNC !!!!!!\n");
+    GLOMPunpack();
+  }
 }
 
 
@@ -122,7 +123,12 @@ int __libc_start_main(int(*main_fct)(int, char **), int argc,
   
   printf("Starting MAIN\n");
   atexit(initGlobal);
+  //initGlobal();
+  
   result = func(main_fct, argc, ubp_av, init, fini, rtld_fini, stack_end);
+  printf("bloque ?%d\n",client_num);
+  
   return result;
 }
+
 

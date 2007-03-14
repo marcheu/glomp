@@ -440,7 +440,7 @@ int main()
 			fprintf(fout_h,"gl%s(",attrib);
 			fprintf(fin_c,"\tglfunctable[%d]=(__GLXextFuncPtr)lib_glXGetProcAddressARB(\"gl%s\");\n",fnum,attrib);
 			fprintf(ftmpc,"void fgl%s()\n{\n",attrib);
-			if(DEBUG)fprintf(ftmpc,"printf(\"jsuis client fnum=%d\\n\");",fnum);
+			//if(DEBUG)fprintf(ftmpc,"printf(\"jsuis client fnum=%d\\n\");",fnum);
 			fprintf(ftmpc2,"\tfunctable[%d]=&fgl%s;\n",fnum,attrib);
 	 		fprintf(fin_h,"void fgl%s();\n",attrib);
                   

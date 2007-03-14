@@ -42,6 +42,7 @@ void fifo_flush(fifo* f)
 /* outputs data to the fifo from the master process */
 void fifo_output(fifo* f,const void* data, int size)
 {
+  if(DEBUG)printf("Le serveur  %d envoie inputfifo\n",client_num);
 	if (f->idx+size>PACKET_SIZE)
 		fifo_flush(f);
 
@@ -53,9 +54,8 @@ void fifo_output(fifo* f,const void* data, int size)
 }
 
 /* reads data from the fifo */
-void fifo_input(fifo* f,void* data,int size )
-{
-  if(DEBUG)printf("le client %d est dans la fifo\n",client_num);
+void fifo_input(fifo* f,void* data,int size ){
+  //if(DEBUG)printf("Le client %d recoit inputfifo\n",client_num);
 
   
 	if (f->idx+size<=f->size)

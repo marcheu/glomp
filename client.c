@@ -5,15 +5,14 @@ PFNGLXGETPROCADDRESSARBPROC lib_glXGetProcAddressARB;
 static void* lib_handle_libGL = 0;
 
 
-void unpack( )
+void GLOMPunpack( )
 {
+ 
   int func;
   int flags;
-  if(DEBUG){printf("!!!!!!!\t%d\n",client_num);}
   fifo_input(&cmd_fifo,&func,4);
-  if(DEBUG){printf("???????\t%d\n",client_num);}
   fifo_input(&cmd_fifo,&flags,4);
-  if(DEBUG)printf("CLIENT :fnum:%d\n",func);
+  if(DEBUG)printf("CLIENT %d :fnum:%d\n",client_num,func);
   if(func<OVERRIDE_BASE)
     functable[func]();
   else if(func==OVERRIDE_BASE)
@@ -111,11 +110,6 @@ void client_init()
   creertabfunc();
 
 
-  // create the pbuffer
-  if (!creerpbuffer(width,height)) {
-    printf("Error:couldn't create pbuffer");
-    exit(0);
-  }
 
   
   printf("client init OKI %d\n",client_num);

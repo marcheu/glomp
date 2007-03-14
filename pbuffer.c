@@ -115,6 +115,8 @@ static int (*lib_Xfree) ( void *data )=0;
   lib_Xfree = dlsym(lib_handle_libX, "XFree");
    lib_Xfree(fbConfigs);
 
+
+   printf("PbufferCreer %d %d\n", height,width);
    return pBuffer;
 }
 
