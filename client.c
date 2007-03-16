@@ -1,8 +1,8 @@
-
 #include "client.h"
 
 PFNGLXGETPROCADDRESSARBPROC lib_glXGetProcAddressARB;
-static void* lib_handle_libGL = 0;
+static void* lib_handle_libGL2 = 0;
+
 
 
 void GLOMPunpack( )
@@ -24,7 +24,9 @@ void GLOMPunpack( )
   else if(func==OVERRIDE_BASE+3)
     fglBindTexture();
   else if(func==OVERRIDE_BASE+4)
-    fglGenLists();
+    {printf("je passe dans OVERRIDE +4\n"); fglGenLists();
+    }
+  
   else if(func==OVERRIDE_BASE+5)
     fglCallList();
   else if(func==OVERRIDE_BASE+6)
@@ -91,17 +93,19 @@ void GLOMPunpack( )
     fglDeleteOcclusionQueriesNV();
   else if(func==OVERRIDE_BASE+37)
     fglDeleteRenderbuffersEXT();
-  else if(func==OVERRIDE_BASE+37)
+  else if(func==OVERRIDE_BASE+38)
     fglDeleteFramebuffersEXT();
+  else if(func==OVERRIDE_BASE+39)
+    fXCreateWindow();
 }
 
 
 void client_init()
 {
   
- lib_handle_libGL = dlopen("/usr/lib/libGL.so", RTLD_LAZY);
+  lib_handle_libGL2 = dlopen("/usr/lib/libGL.so", RTLD_LAZY);
 
-  lib_glXGetProcAddressARB = dlsym(lib_handle_libGL, "glXGetProcAddressARB");
+  lib_glXGetProcAddressARB = dlsym(lib_handle_libGL2, "glXGetProcAddressARB");
 
   //extern void (*glXGetProcAddressARB(const GLubyte *procName))(void);
   
@@ -113,7 +117,7 @@ void client_init()
 
   
   printf("client init OKI %d\n",client_num);
- return; 
+  return; 
 }
 
 

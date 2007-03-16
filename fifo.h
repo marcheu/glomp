@@ -1,6 +1,13 @@
 #ifndef _FIFO_H_
 #define _FIFO_H_
 
+//#include <sys/types.h>
+//#include <sys/ipc.h>
+#include <sys/msg.h>
+#include <errno.h>
+
+
+
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
@@ -9,6 +16,7 @@
 #include <semaphore.h>
 #include <sys/types.h>
 #include <pthread.h>
+#include <stdlib.h>
 #include "init.h"
 
 #define FIFO_SIZE (128*1024)

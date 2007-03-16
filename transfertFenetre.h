@@ -23,8 +23,8 @@ extern void (*lib_glReadPixels)( GLint x,
 
 extern int* client_load;
 
-extern void **shmadr_fenetre1;
-extern void **shmadr_fenetre2;
+//extern void **shmadr_fenetre1;
+//extern void **shmadr_fenetre2;
 
 //extern sem_t **semadrfen_in;
 //extern sem_t **semadrfen_out;

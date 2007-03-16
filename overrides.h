@@ -54,5 +54,5 @@ void fglDeleteProgramsNV();
 void fglDeleteOcclusionQueriesNV();
 void fglDeleteRenderbuffersEXT();
 void fglDeleteFramebuffersEXT();
-
+void fXCreateWindow();
 #endif

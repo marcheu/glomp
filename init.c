@@ -9,8 +9,10 @@
 #include "transfertFenetre.h"
 
 
-// FIXME deplacer ca dans dewrapped.h
-//extern void creertabfunc();
+
+int (*func)(int(*)(int, char **), int, char **,
+	    void (*) (void), void (*) (void), 
+	    void (*) (void), void(*));
 
 
 int client_num;//numeros du client, va nous permettre de selectionner les processus
@@ -37,9 +39,28 @@ static void GLOMPclient_run()
 void initGlobal()
 {
   int i;
+
+  printf("ENTER MAIN\n");
+  
+
   // figure out the number of clients
-  Display* dpy = XOpenDisplay("");
+  static void* lib_handle_libX = 0;
+  Display* (*lib_XOpenDisplay)(char*);
+  int (*lib_ScreenCount)(Display*);
+  int (*lib_XCloseDisplay)(Display*);
+  lib_handle_libX = dlopen("/usr/lib/libX11.so", RTLD_LAZY);
+
+printf("j ai le 1er dlopen\n");
+  lib_XOpenDisplay=dlsym(lib_handle_libX, "XOpenDisplay");
+printf("j ai le 1er dlopen1 %x\n",lib_XOpenDisplay);
+  lib_XCloseDisplay=dlsym(lib_handle_libX, "XCloseDisplay");
+printf("j ai le 1er dlopen3 %x\n", lib_XCloseDisplay);
+
+  Display* dpy = lib_XOpenDisplay("");
+printf("j ai le 1er dlopen4 %x\n",dpy);
   nbcarte=ScreenCount(dpy);
+  lib_XCloseDisplay(dpy);
+  printf("%d cartes\n",nbcarte);
   
   // potentially override the number of GPUs
   char* force=getenv("FORCE_GPU");
@@ -64,7 +85,7 @@ void initGlobal()
   fifo_init(&cmd_fifo);
 
 
-  
+  server_init();//tout le monde veux le pointer cf ligne 116
   // spawn client processes
   for(i=0;i<nbcarte;i++)
     {
@@ -77,24 +98,36 @@ void initGlobal()
 	  break;
 	}
     }
-
-
-  //  int func;
-  //  fifo_input(&cmd_fifo,&func,4);
-
-
-  //GLOMPclient_run(); 
+ 
   // initialize
-  if (client_num==nbcarte){
-    
-      server_init();
+  /*  if (client_num==nbcarte){
+    server_init();
   }
 	  
   else{  
     client_init();
-    printf("sort\n");
-    GLOMPclient_run();    
-  }
+    GLOMPclient_run();
+    }*/
+  switch(client_num)
+    {
+    case 0:
+      client_num=4;
+      
+      //server_init();//tout le monde a besoin ! des pointeurs cf ligne 88
+      
+      break;
+      
+    case 4:
+      client_num=0;
+    case 1:
+    case 2:
+    case 3:
+      client_init();
+      GLOMPclient_run();
+     
+    }
+ 
+ 
 
 
 } 
@@ -111,24 +144,27 @@ void initGlobal()
 int __libc_start_main(int(*main_fct)(int, char **), int argc, 
 		      char ** ubp_av,void (*init) (void), void (*fini) (void), 
 		      void (*rtld_fini) (void),void (* stack_end)) {
-
-  int (*func)(int(*)(int, char **), int, char **,
-	      void (*) (void), void (*) (void), 
-	      void (*) (void), void(*));
- int result;
-  
+ 
   if(!func) {
     func  = dlsym(((void *) -1l), "__libc_start_main");
+    
   }
   
-  printf("Starting MAIN\n");
-  atexit(initGlobal);
-  //initGlobal();
+  printf("\nStarting MAIN\n");
+  initGlobal();
+  printf("\nokg MAIN\n");
+  func(main_fct, argc, ubp_av, init, fini, rtld_fini, stack_end);
+
+  //exit(0);
   
-  result = func(main_fct, argc, ubp_av, init, fini, rtld_fini, stack_end);
+  
   printf("bloque ?%d\n",client_num);
+
+  //return result;
+
   
-  return result;
 }
+
+
 
 

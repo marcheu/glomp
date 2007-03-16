@@ -7,8 +7,11 @@
 #include <GL/glxext.h>
 #include "wrapped.h"
 
-extern gl_type type_table[];
-extern void server_run();
+
+extern void server_init();
+
+int sizeGLenum(GLenum);
+
 
 #endif
 
