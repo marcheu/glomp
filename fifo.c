@@ -21,7 +21,7 @@ void fifo_init(fifo* f)
 	  printf("ERROR trop de file de message\n");
 	  exit(0);
 	}
-      printf("nbfifo:%d %d\n",client_num,f->message_queue[i]);
+      //printf("nbfifo:%d %d\n",client_num,f->message_queue[i]);
       msgctl(f->message_queue[i], IPC_STAT, &buf);
       printf("queue size before %d bytes adjusting to %d\n",(int)buf.msg_qbytes,FIFO_SIZE);
       buf.msg_qbytes=FIFO_SIZE;
@@ -39,7 +39,7 @@ void fifo_flush(fifo* f)
   int i;
   // add the size in front
   uint32_t* h=(uint32_t*)f->msgbuf.mtext;
-  h[0]=f->idx;
+  h[0]=f->idx+1;//+1 pour lire la derniere commande
   // fire
   for(i=0;i<nbcarte;i++)
     {
@@ -80,12 +80,12 @@ void fifo_input(fifo* f,void* data,int size ){
 
       uint32_t* h=(uint32_t*)f->msgbuf.mtext;
 
-      printf("attente:%d %d\n",client_num,f->message_queue[client_num]);
+      //printf("attente:%d %d\n",client_num,f->message_queue[client_num]);
 
       int i=msgrcv(f->message_queue[client_num],&(f->msgbuf),PACKET_SIZE,0,0);
   
 
-      printf("finattente\n");
+      //printf("finattente\n");
    
    
    

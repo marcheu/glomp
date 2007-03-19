@@ -50,14 +50,14 @@ void initGlobal()
   int (*lib_XCloseDisplay)(Display*);
   lib_handle_libX = dlopen("/usr/lib/libX11.so", RTLD_LAZY);
 
-printf("j ai le 1er dlopen\n");
+
   lib_XOpenDisplay=dlsym(lib_handle_libX, "XOpenDisplay");
-printf("j ai le 1er dlopen1 %x\n",lib_XOpenDisplay);
+
   lib_XCloseDisplay=dlsym(lib_handle_libX, "XCloseDisplay");
-printf("j ai le 1er dlopen3 %x\n", lib_XCloseDisplay);
+
 
   Display* dpy = lib_XOpenDisplay("");
-printf("j ai le 1er dlopen4 %x\n",dpy);
+
   nbcarte=ScreenCount(dpy);
   lib_XCloseDisplay(dpy);
   printf("%d cartes\n",nbcarte);
@@ -86,6 +86,8 @@ printf("j ai le 1er dlopen4 %x\n",dpy);
 
 
   server_init();//tout le monde veux le pointer cf ligne 116
+
+
   // spawn client processes
   for(i=0;i<nbcarte;i++)
     {
@@ -100,19 +102,20 @@ printf("j ai le 1er dlopen4 %x\n",dpy);
     }
  
   // initialize
-  /*  if (client_num==nbcarte){
-    server_init();
+  /*if (client_num==nbcarte){
+      //server_init();
   }
 	  
   else{  
     client_init();
     GLOMPclient_run();
-    }*/
+    }
+  */
+
   switch(client_num)
     {
     case 0:
-      client_num=4;
-      
+      client_num=4;     
       //server_init();//tout le monde a besoin ! des pointeurs cf ligne 88
       
       break;
@@ -126,8 +129,8 @@ printf("j ai le 1er dlopen4 %x\n",dpy);
       GLOMPclient_run();
      
     }
- 
- 
+  
+  
 
 
 } 

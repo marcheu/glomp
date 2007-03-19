@@ -29,15 +29,10 @@ static int RuntimeQueryGLXVersion(Display *dpy, int screen)
   char *glxversion ;
   void * lib_strstr;
 
-	
-  printf(" !!!!!\n");
-
 
   clientstring=lib_glXGetProcAddressARB("glXGetClientString");
-  printf("addresscli %x\n",clientstring);
  
   clientstring=dlsym(lib_handle_libG, "glXGetClientString");
-  printf("addr %x !!!!!\n",clientstring);
 
   glxversion = clientstring(dpy, GLX_VERSION);
   
@@ -105,7 +100,7 @@ static GLXPbuffer MakePbuffer( Display *dpy, int screen, int width, int height )
   }
 
   chosenFBConfig = fbConfigs[0];
-  //glomppoint=(__GLXextFuncPtr)lib_glXGetProcAddressARB("glXGetFBConfigAttrib");
+  
   glomppoint=dlsym(lib_handle_libG, "glXGetFBConfigAttrib");
   ((int (*)(Display *,GLXFBConfig,int,int *))glomppoint)(dpy, chosenFBConfig, GLX_FBCONFIG_ID, &fbconfigid);
   printf("Chose 0x%x as fbconfigid\n", fbconfigid);

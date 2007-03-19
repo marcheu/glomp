@@ -199,7 +199,7 @@ void glXSwapBuffers(Display *dpy, GLXDrawable drawable)
 
 void fglXSwapBuffers()
 {
-  if(DEBUG){printf("fXSWAP !!! %d \n",client_num);}
+  //if(DEBUG){printf("fXSWAP !!! %d \n",client_num);
   lire_fenetre();
 }
 
@@ -427,7 +427,7 @@ GLuint glGenLists ( GLsizei p0 )
       fifo_output(&cmd_fifo,&id,4);
     }
 
-  printf("\tglGenList FINI %d\n", p0);
+  //printf("\tglGenList FINI %d\n", p0);
 	
   return ret;
 
@@ -451,9 +451,9 @@ void fglGenLists()
     {
       
       fifo_input(&cmd_fifo,&p1,4);
-      printf("\t\tje suis %d je recoit GENLIST avec p0 = %d et lib = %x  \n",client_num,p0,lib_glGenLists);
+      //printf("\t\tje suis %d je recoit GENLIST avec p0 = %d et lib = %x  \n",client_num,p0,lib_glGenLists);
       id=lib_glGenLists(1);//FIME ME I M BUGGED
-      printf("\t\tje sffffffffffffffffffff\n");
+      //printf("\t\tje sffffffffffffffffffff\n");
       id_add(p1,id);
     }
 

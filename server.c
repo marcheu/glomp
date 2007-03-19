@@ -4,7 +4,7 @@
 int sizeGLenum(GLenum type)
 {
   int i=0;
-  printf("DANS SIZEGLENUM!!!!!! \t%d\t%d\n",client_num,type);
+
 	
 
   while(type_table[i].name!=0)
@@ -14,6 +14,8 @@ int sizeGLenum(GLenum type)
 	return type_table[i].size; 
       i++;
     }
+
+
   return 0;
 }
 
@@ -23,10 +25,6 @@ int sizeGLenum(GLenum type)
 void server_init()
 {
   load_library();
-  
-  /*	while(1){
-	;
-	}*/
 	
 }
 

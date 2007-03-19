@@ -3,8 +3,10 @@
 
 #include"init.h"
 #include"overrides.h"
+#include<stdio.h>
 #include<stdlib.h>
 #include<semaphore.h>
+#include <fcntl.h>
 
 extern void (*lib_glRasterPos2i)( GLint x,GLint y );
 extern void (*lib_glDrawPixels)( GLsizei width,

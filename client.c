@@ -12,7 +12,7 @@ void GLOMPunpack( )
   int flags;
   fifo_input(&cmd_fifo,&func,4);
   fifo_input(&cmd_fifo,&flags,4);
-  if(DEBUG)printf("CLIENT %d :fnum:%d\n",client_num,func);
+  //if(DEBUG&&client_num==2)printf("CLIENT %d :fnum:%d\n",client_num,func);
   if(func<OVERRIDE_BASE)
     functable[func]();
   else if(func==OVERRIDE_BASE)
@@ -24,9 +24,7 @@ void GLOMPunpack( )
   else if(func==OVERRIDE_BASE+3)
     fglBindTexture();
   else if(func==OVERRIDE_BASE+4)
-    {printf("je passe dans OVERRIDE +4\n"); fglGenLists();
-    }
-  
+    fglGenLists();
   else if(func==OVERRIDE_BASE+5)
     fglCallList();
   else if(func==OVERRIDE_BASE+6)
