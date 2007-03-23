@@ -95,6 +95,10 @@ void GLOMPunpack( )
     fglDeleteFramebuffersEXT();
   else if(func==OVERRIDE_BASE+39)
     fXCreateWindow();
+  else if(func==OVERRIDE_BASE+40)
+    fglViewport();
+  else if(func==OVERRIDE_BASE+41)
+    fCreerShmClient();
 }
 
 

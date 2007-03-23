@@ -70,15 +70,15 @@ void initGlobal()
       nbcarte=atoi(force);
     }
   
-  
-  createAllFen();
+  createSem();
+
   segment_create_retour();
   
   // initially everyone has the same load
   // FIXME : make this a shm ?
-  client_load=(int*)malloc(nbcarte*sizeof(int));
+  client_load=(int *)malloc(nbcarte*sizeof(int));
   for(i=0;i<nbcarte;i++)
-    client_load[i]=10;
+    client_load[i]=1;
 	
   client_num=nbcarte;
   // avant le fork, on initialise la fifo
@@ -100,19 +100,23 @@ void initGlobal()
 	  break;
 	}
     }
- 
+
+  //initialisation du tableau des clef pour les segments de memoire partage
+  initTabKey();
+  
+   
   // initialize
-  /*if (client_num==nbcarte){
-      //server_init();
+  if (client_num==nbcarte){
+    //server_init();
   }
-	  
+  
   else{  
     client_init();
     GLOMPclient_run();
     }
-  */
-
-  switch(client_num)
+  
+  /*
+    switch(client_num)
     {
     case 0:
       client_num=4;     
@@ -129,7 +133,7 @@ void initGlobal()
       GLOMPclient_run();
      
     }
-  
+  */
   
 
 

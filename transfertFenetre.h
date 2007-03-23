@@ -23,10 +23,14 @@ extern void (*lib_glReadPixels)( GLint x,
 				GLvoid *pixels );
 
 
-extern int* client_load;
+extern int * client_load;
 
-//extern void **shmadr_fenetre1;
-//extern void **shmadr_fenetre2;
+extern void **shmadr_fenetre1;
+extern void **shmadr_fenetre2;
+//extern int * tabKey1;
+//extern int * tabKey2;
+
+
 
 //extern sem_t **semadrfen_in;
 //extern sem_t **semadrfen_out;
@@ -34,6 +38,9 @@ extern int* client_load;
 extern void * creershm_fenetre();
 extern void lire_fenetre();
 extern void ecrire_fenetre();
+
+void createAllFen();
+void initTabKey();
 
 
 

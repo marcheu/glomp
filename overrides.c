@@ -68,7 +68,12 @@ static void (*lib_glDeleteProgramsNV) ( GLsizei p0 , GLuint *p1 )=0;
 static void (*lib_glDeleteOcclusionQueriesNV) ( GLsizei p0 , GLuint *p1 )=0;
 static void (*lib_glDeleteRenderbuffersEXT) ( GLsizei p0 , GLuint *p1 )=0;
 static void (*lib_glDeleteFramebuffersEXT) ( GLsizei p0 , GLuint *p1 )=0;
-void (*lib_glRasterPos2i)( GLint x,GLint y )=0;
+static void (*lib_glGetIntegerv)(GLenum p0,GLint *p1)=0;
+static void (*lib_glViewport)( GLint x,GLint y,GLsizei width,GLsizei height)=0;
+
+
+void (*lib_glRasterPos2i)( GLint x,GLint y)=0;
+void (*lib_glRasterPos2f)( GLfloat x,GLfloat y)=0;
 void (*lib_glDrawPixels)( GLsizei width,
 			  GLsizei height,
 			  GLenum format,
@@ -93,7 +98,24 @@ static void* lib_handle_libGL = 0;
 static void* lib_handle_libX11 = 0;
 
 
-
+// dumps the screen contents into a .pnm file
+void screen_dump(char* filename)
+{
+	int i;
+	GLint port[4];
+	lib_glGetIntegerv(GL_VIEWPORT,port);
+	int width=port[2], height=port[3];
+	char* mem=(char*)malloc(sizeof(char)*width*3);
+	FILE* f=fopen(filename,"wb");
+	fprintf(f,"P6\n# CREATOR : Volren\n%d %d\n255\n",width,height);	
+	for(i=height-1;i>=0;i--)
+	{
+		lib_glReadPixels(0,i,width,1,GL_RGB,GL_UNSIGNED_BYTE,mem);
+		fwrite(mem,width*3,1,f);
+	}
+	fclose(f);
+	free(mem);
+}
 
 
 
@@ -124,6 +146,10 @@ void load_library(void)
   lib_glDeleteTextures= dlsym(lib_handle_libGL, "glDeleteTextures");
   lib_glFlush= dlsym(lib_handle_libGL, "glFlush");
   lib_glFinish= dlsym(lib_handle_libGL, "glFinish");
+  lib_glGetIntegerv=dlsym(lib_handle_libGL, "glGetIntegerv");
+  lib_glViewport=dlsym(lib_handle_libGL, "glViewport");
+  lib_glRasterPos2f = dlsym(lib_handle_libGL, "glRasterPos2f");
+
 
   /*les extensions*/
   lib_glBindTextureEXT = dlsym(lib_handle_libGL, "glBindTextureEXT");    
@@ -183,22 +209,34 @@ void glXSwapBuffers(Display *dpy, GLXDrawable drawable)
   int fnum=OVERRIDE_BASE;
   int fflags=0;
 
-  if(DEBUG){printf("JE RENTRE DANS SWAP !!!\n");}
+  //if(DEBUG){printf("JE RENTRE DANS SWAP !!!\n");}
 
   fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
   fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
   fifo_flush(&cmd_fifo);
 
-  if(DEBUG){printf("JE avant ECRIREFENETRE!!!\n");}
+  //if(DEBUG){printf("JE avant ECRIREFENETRE!!!\n");}
   ecrire_fenetre();//si on est dans le maitre, on recupere les buffers
-  if(DEBUG){printf("JE APRES ECRIREFEN!!!\n");}
+  //if(DEBUG){printf("JE APRES ECRIREFEN!!!\n");}
   lib_glXSwapBuffers(dpy, drawable);//et on utilise la vrai fonction swapbuffer
-  if(DEBUG){printf("JE sort de  SWAP !!!\n");}
+  //if(DEBUG){printf("JE sort de  SWAP !!!\n");}
 
 }
 
 void fglXSwapBuffers()
 {
+  if(client_num==0)
+    screen_dump("img0.pnm");
+  if(client_num==1)
+    screen_dump("img1.pnm");
+  if(client_num==2)
+    screen_dump("img2.pnm");
+  if(client_num==3)
+    screen_dump("img3.pnm");
+
+  
+  
+  
   //if(DEBUG){printf("fXSWAP !!! %d \n",client_num);
   lire_fenetre();
 }
@@ -220,12 +258,6 @@ int XSetStandardProperties(
   //recupere les tailles
   width=hints->width;
   height=hints->height;
-  
-  // create the pbuffer
-  /* if (!creerpbuffer(width,height)) {
-     printf("Error:couldn't create pbuffer");
-     exit(0);
-     }*/
  
   //on relance la fonction
   return lib_XSetStandardProperties(dpy,w,name,icon_string,icon_pixmap,argv,argc,hints  );
@@ -234,14 +266,15 @@ int XSetStandardProperties(
 extern GLXWindow XCreateWindow(Display *display, Window parent, int x, int y,
 			       unsigned int width2, unsigned int height2, unsigned int border_width, int depth, unsigned int class, Visual *visual,
 			       unsigned long valuemask, XSetWindowAttributes *attribute)
-{
-  if(DEBUG){printf("XCREATEWIN !!!!\n"); }
-  
+{  
   int fnum=OVERRIDE_BASE+39;
   int fflags=0;
   
   width=width2;
   height=height2;
+
+  
+  createAllFen();
 
   fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
   fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
@@ -251,27 +284,27 @@ extern GLXWindow XCreateWindow(Display *display, Window parent, int x, int y,
 
 
   return lib_XCreateWindow(display, parent, x, y,width2, height2, border_width,depth,class,visual,valuemask, attribute);
-
-  
-
-  
-
 }
 
 void fXCreateWindow()
 {
-  int tmp;
+  int i;
   
-  int width;
-  int height;
+
   fifo_input(&cmd_fifo,&width,4);
   fifo_input(&cmd_fifo,&height,4);
   
+  createAllFen();
+
+  printf("les @ apres : %x %x\n",shmadr_fenetre1[client_num],shmadr_fenetre2[client_num]);
   
+
+
   if (!creerpbuffer(width,height)) {
     printf("Error:couldn't create pbuffer %s %s\n",width,height);
     exit(0);
   }
+
   
 
 }
@@ -279,13 +312,9 @@ void fXCreateWindow()
 
 
 
-
+/*bugged! please use XCreateWindows*/
 extern GLXWindow glXCreateWindow(Display *dpy, GLXFBConfig config, Window win, const int *attrib_list)
 {
-  if(DEBUG){printf("GLXCREATEWIN !!!!\n"); }
-
-
-  //initGlobal();
   return lib_glXCreateWindow(dpy,config,win,attrib_list);
 }
 
@@ -324,7 +353,7 @@ void fglFrustum()
   fifo_input(&cmd_fifo,&p3,8);
   fifo_input(&cmd_fifo,&p4,8);
   fifo_input(&cmd_fifo,&p5,8);
-
+  
   int totalload=0;
   int beforeload=0;
   for(i=0;i<nbcarte;i++)
@@ -333,10 +362,10 @@ void fglFrustum()
       if (i<client_num)
 	beforeload+=client_load[i];
     }
-
-  newp2=(p3-p2)*(double)beforeload/(double)totalload;
-  newp3=(p3-p2)*(double)(beforeload+client_load[client_num])/(double)totalload;
-
+  
+  
+  newp2=(p3-p2)*(double)beforeload/(double)totalload-1;
+  newp3=(p3-p2)*(double)(beforeload+client_load[client_num])/(double)totalload-1;
   lib_glFrustum(p0,p1,newp2,newp3,p4,p5);
 }
 
@@ -426,8 +455,6 @@ GLuint glGenLists ( GLsizei p0 )
 	ret=id;
       fifo_output(&cmd_fifo,&id,4);
     }
-
-  //printf("\tglGenList FINI %d\n", p0);
 	
   return ret;
 
@@ -451,9 +478,7 @@ void fglGenLists()
     {
       
       fifo_input(&cmd_fifo,&p1,4);
-      //printf("\t\tje suis %d je recoit GENLIST avec p0 = %d et lib = %x  \n",client_num,p0,lib_glGenLists);
-      id=lib_glGenLists(1);//FIME ME I M BUGGED
-      //printf("\t\tje sffffffffffffffffffff\n");
+      id=lib_glGenLists(1);
       id_add(p1,id);
     }
 
@@ -1657,7 +1682,44 @@ void fglDeleteFramebuffersEXT()
     }
 }
 
+void glViewport ( GLint x,GLint y,GLsizei w,GLsizei h )
+{
+  int i;
+  int fnum=OVERRIDE_BASE+40;
+  int fflags=0;
 
+  fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
+  fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
+  fifo_output(&cmd_fifo,&x,4);
+  fifo_output(&cmd_fifo,&y,4);
+  fifo_output(&cmd_fifo,&w,4);
+  fifo_output(&cmd_fifo,&h,4);
+}
+
+void fglViewport()
+{
+  int i;
+  
+  GLsizei p2,p3,newp3;
+  GLint p0,p1;
+  fifo_input(&cmd_fifo,&p0,4);
+  fifo_input(&cmd_fifo,&p1,4);
+  fifo_input(&cmd_fifo,&p2,4);
+  fifo_input(&cmd_fifo,&p3,4); 
+
+  
+  int totalload=0;
+  for(i=0;i<nbcarte;i++)
+    {
+      totalload+=client_load[i];
+    }
+    newp3=p3*(double)client_load[client_num]/(double)totalload;
+    
+  
+  lib_glViewport(p0,p1,p2,newp3);
+ 
+    
+}
 
 
 

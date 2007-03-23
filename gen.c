@@ -42,6 +42,7 @@ typedef struct gl_type{
 /*------tableau des fonction ne devant pas etre traite par le parseur xml---*/
 char * noParseFunction_table[]=
   {
+    "Viewport",
     "IsQuery",
     "IsBuffer",
     "IsProgramARB",
