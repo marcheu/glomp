@@ -8,6 +8,7 @@
 #include<semaphore.h>
 #include <fcntl.h>
 
+extern void (*lib_glRasterPos2f)( GLfloat x,GLfloat y );
 extern void (*lib_glRasterPos2i)( GLint x,GLint y );
 extern void (*lib_glDrawPixels)( GLsizei width,
 				GLsizei height,

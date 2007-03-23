@@ -149,7 +149,7 @@ void load_library(void)
   lib_glGetIntegerv=dlsym(lib_handle_libGL, "glGetIntegerv");
   lib_glViewport=dlsym(lib_handle_libGL, "glViewport");
   lib_glRasterPos2f = dlsym(lib_handle_libGL, "glRasterPos2f");
-
+  
 
   /*les extensions*/
   lib_glBindTextureEXT = dlsym(lib_handle_libGL, "glBindTextureEXT");    
@@ -225,6 +225,7 @@ void glXSwapBuffers(Display *dpy, GLXDrawable drawable)
 
 void fglXSwapBuffers()
 {
+/*
   if(client_num==0)
     screen_dump("img0.pnm");
   if(client_num==1)
@@ -233,7 +234,7 @@ void fglXSwapBuffers()
     screen_dump("img2.pnm");
   if(client_num==3)
     screen_dump("img3.pnm");
-
+ */
   
   
   

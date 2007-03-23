@@ -19,15 +19,15 @@ int* client_load;//pour calculer la charge de travaille de chaque GPU ...
 
 static void screen_dump(char* filename)
 {
-	int i;
-	//GLint port[4];
-	//lib_glGetIntegerv(GL_VIEWPORT,port);
-	int width=300, height=300;
-	FILE* f=fopen(filename,"wb");
-	fprintf(f,"P6\n# CREATOR : Volren\n%d %d\n255\n",width,height);
-	fflush(f);
-	fwrite(shmadr_fenetre1[3],width*4*height,1,f);
-	fclose(f);
+  int i;
+  //GLint port[4];
+  //lib_glGetIntegerv(GL_VIEWPORT,port);
+  int width=300, height=300;
+  FILE* f=fopen(filename,"wb");
+  fprintf(f,"P6\n# CREATOR : Volren\n%d %d\n255\n",width,height);
+  fflush(f);
+  fwrite(shmadr_fenetre1[3],width*4*height,1,f);
+  fclose(f);
 }
 
 
@@ -38,7 +38,7 @@ void createSem()
   int shmid;
   
   client_load=malloc(sizeof(int)*nbcarte);
-  //printf("les SEM VONT cree %x %x %x \n",shmid,semadrfen_in,semadrfen_out);
+  
 
   //les semaphores doivent etre dans des segment de mem partage pour eter paratges entre process
   shmid = shmget(IPC_PRIVATE,sizeof(sem_t)*nbcarte,0666);
@@ -46,14 +46,14 @@ void createSem()
   shmid = shmget(IPC_PRIVATE,sizeof(sem_t)*nbcarte,0666);
   semadrfen_out=(sem_t *)shmat(shmid,0,0);
 
-    for(i=0;i<nbcarte;i++)
+  for(i=0;i<nbcarte;i++)
     { 
       sem_init(&semadrfen_in[i],10,0);
       sem_init(&semadrfen_out[i],10,2);
 
     }
   
-    //printf("les SEM sont cree %x %x %x \n",shmid,semadrfen_in,semadrfen_out);
+  //printf("les SEM sont cree %x %x %x \n",shmid,semadrfen_in,semadrfen_out);
     
 
 }
@@ -89,8 +89,7 @@ void createAllFen(){
     {
       shmadr_fenetre1[i]=creershm_fenetre(tabKey1[i]);
       shmadr_fenetre2[i]=creershm_fenetre(tabKey2[i]);
-      printf("fen1 : %x et fen2 : %x\n",shmadr_fenetre1[i],shmadr_fenetre2[i]);
-      
+            
     }
   
 }
@@ -115,19 +114,15 @@ void lire_fenetre()
   int starthauteur=0;
   
   for(i=0;i<nbcarte;i++)
-  {
-    totalload+=client_load[i];
-  }
+    {
+      totalload+=client_load[i];
+    }
   
   int heightclient=(double)client_load[client_num]/(double)totalload*height;
 
-
-  printf("width : %d heightr : %d\t %d\n",width,heightclient,height);
   
   if(fenetreactive==0)
     lib_glReadPixels(0,0,width,heightclient,GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, shmadr_fenetre1[client_num]);
-  /*pb ici*/  
-  //memcpy(shmadr_fenetre1[i],"coucocuocuocuocuc",100);
   else
     lib_glReadPixels(0,0,width,heightclient,GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, shmadr_fenetre2[client_num]);
   sem_post(&semadrfen_in[client_num]);
@@ -149,35 +144,32 @@ void ecrire_fenetre()
 
 
   for(i=0;i<nbcarte;i++)
-  {
-    totalload+=client_load[i];
-  }
+    {
+      totalload+=client_load[i];
+    }
   
   for(i=0;i<nbcarte;i++)
-  {
-    heightclient[i]=((double)client_load[i]/(double)totalload)*height;
-  }
+    {
+      heightclient[i]=((double)client_load[i]/(double)totalload)*height;
+    }
   
-  printf("serveur %d %d %d \n",width,height,heightclient[0] );
-
   if(fenetreactive==0)  
     for(i=0;i<nbcarte;i++)
       {
-	printf("cquoilavaleur:%f\n",position);
-        lib_glRasterPos2i(-1,position);
+	lib_glRasterPos2f(-1,position);
 	position=position+((double)client_load[i]/(double)totalload)*(double)2;
 	sem_wait(&semadrfen_in[i]);
 	/*pb ici*/
         lib_glDrawPixels(width,heightclient[i],GL_BGRA,GL_UNSIGNED_INT_8_8_8_8_REV,shmadr_fenetre1[i]);
 	
-	screen_dump("./toto.pnm");
+	//screen_dump("./toto.pnm");
 	sem_post(&semadrfen_out[i]);
       } 
   else for(i=0;i<nbcarte;i++)
     {
       //if(DEBUG){printf("COUCOU!! %d \n",client_num);}
 
-      lib_glRasterPos2i(-1,position);
+      lib_glRasterPos2f(-1,position);
       position=position+((double)client_load[i]/(double)totalload)*(double)2;
       sem_wait(&semadrfen_in[i]);
       lib_glDrawPixels(width,heightclient[i],GL_BGRA,GL_UNSIGNED_INT_8_8_8_8_REV,shmadr_fenetre2[i]);
