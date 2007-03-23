@@ -124,7 +124,7 @@ void lire_fenetre()
   if(fenetreactive==0)
     lib_glReadPixels(0,0,width,heightclient,GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, shmadr_fenetre1[client_num]);
   else
-    lib_glReadPixels(0,0,width,heightclient,GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, shmadr_fenetre2[client_num]);
+  lib_glReadPixels(0,0,width,heightclient,GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, shmadr_fenetre2[client_num]);
   sem_post(&semadrfen_in[client_num]);
   fenetreactive=(fenetreactive+1)%2;
   int aa;
@@ -167,7 +167,7 @@ void ecrire_fenetre()
       } 
   else for(i=0;i<nbcarte;i++)
     {
-      //if(DEBUG){printf("COUCOU!! %d \n",client_num);}
+    
 
       lib_glRasterPos2f(-1,position);
       position=position+((double)client_load[i]/(double)totalload)*(double)2;

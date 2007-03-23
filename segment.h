@@ -7,7 +7,8 @@
 #include "segment.h"
 #include "init.h"
 char* shmadr;
-sem_t * semadr;
+extern sem_t * semadr;
+extern char * semadrShm;
 
 // creer le segment et ecrit dans la fifo
 extern int segment_create(char* p,int size);

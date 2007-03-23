@@ -1,12 +1,13 @@
 #include"overrides.h"
-//#include "config.h"
 
-int width,height;//taille de l'ecran
+int width,height;//taille de la fenetre de l'appli
 /* functions we implement ourselves */
 
 static void (*lib_glXSwapBuffers)(Display *dpy, GLXDrawable drawable)=0;
 static GLXWindow (*lib_glXCreateWindow) (Display *dpy, GLXFBConfig config,
 					 Window win, const int *attrib_list);
+
+
 
 static void (*lib_glBindTexture) ( GLenum p0 , GLuint p1 )=0;
 static void (*lib_glGenTextures) ( GLsizei p0 , GLuint *p1 )=0;	
@@ -90,32 +91,16 @@ void (*lib_glReadPixels)( GLint x,
 
 
 static Window (*lib_XCreateWindow)(Display *display, Window parent, int x, int y,
-				   unsigned int width, unsigned int height, unsigned int border_width, int depth, unsigned int class, Visual *visual,
+				   unsigned int width, unsigned int height,
+				   unsigned int border_width, int depth,
+				   unsigned int class, Visual *visual,
 				   unsigned long valuemask, XSetWindowAttributes *attributes)=0;
+static int (*lib_XCloseDisplay)(Display * dis)=0;
+
 
 /* library interception variables */
 static void* lib_handle_libGL = 0;
 static void* lib_handle_libX11 = 0;
-
-
-// dumps the screen contents into a .pnm file
-void screen_dump(char* filename)
-{
-	int i;
-	GLint port[4];
-	lib_glGetIntegerv(GL_VIEWPORT,port);
-	int width=port[2], height=port[3];
-	char* mem=(char*)malloc(sizeof(char)*width*3);
-	FILE* f=fopen(filename,"wb");
-	fprintf(f,"P6\n# CREATOR : Volren\n%d %d\n255\n",width,height);	
-	for(i=height-1;i>=0;i--)
-	{
-		lib_glReadPixels(0,i,width,1,GL_RGB,GL_UNSIGNED_BYTE,mem);
-		fwrite(mem,width*3,1,f);
-	}
-	fclose(f);
-	free(mem);
-}
 
 
 
@@ -149,7 +134,9 @@ void load_library(void)
   lib_glGetIntegerv=dlsym(lib_handle_libGL, "glGetIntegerv");
   lib_glViewport=dlsym(lib_handle_libGL, "glViewport");
   lib_glRasterPos2f = dlsym(lib_handle_libGL, "glRasterPos2f");
-  
+  lib_glRasterPos2i = dlsym(lib_handle_libGL, "glRasterPos2i");
+  lib_glDrawPixels = dlsym(lib_handle_libGL, "glDrawPixels");
+  lib_glReadPixels = dlsym(lib_handle_libGL, "glReadPixels");  
 
   /*les extensions*/
   lib_glBindTextureEXT = dlsym(lib_handle_libGL, "glBindTextureEXT");    
@@ -181,9 +168,7 @@ void load_library(void)
   lib_glDeleteOcclusionQueriesNV = dlsym(lib_handle_libGL, "glDeleteOcclusionQueriesNV");
   lib_glDeleteRenderbuffersEXT = dlsym(lib_handle_libGL, "glDeleteRenderbuffersEXT");
   lib_glDeleteFramebuffersEXT = dlsym(lib_handle_libGL, "glDeleteFramebuffersEXT");
-  lib_glRasterPos2i = dlsym(lib_handle_libGL, "glRasterPos2i");
-  lib_glDrawPixels = dlsym(lib_handle_libGL, "glDrawPixels");
-  lib_glReadPixels = dlsym(lib_handle_libGL, "glReadPixels");
+
   /* intercept XSetStandardProperties */
   lib_handle_libX11 = dlopen("/usr/lib/libX11.so", RTLD_LAZY);
 
@@ -191,10 +176,7 @@ void load_library(void)
 
   lib_XSetStandardProperties = dlsym(lib_handle_libX11, "XSetStandardProperties");
   lib_XCreateWindow = dlsym(lib_handle_libX11, "XCreateWindow");
-  
-
-  printf("Je suis %d, j'ai chargé les lib !!\n",client_num);
-  
+  lib_XCloseDisplay = dlsym(lib_handle_libX11, "XCloseDisplay");
 
 }
 
@@ -209,36 +191,17 @@ void glXSwapBuffers(Display *dpy, GLXDrawable drawable)
   int fnum=OVERRIDE_BASE;
   int fflags=0;
 
-  //if(DEBUG){printf("JE RENTRE DANS SWAP !!!\n");}
-
   fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
   fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
   fifo_flush(&cmd_fifo);
-
-  //if(DEBUG){printf("JE avant ECRIREFENETRE!!!\n");}
   ecrire_fenetre();//si on est dans le maitre, on recupere les buffers
-  //if(DEBUG){printf("JE APRES ECRIREFEN!!!\n");}
   lib_glXSwapBuffers(dpy, drawable);//et on utilise la vrai fonction swapbuffer
-  //if(DEBUG){printf("JE sort de  SWAP !!!\n");}
+ 
 
 }
 
 void fglXSwapBuffers()
-{
-/*
-  if(client_num==0)
-    screen_dump("img0.pnm");
-  if(client_num==1)
-    screen_dump("img1.pnm");
-  if(client_num==2)
-    screen_dump("img2.pnm");
-  if(client_num==3)
-    screen_dump("img3.pnm");
- */
-  
-  
-  
-  //if(DEBUG){printf("fXSWAP !!! %d \n",client_num);
+{ 
   lire_fenetre();
 }
 
@@ -281,8 +244,7 @@ extern GLXWindow XCreateWindow(Display *display, Window parent, int x, int y,
   fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
   fifo_output(&cmd_fifo,&width,sizeof(width));
   fifo_output(&cmd_fifo,&height,sizeof(height));
-
-
+ 
 
   return lib_XCreateWindow(display, parent, x, y,width2, height2, border_width,depth,class,visual,valuemask, attribute);
 }
@@ -296,9 +258,6 @@ void fXCreateWindow()
   fifo_input(&cmd_fifo,&height,4);
   
   createAllFen();
-
-  printf("les @ apres : %x %x\n",shmadr_fenetre1[client_num],shmadr_fenetre2[client_num]);
-  
 
 
   if (!creerpbuffer(width,height)) {
@@ -318,6 +277,7 @@ extern GLXWindow glXCreateWindow(Display *dpy, GLXFBConfig config, Window win, c
 {
   return lib_glXCreateWindow(dpy,config,win,attrib_list);
 }
+
 
 void glFrustum ( GLdouble p0 , GLdouble p1 , GLdouble p2 , GLdouble p3 , GLdouble p4 , GLdouble p5 )
 {
@@ -1722,6 +1682,13 @@ void fglViewport()
     
 }
 
+int XCloseDisplay ( Display * disp)
+
+{
+  lib_XCloseDisplay(disp);
+  kill(0,SIGKILL);
+  
+}
 
 
 

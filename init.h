@@ -9,7 +9,7 @@
 
 #include "fifo.h"
 
-#define DEBUG 1
+#define DEBUG 0
 
 
 extern int client_num;//numeros du client, va nous permettre de selectionner les processus

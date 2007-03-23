@@ -12,7 +12,7 @@ void GLOMPunpack( )
   int flags;
   fifo_input(&cmd_fifo,&func,4);
   fifo_input(&cmd_fifo,&flags,4);
-  //if(DEBUG&&client_num==2)printf("CLIENT %d :fnum:%d\n",client_num,func);
+  //if(DEBUG&&client_num==0)printf("CLIENT %d :fnum:%d\n",client_num,func);
   if(func<OVERRIDE_BASE)
     functable[func]();
   else if(func==OVERRIDE_BASE)

@@ -576,7 +576,7 @@ int main()
 			}
 		    }
 		  fprintf(fout_c2,"\tint fnum=%d;\n",fnum);
-		  //fprintf(fout_c2,"\n\tif(DEBUG){printf(\"serveur fnum = %%d\\n\",fnum);}\n");
+		  fprintf(fout_c2,"\n\tif(DEBUG){printf(\"serveur fnum = %%d\\n\",fnum);}\n");
 		  fprintf(fout_c2,"\tint fflags=0;\n");
 		  fprintf(fout_c2,"\tfifo_output(&cmd_fifo,&fnum,sizeof(fnum));\n");
 		  fprintf(fout_c2,"\tfifo_output(&cmd_fifo,&fflags,sizeof(fflags));\n");

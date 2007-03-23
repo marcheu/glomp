@@ -104,7 +104,7 @@ void initGlobal()
   //initialisation du tableau des clef pour les segments de memoire partage
   initTabKey();
   
-   
+       
   // initialize
   if (client_num==nbcarte){
     //server_init();
@@ -114,8 +114,8 @@ void initGlobal()
     client_init();
     GLOMPclient_run();
     }
-  
   /*
+  
     switch(client_num)
     {
     case 0:
@@ -133,8 +133,8 @@ void initGlobal()
       GLOMPclient_run();
      
     }
-  */
   
+  */
 
 
 } 
