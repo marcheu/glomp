@@ -87,7 +87,7 @@ void * creershm_fenetre(int clef)
 
 static void screen_dump(char* filename)
 {
-
+  /*
   int i;
   //GLint port[4];
   //lib_glGetIntegerv(GL_VIEWPORT,port);
@@ -96,6 +96,20 @@ static void screen_dump(char* filename)
   fflush(f);
   fwrite(shmadr_fenetre1[3],width*4*height,1,f);
   fclose(f);
+  */
+  int i;
+  GLint port[4];
+  int width=500, height=400;
+  char* mem=(char*)malloc(sizeof(char)*width*3);
+  FILE* f=fopen(filename,"wb");
+  fprintf(f,"P6\n# CREATOR : Volren\n%d %d\n255\n",width,height);
+  for(i=height-1;i>=0;i--)
+  	{
+	  lib_glReadPixels(0,i,width,1,GL_RGB,GL_UNSIGNED_BYTE,mem);
+	  fwrite(mem,width*3,1,f);
+  	}
+  fclose(f);
+  free(mem);
 }
 
 //lecture de la fenetre pour copie vers le segment de memoire
@@ -103,26 +117,32 @@ static void screen_dump(char* filename)
 void lire_fenetre()
 {
   
+
   sem_wait(&semadrfen_out[client_num]);
-  int totalload=0;
-  int starthauteur=0;
   
+  int totalload=0;
+  int beforeload=0;
+  int startload=0;
   for(i=0;i<nbcarte;i++)
     {
       totalload+=client_load[i];
+      if (i<client_num)
+	beforeload+=client_load[i];
     }
   
   int heightclient=(double)client_load[client_num]/(double)totalload*height;
-  /*
-  char nom[20];
-  sprintf(nom,"file%d.pnm",client_num);
-  screen_dump(nom);
-  */
+  startload=height*beforeload/totalload;
+  
+
+//  char nom[20];
+//  sprintf(nom,"file%d.pnm",client_num);
+//  screen_dump(nom);
+  
   if(fenetreactive==0){
-    lib_glReadPixels(0,0,width,heightclient,GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, shmadr_fenetre1[client_num]);
+    lib_glReadPixels(0,startload,width,heightclient,GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, shmadr_fenetre1[client_num]);
   
   }else
-  lib_glReadPixels(0,0,width,heightclient,GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, shmadr_fenetre2[client_num]);
+  lib_glReadPixels(0,startload,width,heightclient,GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, shmadr_fenetre2[client_num]);
   sem_post(&semadrfen_in[client_num]);
   fenetreactive=(fenetreactive+1)%2;
   int aa;

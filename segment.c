@@ -45,7 +45,8 @@ int segment_create(char* p,int size)
   else
     fifo_output(&GLOMPcmd_fifo,&zero_key,4);
   fifo_output(&GLOMPcmd_fifo,&snd_size,4);
-  printf("[serveur] cree segment key %x size %d\n",snd_key,snd_size);
+  printf("[serveur] cree segment key %x size %d\n",p?snd_key:zero_key,snd_size);
+  fflush(stdout);
 }
 
 // recupere un segment dans la fifo et l'attache

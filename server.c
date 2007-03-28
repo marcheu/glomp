@@ -1,18 +1,19 @@
 #include "server.h"
 
 static gl_type colorcomponents[]={
-	{GL_COLOR_INDEX,1},
-	{ GL_RED, 1},
-	{ GL_GREEN,1},
-	{ GL_BLUE,1},
-	{ GL_ALPHA,1},
-	{ GL_RGB,3},
-	{ GL_BGR,3},
-	{ GL_RGBA,4},
-	{ GL_BGRA,4},
-	{ GL_LUMINANCE,1},
-	{GL_LUMINANCE_ALPHA,2},
-	{0,0},
+	{ GL_COLOR_INDEX,8},
+	{ GL_RED, 8},
+	{ GL_GREEN,8},
+	{ GL_BLUE,8},
+	{ GL_ALPHA,8},
+	{ GL_RGB,24},
+	{ GL_BGR,24},
+	{ GL_RGBA,32},
+	{ GL_BGRA,32},
+	{ GL_LUMINANCE,8},
+	{ GL_LUMINANCE_ALPHA,16},
+	{ GL_BITMAP,1},
+	{ 0,0},
 };
 
 int sizeGLenum(GLenum type)
@@ -42,6 +43,7 @@ int sizeGLenum(GLenum type)
     }
 
 
+  printf("Attention sizeGLenum=0!!\n");
   return 0;
 }
 

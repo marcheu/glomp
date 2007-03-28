@@ -23,6 +23,7 @@ extern void (*lib_glReadPixels)( GLint x,
 				GLenum type,
 				GLvoid *pixels );
 
+
 extern void **shmadr_fenetre1;
 extern void **shmadr_fenetre2;
 //extern int * tabKey1;

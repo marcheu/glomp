@@ -406,7 +406,7 @@ int main()
 		      attrib=xmlGetProp(cur, "value");
 		      fprintf(fout_c,"\t{%s,",attrib);
 		      attrib=xmlGetProp(cur, "count");
-		      fprintf(fout_c,"%d},\n",atoi(attrib));
+		      fprintf(fout_c,"%d},\n",atoi(attrib)*8);
 		    }
 		}
 
@@ -603,12 +603,12 @@ int main()
 			      if(param_attrib[i][3]==1)
 				{
 				  if(param_attrib[i][4]==1)
-				    fprintf(fout_c2,"\tsizep=%s*%s*%s*sizeGLenum(%s);\n",img_width[i],img_height[i],
+				    fprintf(fout_c2,"\tsizep=%s*%s*%s*sizeGLenum(%s)/8;\n",img_width[i],img_height[i],
 					    img_depth[i],img_type[i]);
-				  else fprintf(fout_c2,"\tsizep=%s*%s*sizeGLenum(%s);\n",img_width[i],
+				  else fprintf(fout_c2,"\tsizep=%s*%s*sizeGLenum(%s)/8;\n",img_width[i],
 					       img_height[i],img_type[i]);
 				}
-			      else fprintf(fout_c2,"\tsizep=%s*sizeGLenum(%s);\n",img_width[i],img_type[i]);
+			      else fprintf(fout_c2,"\tsizep=%s*sizeGLenum(%s)/8;\n",img_width[i],img_type[i]);
 
 			      //fprintf(ftmpc,"\twrite_segment(sizep);\n",nameparam[i],type_remove_const(type[np]));
 			    }
@@ -619,8 +619,8 @@ int main()
 			    }
 			  else if(param_attrib[i][1]==1)
 			    {   
-			      fprintf(fout_c2,"\tsizep=sizeGLenum(%s)*%d;\n",variable_param[i],type_size(type[i]));
-			      //fprintf(ftmpc,"\tsizep=sizeGLenum(%s)*%d;\n",variable_param[i],type_size(type[i]));
+			      fprintf(fout_c2,"\tsizep=sizeGLenum(%s)*%d/8;\n",variable_param[i],type_size(type[i]));
+			      //fprintf(ftmpc,"\tsizep=sizeGLenum(%s)*%d/8;\n",variable_param[i],type_size(type[i]));
 			    }
 
 			  fprintf(fout_c2,"\tfifo_flush(&GLOMPcmd_fifo);\n");
@@ -634,15 +634,15 @@ int main()
 			  if(param_attrib[i][3]==1)
 			    {
 			      if(param_attrib[i][4]==1)
-				fprintf(fout_c2,"\tsizep=%s*%s*%s*sizeGLenum(%s);\n",img_width[i],img_height[i],
+				fprintf(fout_c2,"\tsizep=%s*%s*%s*sizeGLenum(%s)/8;\n",img_width[i],img_height[i],
 					img_depth[i],img_type[i]);
-			      else fprintf(fout_c2,"\tsizep=%s*%s*sizeGLenum(%s);\n",img_width[i],
+			      else fprintf(fout_c2,"\tsizep=%s*%s*sizeGLenum(%s)/8;\n",img_width[i],
 					   img_height[i],img_type[i]);
 			    }
-			  else fprintf(fout_c2,"\tsizep=%s*sizeGLenum(%s);\n",img_width[i],img_type[i]);
+			  else fprintf(fout_c2,"\tsizep=%s*sizeGLenum(%s)/8;\n",img_width[i],img_type[i]);
 
 			  if(param_attrib[i][7]==1)
-				fprintf(fout_c2,"\tsizep=sizep*sizeGLenum(%s);\n",img_format[i]);
+				fprintf(fout_c2,"\tsizep=sizep*sizeGLenum(%s)/8;\n",img_format[i]);
 
 			  fprintf(fout_c2,"\tsegment_create((char *)%s,sizep);\n",nameparam[i]);
 			  fprintf(ftmpc,"\t%s=(%s)segment_attach();\n",nameparam[i],type_remove_const(type[i]));
@@ -662,10 +662,10 @@ int main()
 			}
 		      else if(param_attrib[i][1]==1)
 			{   
-			  fprintf(ftmpc,"\t%s %s[sizeGLenum(%s)];\n",type_remove_etoile(type_remove_const(type[i])),
+			  fprintf(ftmpc,"\t%s %s[sizeGLenum(%s)/8];\n",type_remove_etoile(type_remove_const(type[i])),
 				  nameparam[i],variable_param[i]);
-			  fprintf(fout_c2,"\tsizep=sizeGLenum(%s)*%d;\n",variable_param[i],type_size(type[i]));
-			  fprintf(ftmpc,"\tsizep=sizeGLenum(%s)*%d;\n",variable_param[i],type_size(type[i]));				
+			  fprintf(fout_c2,"\tsizep=sizeGLenum(%s)*%d/8;\n",variable_param[i],type_size(type[i]));
+			  fprintf(ftmpc,"\tsizep=sizeGLenum(%s)*%d/8;\n",variable_param[i],type_size(type[i]));				
 
 
 			  fprintf(fout_c2,"\tfifo_output(&GLOMPcmd_fifo,%s,sizep);\n",nameparam[i]);		     
