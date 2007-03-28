@@ -15,16 +15,16 @@ void id_add(int value,int translated_value)
   id_table_size++;
   id_table=(int*)realloc(id_table,id_table_size*sizeof(int));
   if (value!=id_table_size-1)
-    printf("oops non-ordered additions\n");
+    printf("oops non-ordered additions (%d,%d)\n",value,id_table_size-1);
   id_table[id_table_size-1]=translated_value;
 }
 
 // translates an id
 int id_translate(int value)
 {
-  if (id_table_size<value)//c etait bugge
+  if (value>=id_table_size)
     {
-      printf("oops id not found (bug in the application ?)\n");
+      printf("oops id %d not found, table size %d  (bug in the application ?)\n",value,id_table_size);
       return 0;
     }
   return id_table[value];

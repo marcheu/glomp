@@ -359,9 +359,8 @@ void GLOMPglGenTextures()
   fifo_input(&GLOMPcmd_fifo,&p0,4);
   for(i=0;i<p0;i++)
     {
-		
       fifo_input(&GLOMPcmd_fifo,&p1,4);
-      lib_glGenTextures ( p0 , &id );
+      lib_glGenTextures ( 1 , &id );
       id_add(p1,id);
     }
 }
@@ -432,7 +431,6 @@ void GLOMPglGenLists()
 
   
   fifo_input(&GLOMPcmd_fifo,&p0,4);
-  
   
   for(i=0;i<p0;i++)
     {
@@ -549,6 +547,7 @@ void glGenTexturesEXT ( GLsizei p0 , GLuint *p1 )
   int fnum=OVERRIDE_BASE+7;
   int fflags=0;
   GLuint id;
+  
   fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
   fifo_output(&GLOMPcmd_fifo,&fflags,sizeof(fflags));
   fifo_output(&GLOMPcmd_fifo,&p0,4);
