@@ -19,6 +19,9 @@ extern char * segment_attach();
 // detruit tous les segments
 extern void segment_delete();
 
+/*procedure de creation du segment de retour*/
+extern int GLOMPsegment_create_retour();
+
 
 #endif
 

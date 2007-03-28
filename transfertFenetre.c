@@ -8,39 +8,25 @@
  */
 static int i;
 void **shmadr_fenetre1,**shmadr_fenetre2;
-static sem_t * semadrfen_in;
-static sem_t * semadrfen_out;
-
-//2 tableau contenant des clef pour les shm (initalise dans createAllFen)
-int * tabKey1;
-int * tabKey2;
-
-int* client_load;//pour calculer la charge de travaille de chaque GPU ...
-
-static void screen_dump(char* filename)
-{
-  int i;
-  //GLint port[4];
-  //lib_glGetIntegerv(GL_VIEWPORT,port);
-  int width=300, height=300;
-  FILE* f=fopen(filename,"wb");
-  fprintf(f,"P6\n# CREATOR : Volren\n%d %d\n255\n",width,height);
-  fflush(f);
-  fwrite(shmadr_fenetre1[3],width*4*height,1,f);
-  fclose(f);
-}
 
 
-/*les semaphores sont bel et bien cree (verifier garce aux adresses des pointeurs)*/
-void createSem()
-{
-  
+/*2 tableau contenant des clef pour les shm (initalise dans createAllFen)*/
+static int * tabKey1;
+static int * tabKey2;
+
+
+
+
+/*Creation et initilalisation d'un tableau de nbcartes semaphores
+semadrfen_in[nbcarte] et semadrfen_out[nbcarte], variables globales a tout le prog
+servant a proteger la lecture et l ecriture dans la fifo
+focntion appellee dans init */
+void GLOMPcreateSem()
+{  
   int shmid;
-  
-  client_load=malloc(sizeof(int)*nbcarte);
-  
 
-  //les semaphores doivent etre dans des segment de mem partage pour eter paratges entre process
+  /*les semaphores doivent etre places dans des segment de mem partage
+    pour eter paratges entre process*/
   shmid = shmget(IPC_PRIVATE,sizeof(sem_t)*nbcarte,0666);
   semadrfen_in=(sem_t *)shmat(shmid,0,0);
   shmid = shmget(IPC_PRIVATE,sizeof(sem_t)*nbcarte,0666);
@@ -50,16 +36,11 @@ void createSem()
     { 
       sem_init(&semadrfen_in[i],10,0);
       sem_init(&semadrfen_out[i],10,2);
-
     }
-  
-  //printf("les SEM sont cree %x %x %x \n",shmid,semadrfen_in,semadrfen_out);
-    
-
 }
 
-
-void initTabKey()
+/*initialise le tableau des clef de semaphore (sert a pouvoir les eattacher entre process)*/
+void GLOMPinitTabKey()
 {
   /*pour creer les segment, nous avons besoin de 2 tableaux contenant des clef pour les shm*/
   int j=0;  
@@ -104,6 +85,19 @@ void * creershm_fenetre(int clef)
 
 }
 
+static void screen_dump(char* filename)
+{
+
+  int i;
+  //GLint port[4];
+  //lib_glGetIntegerv(GL_VIEWPORT,port);
+  FILE* f=fopen(filename,"wb");
+  fprintf(f,"P6\n# CREATOR : Volren\n%d %d\n255\n",width,height);
+  fflush(f);
+  fwrite(shmadr_fenetre1[3],width*4*height,1,f);
+  fclose(f);
+}
+
 //lecture de la fenetre pour copie vers le segment de memoire
 //vu qu'il y a une recipoie vers un shm, ceci doit etre proteger (ici avec un semaphore)
 void lire_fenetre()
@@ -119,11 +113,15 @@ void lire_fenetre()
     }
   
   int heightclient=(double)client_load[client_num]/(double)totalload*height;
-
-  
-  if(fenetreactive==0)
+  /*
+  char nom[20];
+  sprintf(nom,"file%d.pnm",client_num);
+  screen_dump(nom);
+  */
+  if(fenetreactive==0){
     lib_glReadPixels(0,0,width,heightclient,GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, shmadr_fenetre1[client_num]);
-  else
+  
+  }else
   lib_glReadPixels(0,0,width,heightclient,GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, shmadr_fenetre2[client_num]);
   sem_post(&semadrfen_in[client_num]);
   fenetreactive=(fenetreactive+1)%2;
@@ -131,7 +129,6 @@ void lire_fenetre()
   sem_getvalue(&semadrfen_in[client_num],&aa);
   
 }
-
 
 //lecrture depuis le segment de memoire pour ecriture dans le buffer d'affichage
 
@@ -153,6 +150,7 @@ void ecrire_fenetre()
       heightclient[i]=((double)client_load[i]/(double)totalload)*height;
     }
   
+
   if(fenetreactive==0)  
     for(i=0;i<nbcarte;i++)
       {
@@ -160,8 +158,7 @@ void ecrire_fenetre()
 	position=position+((double)client_load[i]/(double)totalload)*(double)2;
 	sem_wait(&semadrfen_in[i]);
 	/*pb ici*/
-        lib_glDrawPixels(width,heightclient[i],GL_BGRA,GL_UNSIGNED_INT_8_8_8_8_REV,shmadr_fenetre1[i]);
-	
+        lib_glDrawPixels(width,heightclient[i],GL_BGRA,GL_UNSIGNED_INT_8_8_8_8_REV,shmadr_fenetre1[i]);	
 	//screen_dump("./toto.pnm");
 	sem_post(&semadrfen_out[i]);
       } 

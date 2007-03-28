@@ -23,25 +23,23 @@ extern void (*lib_glReadPixels)( GLint x,
 				GLenum type,
 				GLvoid *pixels );
 
-
-extern int * client_load;
-
 extern void **shmadr_fenetre1;
 extern void **shmadr_fenetre2;
 //extern int * tabKey1;
 //extern int * tabKey2;
 
 
+/*procedure de creation des semaphores*/
+extern void GLOMPcreateSem();
 
-//extern sem_t **semadrfen_in;
-//extern sem_t **semadrfen_out;
+
 
 extern void * creershm_fenetre();
 extern void lire_fenetre();
 extern void ecrire_fenetre();
 
 void createAllFen();
-void initTabKey();
+extern void GLOMPinitTabKey();
 
 
 

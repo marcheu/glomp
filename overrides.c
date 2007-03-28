@@ -1,6 +1,5 @@
 #include"overrides.h"
 
-int width,height;//taille de la fenetre de l'appli
 /* functions we implement ourselves */
 
 static void (*lib_glXSwapBuffers)(Display *dpy, GLXDrawable drawable)=0;
@@ -12,6 +11,12 @@ static GLXWindow (*lib_glXCreateWindow) (Display *dpy, GLXFBConfig config,
 static void (*lib_glBindTexture) ( GLenum p0 , GLuint p1 )=0;
 static void (*lib_glGenTextures) ( GLsizei p0 , GLuint *p1 )=0;	
 static void (*lib_glFrustum) ( GLdouble left,
+			       GLdouble right,
+			       GLdouble bottom,
+			       GLdouble top,
+			       GLdouble zNear,
+			       GLdouble zFar	)=0;
+static void (*lib_glOrtho) ( GLdouble left,
 			       GLdouble right,
 			       GLdouble bottom,
 			       GLdouble top,
@@ -95,8 +100,8 @@ static Window (*lib_XCreateWindow)(Display *display, Window parent, int x, int y
 				   unsigned int border_width, int depth,
 				   unsigned int class, Visual *visual,
 				   unsigned long valuemask, XSetWindowAttributes *attributes)=0;
+static int (*lib_XDestroyWindow)( Display * disp, Window parent)=0;
 static int (*lib_XCloseDisplay)(Display * dis)=0;
-
 
 /* library interception variables */
 static void* lib_handle_libGL = 0;
@@ -120,6 +125,7 @@ void load_library(void)
   lib_glBindTexture = dlsym(lib_handle_libGL, "glBindTexture");
   lib_glGenTextures = dlsym(lib_handle_libGL, "glGenTextures");    
   lib_glFrustum = dlsym(lib_handle_libGL, "glFrustum"); 
+  lib_glOrtho = dlsym(lib_handle_libGL, "glOrtho"); 
   lib_glGenLists= dlsym(lib_handle_libGL, "glGenLists");
   lib_glCallList= dlsym(lib_handle_libGL, "glCallList");
   lib_glCallLists= dlsym(lib_handle_libGL, "glCallLists");
@@ -176,8 +182,8 @@ void load_library(void)
 
   lib_XSetStandardProperties = dlsym(lib_handle_libX11, "XSetStandardProperties");
   lib_XCreateWindow = dlsym(lib_handle_libX11, "XCreateWindow");
+  lib_XDestroyWindow= dlsym(lib_handle_libX11, "XDestroyWindow");
   lib_XCloseDisplay = dlsym(lib_handle_libX11, "XCloseDisplay");
-
 }
 
 
@@ -191,16 +197,16 @@ void glXSwapBuffers(Display *dpy, GLXDrawable drawable)
   int fnum=OVERRIDE_BASE;
   int fflags=0;
 
-  fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
-  fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
-  fifo_flush(&cmd_fifo);
+  fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
+  fifo_output(&GLOMPcmd_fifo,&fflags,sizeof(fflags));
+  fifo_flush(&GLOMPcmd_fifo);
   ecrire_fenetre();//si on est dans le maitre, on recupere les buffers
   lib_glXSwapBuffers(dpy, drawable);//et on utilise la vrai fonction swapbuffer
  
 
 }
 
-void fglXSwapBuffers()
+void GLOMPglXSwapBuffers()
 { 
   lire_fenetre();
 }
@@ -217,13 +223,7 @@ int XSetStandardProperties(
 			   XSizeHints*		hints
 			   )
 {
-
-  int i;
-  //recupere les tailles
-  width=hints->width;
-  height=hints->height;
- 
-  //on relance la fonction
+  /*on la relance betement*/
   return lib_XSetStandardProperties(dpy,w,name,icon_string,icon_pixmap,argv,argc,hints  );
 
 }
@@ -236,26 +236,24 @@ extern GLXWindow XCreateWindow(Display *display, Window parent, int x, int y,
   
   width=width2;
   height=height2;
-
-  
   createAllFen();
 
-  fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
-  fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
-  fifo_output(&cmd_fifo,&width,sizeof(width));
-  fifo_output(&cmd_fifo,&height,sizeof(height));
+  fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
+  fifo_output(&GLOMPcmd_fifo,&fflags,sizeof(fflags));
+  fifo_output(&GLOMPcmd_fifo,&width,sizeof(width));
+  fifo_output(&GLOMPcmd_fifo,&height,sizeof(height));
  
-
+  
   return lib_XCreateWindow(display, parent, x, y,width2, height2, border_width,depth,class,visual,valuemask, attribute);
 }
 
-void fXCreateWindow()
+void GLOMPXCreateWindow()
 {
   int i;
   
 
-  fifo_input(&cmd_fifo,&width,4);
-  fifo_input(&cmd_fifo,&height,4);
+  fifo_input(&GLOMPcmd_fifo,&width,4);
+  fifo_input(&GLOMPcmd_fifo,&height,4);
   
   createAllFen();
 
@@ -283,20 +281,20 @@ void glFrustum ( GLdouble p0 , GLdouble p1 , GLdouble p2 , GLdouble p3 , GLdoubl
 {
   int fnum=OVERRIDE_BASE+1;
   int fflags=0;
-  fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
-  fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
-  fifo_output(&cmd_fifo,&p0,8);
-  fifo_output(&cmd_fifo,&p1,8);
-  fifo_output(&cmd_fifo,&p2,8);
-  fifo_output(&cmd_fifo,&p3,8);
-  fifo_output(&cmd_fifo,&p4,8);
-  fifo_output(&cmd_fifo,&p5,8);
+  fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
+  fifo_output(&GLOMPcmd_fifo,&fflags,sizeof(fflags));
+  fifo_output(&GLOMPcmd_fifo,&p0,8);
+  fifo_output(&GLOMPcmd_fifo,&p1,8);
+  fifo_output(&GLOMPcmd_fifo,&p2,8);
+  fifo_output(&GLOMPcmd_fifo,&p3,8);
+  fifo_output(&GLOMPcmd_fifo,&p4,8);
+  fifo_output(&GLOMPcmd_fifo,&p5,8);
   return ;
 }
 
 
 /*on a besoin de gerer la perspective donc on interceptent les info de glfrumstun*/
-void fglFrustum()
+void GLOMPglFrustum()
 {
   int i;
 
@@ -308,12 +306,12 @@ void fglFrustum()
   GLdouble p5;
   GLdouble newp2;
   GLdouble newp3;
-  fifo_input(&cmd_fifo,&p0,8);
-  fifo_input(&cmd_fifo,&p1,8);
-  fifo_input(&cmd_fifo,&p2,8);
-  fifo_input(&cmd_fifo,&p3,8);
-  fifo_input(&cmd_fifo,&p4,8);
-  fifo_input(&cmd_fifo,&p5,8);
+  fifo_input(&GLOMPcmd_fifo,&p0,8);
+  fifo_input(&GLOMPcmd_fifo,&p1,8);
+  fifo_input(&GLOMPcmd_fifo,&p2,8);
+  fifo_input(&GLOMPcmd_fifo,&p3,8);
+  fifo_input(&GLOMPcmd_fifo,&p4,8);
+  fifo_input(&GLOMPcmd_fifo,&p5,8);
   
   int totalload=0;
   int beforeload=0;
@@ -325,8 +323,9 @@ void fglFrustum()
     }
   
   
-  newp2=(p3-p2)*(double)beforeload/(double)totalload-1;
-  newp3=(p3-p2)*(double)(beforeload+client_load[client_num])/(double)totalload-1;
+  newp2=(p3-p2)*((double)beforeload/(double)totalload-0.5);
+  newp3=(p3-p2)*((double)(beforeload+client_load[client_num])/(double)totalload-0.5);
+  
   lib_glFrustum(p0,p1,newp2,newp3,p4,p5);
 }
 
@@ -337,31 +336,31 @@ void glGenTextures ( GLsizei p0 , GLuint *p1 )
   int fnum=OVERRIDE_BASE+2;
   int fflags=0;
   GLuint id;
-  fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
-  fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
-  fifo_output(&cmd_fifo,&p0,4);
+  fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
+  fifo_output(&GLOMPcmd_fifo,&fflags,sizeof(fflags));
+  fifo_output(&GLOMPcmd_fifo,&p0,4);
 
   for(i=0;i<p0;i++)
     {
       GLuint id=id_server_generate(id_texture);
       *p1=id;
-      fifo_output(&cmd_fifo,&id,4);
+      fifo_output(&GLOMPcmd_fifo,&id,4);
       p1++;
     }
 
 }
 
-void fglGenTextures()
+void GLOMPglGenTextures()
 {
   int i;
   GLuint id;
   GLsizei p0;
   GLuint p1;
-  fifo_input(&cmd_fifo,&p0,4);
+  fifo_input(&GLOMPcmd_fifo,&p0,4);
   for(i=0;i<p0;i++)
     {
 		
-      fifo_input(&cmd_fifo,&p1,4);
+      fifo_input(&GLOMPcmd_fifo,&p1,4);
       lib_glGenTextures ( p0 , &id );
       id_add(p1,id);
     }
@@ -378,20 +377,20 @@ void glBindTexture ( GLenum p0 , GLuint p1 )
   int fnum=OVERRIDE_BASE+3;
   int fflags=0;
 
-  fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
-  fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
-  fifo_output(&cmd_fifo,&p0,4);
-  fifo_output(&cmd_fifo,&p1,4);
+  fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
+  fifo_output(&GLOMPcmd_fifo,&fflags,sizeof(fflags));
+  fifo_output(&GLOMPcmd_fifo,&p0,4);
+  fifo_output(&GLOMPcmd_fifo,&p1,4);
   return ;
   
 }
 
-void fglBindTexture()
+void GLOMPglBindTexture()
 {
   GLenum p0;
   GLuint p1;
-  fifo_input(&cmd_fifo,&p0,4);
-  fifo_input(&cmd_fifo,&p1,4);
+  fifo_input(&GLOMPcmd_fifo,&p0,4);
+  fifo_input(&GLOMPcmd_fifo,&p1,4);
   
   p1=id_translate(p1);
   
@@ -404,9 +403,9 @@ GLuint glGenLists ( GLsizei p0 )
   int fnum=OVERRIDE_BASE+4;
   int fflags=0;
   GLuint id;
-  fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
-  fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
-  fifo_output(&cmd_fifo,&p0,4);
+  fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
+  fifo_output(&GLOMPcmd_fifo,&fflags,sizeof(fflags));
+  fifo_output(&GLOMPcmd_fifo,&p0,4);
 
   GLuint ret=0;
   for(i=0;i<p0;i++)
@@ -414,7 +413,7 @@ GLuint glGenLists ( GLsizei p0 )
       GLuint id=id_server_generate(id_list);
       if (i==0)
 	ret=id;
-      fifo_output(&cmd_fifo,&id,4);
+      fifo_output(&GLOMPcmd_fifo,&id,4);
     }
 	
   return ret;
@@ -422,7 +421,7 @@ GLuint glGenLists ( GLsizei p0 )
 
 }
 
-void fglGenLists()
+void GLOMPglGenLists()
 {
   
   int i;
@@ -432,13 +431,13 @@ void fglGenLists()
 
 
   
-  fifo_input(&cmd_fifo,&p0,4);
+  fifo_input(&GLOMPcmd_fifo,&p0,4);
   
   
   for(i=0;i<p0;i++)
     {
       
-      fifo_input(&cmd_fifo,&p1,4);
+      fifo_input(&GLOMPcmd_fifo,&p1,4);
       id=lib_glGenLists(1);
       id_add(p1,id);
     }
@@ -454,15 +453,15 @@ void glCallList (GLuint p0)
 {
   int fnum=OVERRIDE_BASE+5;
   int fflags=0;
-  fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
-  fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
-  fifo_output(&cmd_fifo,&p0,4);
+  fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
+  fifo_output(&GLOMPcmd_fifo,&fflags,sizeof(fflags));
+  fifo_output(&GLOMPcmd_fifo,&p0,4);
 }
 
-void fglCallList ()
+void GLOMPglCallList ()
 {
   GLuint p0;
-  fifo_input(&cmd_fifo,&p0,4);
+  fifo_input(&GLOMPcmd_fifo,&p0,4);
   lib_glCallList(id_translate(p0));
 }
 
@@ -491,21 +490,21 @@ void glCallLists (GLsizei n, GLenum type, const GLvoid *lists)
 
   int fnum=OVERRIDE_BASE+6;
   int fflags=0;
-  fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
-  fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
-  fifo_output(&cmd_fifo,&n,4);
-  fifo_output(&cmd_fifo,&type,4);
+  fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
+  fifo_output(&GLOMPcmd_fifo,&fflags,sizeof(fflags));
+  fifo_output(&GLOMPcmd_fifo,&n,4);
+  fifo_output(&GLOMPcmd_fifo,&type,4);
   segment_create(lists,n);
 
 }
 
-void fglCallLists ()
+void GLOMPglCallLists ()
 {
   GLsizei p0;
   GLenum p1;
   GLvoid *p2;
-  fifo_input(&cmd_fifo,&p0,4);
-  fifo_input(&cmd_fifo,&p1,4);
+  fifo_input(&GLOMPcmd_fifo,&p0,4);
+  fifo_input(&GLOMPcmd_fifo,&p1,4);
   p2=(GLvoid*)(segment_attach());
   lib_glCallLists(p0,p1,p2);
   segment_delete();
@@ -550,31 +549,31 @@ void glGenTexturesEXT ( GLsizei p0 , GLuint *p1 )
   int fnum=OVERRIDE_BASE+7;
   int fflags=0;
   GLuint id;
-  fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
-  fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
-  fifo_output(&cmd_fifo,&p0,4);
+  fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
+  fifo_output(&GLOMPcmd_fifo,&fflags,sizeof(fflags));
+  fifo_output(&GLOMPcmd_fifo,&p0,4);
 
   for(i=0;i<p0;i++)
     {
       GLuint id=id_server_generate(id_texture);
       *p1=id;
-      fifo_output(&cmd_fifo,&id,4);
+      fifo_output(&GLOMPcmd_fifo,&id,4);
       p1++;
     }
 
 }
 
-void fglGenTexturesEXT()
+void GLOMPglGenTexturesEXT()
 {
   int i;
   GLuint id;
   GLsizei p0;
   GLuint p1;
-  fifo_input(&cmd_fifo,&p0,4);
+  fifo_input(&GLOMPcmd_fifo,&p0,4);
   for(i=0;i<p0;i++)
     {
 		
-      fifo_input(&cmd_fifo,&p1,4);
+      fifo_input(&GLOMPcmd_fifo,&p1,4);
       lib_glGenTexturesEXT ( p0 , &id );
       id_add(p1,id);
     }
@@ -591,19 +590,19 @@ void glBindTextureEXT ( GLenum p0 , GLuint p1 )
   int fnum=OVERRIDE_BASE+8;
   int fflags=0;
 
-  fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
-  fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
-  fifo_output(&cmd_fifo,&p0,4);
-  fifo_output(&cmd_fifo,&p1,4);
+  fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
+  fifo_output(&GLOMPcmd_fifo,&fflags,sizeof(fflags));
+  fifo_output(&GLOMPcmd_fifo,&p0,4);
+  fifo_output(&GLOMPcmd_fifo,&p1,4);
   return ;
   
 }
-void fglBindTextureEXT()
+void GLOMPglBindTextureEXT()
 {
   GLenum p0;
   GLuint p1;
-  fifo_input(&cmd_fifo,&p0,4);
-  fifo_input(&cmd_fifo,&p1,4);
+  fifo_input(&GLOMPcmd_fifo,&p0,4);
+  fifo_input(&GLOMPcmd_fifo,&p1,4);
   
   p1=id_translate(p1);
   
@@ -618,31 +617,31 @@ void glGenQueries ( GLsizei p0 , GLuint *p1 )
   int fnum=OVERRIDE_BASE+9;
   int fflags=0;
   GLuint id;
-  fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
-  fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
-  fifo_output(&cmd_fifo,&p0,4);
+  fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
+  fifo_output(&GLOMPcmd_fifo,&fflags,sizeof(fflags));
+  fifo_output(&GLOMPcmd_fifo,&p0,4);
 
   for(i=0;i<p0;i++)
     {
       GLuint id=id_server_generate(id_occlusion_query);
       *p1=id;
-      fifo_output(&cmd_fifo,&id,4);
+      fifo_output(&GLOMPcmd_fifo,&id,4);
       p1++;
     }
 
 }
 
-void fglGenQueries()
+void GLOMPglGenQueries()
 {
   int i;
   GLuint id;
   GLsizei p0;
   GLuint p1;
-  fifo_input(&cmd_fifo,&p0,4);
+  fifo_input(&GLOMPcmd_fifo,&p0,4);
   for(i=0;i<p0;i++)
     {
 		
-      fifo_input(&cmd_fifo,&p1,4);
+      fifo_input(&GLOMPcmd_fifo,&p1,4);
       lib_glGenQueries ( p0 , &id );
       id_add(p1,id);
     }
@@ -660,31 +659,31 @@ void glGenBuffers ( GLsizei p0 , GLuint *p1 )
   int fnum=OVERRIDE_BASE+10;
   int fflags=0;
   GLuint id;
-  fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
-  fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
-  fifo_output(&cmd_fifo,&p0,4);
+  fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
+  fifo_output(&GLOMPcmd_fifo,&fflags,sizeof(fflags));
+  fifo_output(&GLOMPcmd_fifo,&p0,4);
 
   for(i=0;i<p0;i++)
     {
       GLuint id=id_server_generate(id_buffer);
       *p1=id;
-      fifo_output(&cmd_fifo,&id,4);
+      fifo_output(&GLOMPcmd_fifo,&id,4);
       p1++;
     }
 
 }
 
-void fglGenBuffers()
+void GLOMPglGenBuffers()
 {
   int i;
   GLuint id;
   GLsizei p0;
   GLuint p1;
-  fifo_input(&cmd_fifo,&p0,4);
+  fifo_input(&GLOMPcmd_fifo,&p0,4);
   for(i=0;i<p0;i++)
     {
 		
-      fifo_input(&cmd_fifo,&p1,4);
+      fifo_input(&GLOMPcmd_fifo,&p1,4);
       lib_glGenBuffers ( p0 , &id );
       id_add(p1,id);
     }
@@ -701,19 +700,19 @@ void glBindBuffer ( GLenum p0 , GLuint p1 )
   int fnum=OVERRIDE_BASE+11;
   int fflags=0;
 
-  fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
-  fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
-  fifo_output(&cmd_fifo,&p0,4);
-  fifo_output(&cmd_fifo,&p1,4);
+  fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
+  fifo_output(&GLOMPcmd_fifo,&fflags,sizeof(fflags));
+  fifo_output(&GLOMPcmd_fifo,&p0,4);
+  fifo_output(&GLOMPcmd_fifo,&p1,4);
   return ;
   
 }
-void fglBindBuffer()
+void GLOMPglBindBuffer()
 {
   GLenum p0;
   GLuint p1;
-  fifo_input(&cmd_fifo,&p0,4);
-  fifo_input(&cmd_fifo,&p1,4);
+  fifo_input(&GLOMPcmd_fifo,&p0,4);
+  fifo_input(&GLOMPcmd_fifo,&p1,4);
   
   p1=id_translate(p1);
   
@@ -728,31 +727,31 @@ void glGenProgramsARB ( GLsizei p0 , GLuint *p1 )
   int fnum=OVERRIDE_BASE+12;
   int fflags=0;
   GLuint id;
-  fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
-  fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
-  fifo_output(&cmd_fifo,&p0,4);
+  fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
+  fifo_output(&GLOMPcmd_fifo,&fflags,sizeof(fflags));
+  fifo_output(&GLOMPcmd_fifo,&p0,4);
 
   for(i=0;i<p0;i++)
     {
       GLuint id=id_server_generate(id_program);
       *p1=id;
-      fifo_output(&cmd_fifo,&id,4);
+      fifo_output(&GLOMPcmd_fifo,&id,4);
       p1++;
     }
 
 }
 
-void fglGenProgramsARB()
+void GLOMPglGenProgramsARB()
 {
   int i;
   GLuint id;
   GLsizei p0;
   GLuint p1;
-  fifo_input(&cmd_fifo,&p0,4);
+  fifo_input(&GLOMPcmd_fifo,&p0,4);
   for(i=0;i<p0;i++)
     {
 		
-      fifo_input(&cmd_fifo,&p1,4);
+      fifo_input(&GLOMPcmd_fifo,&p1,4);
       lib_glGenProgramsARB ( p0 , &id );
       id_add(p1,id);
     }
@@ -764,19 +763,19 @@ void glBindProgramARB ( GLenum p0 , GLuint p1 )
   int fnum=OVERRIDE_BASE+13;
   int fflags=0;
 
-  fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
-  fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
-  fifo_output(&cmd_fifo,&p0,4);
-  fifo_output(&cmd_fifo,&p1,4);
+  fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
+  fifo_output(&GLOMPcmd_fifo,&fflags,sizeof(fflags));
+  fifo_output(&GLOMPcmd_fifo,&p0,4);
+  fifo_output(&GLOMPcmd_fifo,&p1,4);
   return ;
   
 }
-void fglBindProgramARB()
+void GLOMPglBindProgramARB()
 {
   GLenum p0;
   GLuint p1;
-  fifo_input(&cmd_fifo,&p0,4);
-  fifo_input(&cmd_fifo,&p1,4);
+  fifo_input(&GLOMPcmd_fifo,&p0,4);
+  fifo_input(&GLOMPcmd_fifo,&p1,4);
   
   p1=id_translate(p1);
   
@@ -797,31 +796,31 @@ void glGenBuffersARB ( GLsizei p0 , GLuint *p1 )
   int fnum=OVERRIDE_BASE+14;
   int fflags=0;
   GLuint id;
-  fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
-  fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
-  fifo_output(&cmd_fifo,&p0,4);
+  fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
+  fifo_output(&GLOMPcmd_fifo,&fflags,sizeof(fflags));
+  fifo_output(&GLOMPcmd_fifo,&p0,4);
 
   for(i=0;i<p0;i++)
     {
       GLuint id=id_server_generate(id_buffer);
       *p1=id;
-      fifo_output(&cmd_fifo,&id,4);
+      fifo_output(&GLOMPcmd_fifo,&id,4);
       p1++;
     }
 
 }
 
-void fglGenBuffersARB()
+void GLOMPglGenBuffersARB()
 {
   int i;
   GLuint id;
   GLsizei p0;
   GLuint p1;
-  fifo_input(&cmd_fifo,&p0,4);
+  fifo_input(&GLOMPcmd_fifo,&p0,4);
   for(i=0;i<p0;i++)
     {
 		
-      fifo_input(&cmd_fifo,&p1,4);
+      fifo_input(&GLOMPcmd_fifo,&p1,4);
       lib_glGenBuffersARB ( p0 , &id );
       id_add(p1,id);
     }
@@ -838,19 +837,19 @@ void glBindBufferARB ( GLenum p0 , GLuint p1 )
   int fnum=OVERRIDE_BASE+15;
   int fflags=0;
 
-  fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
-  fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
-  fifo_output(&cmd_fifo,&p0,4);
-  fifo_output(&cmd_fifo,&p1,4);
+  fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
+  fifo_output(&GLOMPcmd_fifo,&fflags,sizeof(fflags));
+  fifo_output(&GLOMPcmd_fifo,&p0,4);
+  fifo_output(&GLOMPcmd_fifo,&p1,4);
   return ;
   
 }
-void fglBindBufferARB()
+void GLOMPglBindBufferARB()
 {
   GLenum p0;
   GLuint p1;
-  fifo_input(&cmd_fifo,&p0,4);
-  fifo_input(&cmd_fifo,&p1,4);
+  fifo_input(&GLOMPcmd_fifo,&p0,4);
+  fifo_input(&GLOMPcmd_fifo,&p1,4);
   
   p1=id_translate(p1);
   
@@ -864,31 +863,31 @@ void glGenQueriesARB ( GLsizei p0 , GLuint *p1 )
   int fnum=OVERRIDE_BASE+16;
   int fflags=0;
   GLuint id;
-  fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
-  fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
-  fifo_output(&cmd_fifo,&p0,4);
+  fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
+  fifo_output(&GLOMPcmd_fifo,&fflags,sizeof(fflags));
+  fifo_output(&GLOMPcmd_fifo,&p0,4);
 
   for(i=0;i<p0;i++)
     {
       GLuint id=id_server_generate(id_occlusion_query);
       *p1=id;
-      fifo_output(&cmd_fifo,&id,4);
+      fifo_output(&GLOMPcmd_fifo,&id,4);
       p1++;
     }
 
 }
 
-void fglGenQueriesARB()
+void GLOMPglGenQueriesARB()
 {
   int i;
   GLuint id;
   GLsizei p0;
   GLuint p1;
-  fifo_input(&cmd_fifo,&p0,4);
+  fifo_input(&GLOMPcmd_fifo,&p0,4);
   for(i=0;i<p0;i++)
     {
 		
-      fifo_input(&cmd_fifo,&p1,4);
+      fifo_input(&GLOMPcmd_fifo,&p1,4);
       lib_glGenQueriesARB ( p0 , &id );
       id_add(p1,id);
     }
@@ -907,31 +906,31 @@ void glGenFencesNV ( GLsizei p0 , GLuint *p1 )
   int fnum=OVERRIDE_BASE+17;
   int fflags=0;
   GLuint id;
-  fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
-  fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
-  fifo_output(&cmd_fifo,&p0,4);
+  fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
+  fifo_output(&GLOMPcmd_fifo,&fflags,sizeof(fflags));
+  fifo_output(&GLOMPcmd_fifo,&p0,4);
 
   for(i=0;i<p0;i++)
     {
       GLuint id=id_server_generate(id_fence);
       *p1=id;
-      fifo_output(&cmd_fifo,&id,4);
+      fifo_output(&GLOMPcmd_fifo,&id,4);
       p1++;
     }
 
 }
 
-void fglGenFencesNV()
+void GLOMPglGenFencesNV()
 {
   int i;
   GLuint id;
   GLsizei p0;
   GLuint p1;
-  fifo_input(&cmd_fifo,&p0,4);
+  fifo_input(&GLOMPcmd_fifo,&p0,4);
   for(i=0;i<p0;i++)
     {
 		
-      fifo_input(&cmd_fifo,&p1,4);
+      fifo_input(&GLOMPcmd_fifo,&p1,4);
       lib_glGenFencesNV ( p0 , &id );
       id_add(p1,id);
     }
@@ -953,31 +952,31 @@ void glGenProgramsNV ( GLsizei p0 , GLuint *p1 )
   int fnum=OVERRIDE_BASE+18;
   int fflags=0;
   GLuint id;
-  fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
-  fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
-  fifo_output(&cmd_fifo,&p0,4);
+  fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
+  fifo_output(&GLOMPcmd_fifo,&fflags,sizeof(fflags));
+  fifo_output(&GLOMPcmd_fifo,&p0,4);
 
   for(i=0;i<p0;i++)
     {
       GLuint id=id_server_generate(id_program);
       *p1=id;
-      fifo_output(&cmd_fifo,&id,4);
+      fifo_output(&GLOMPcmd_fifo,&id,4);
       p1++;
     }
 
 }
 
-void fglGenProgramsNV()
+void GLOMPglGenProgramsNV()
 {
   int i;
   GLuint id;
   GLsizei p0;
   GLuint p1;
-  fifo_input(&cmd_fifo,&p0,4);
+  fifo_input(&GLOMPcmd_fifo,&p0,4);
   for(i=0;i<p0;i++)
     {
 		
-      fifo_input(&cmd_fifo,&p1,4);
+      fifo_input(&GLOMPcmd_fifo,&p1,4);
       lib_glGenProgramsNV ( p0 , &id );
       id_add(p1,id);
     }
@@ -989,19 +988,19 @@ void glBindProgramNV ( GLenum p0 , GLuint p1 )
   int fnum=OVERRIDE_BASE+19;
   int fflags=0;
 
-  fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
-  fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
-  fifo_output(&cmd_fifo,&p0,4);
-  fifo_output(&cmd_fifo,&p1,4);
+  fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
+  fifo_output(&GLOMPcmd_fifo,&fflags,sizeof(fflags));
+  fifo_output(&GLOMPcmd_fifo,&p0,4);
+  fifo_output(&GLOMPcmd_fifo,&p1,4);
   return ;
   
 }
-void fglBindProgramNV()
+void GLOMPglBindProgramNV()
 {
   GLenum p0;
   GLuint p1;
-  fifo_input(&cmd_fifo,&p0,4);
-  fifo_input(&cmd_fifo,&p1,4);
+  fifo_input(&GLOMPcmd_fifo,&p0,4);
+  fifo_input(&GLOMPcmd_fifo,&p1,4);
   
   p1=id_translate(p1);
   
@@ -1023,31 +1022,31 @@ void glGenOcclusionQueriesNV ( GLsizei p0 , GLuint *p1 )
   int fnum=OVERRIDE_BASE+20;
   int fflags=0;
   GLuint id;
-  fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
-  fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
-  fifo_output(&cmd_fifo,&p0,4);
+  fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
+  fifo_output(&GLOMPcmd_fifo,&fflags,sizeof(fflags));
+  fifo_output(&GLOMPcmd_fifo,&p0,4);
 
   for(i=0;i<p0;i++)
     {
       GLuint id=id_server_generate(id_occlusion_query);
       *p1=id;
-      fifo_output(&cmd_fifo,&id,4);
+      fifo_output(&GLOMPcmd_fifo,&id,4);
       p1++;
     }
 
 }
 
-void fglGenOcclusionQueriesNV()
+void GLOMPglGenOcclusionQueriesNV()
 {
   int i;
   GLuint id;
   GLsizei p0;
   GLuint p1;
-  fifo_input(&cmd_fifo,&p0,4);
+  fifo_input(&GLOMPcmd_fifo,&p0,4);
   for(i=0;i<p0;i++)
     {
 		
-      fifo_input(&cmd_fifo,&p1,4);
+      fifo_input(&GLOMPcmd_fifo,&p1,4);
       lib_glGenOcclusionQueriesNV ( p0 , &id );
       id_add(p1,id);
     }
@@ -1069,31 +1068,31 @@ void glGenRenderbuffersEXT ( GLsizei p0 , GLuint *p1 )
   int fnum=OVERRIDE_BASE+21;
   int fflags=0;
   GLuint id;
-  fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
-  fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
-  fifo_output(&cmd_fifo,&p0,4);
+  fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
+  fifo_output(&GLOMPcmd_fifo,&fflags,sizeof(fflags));
+  fifo_output(&GLOMPcmd_fifo,&p0,4);
 
   for(i=0;i<p0;i++)
     {
       GLuint id=id_server_generate(id_buffer);
       *p1=id;
-      fifo_output(&cmd_fifo,&id,4);
+      fifo_output(&GLOMPcmd_fifo,&id,4);
       p1++;
     }
 
 }
 
-void fglGenRenderbuffersEXT()
+void GLOMPglGenRenderbuffersEXT()
 {
   int i;
   GLuint id;
   GLsizei p0;
   GLuint p1;
-  fifo_input(&cmd_fifo,&p0,4);
+  fifo_input(&GLOMPcmd_fifo,&p0,4);
   for(i=0;i<p0;i++)
     {
 		
-      fifo_input(&cmd_fifo,&p1,4);
+      fifo_input(&GLOMPcmd_fifo,&p1,4);
       lib_glGenRenderbuffersEXT ( p0 , &id );
       id_add(p1,id);
     }
@@ -1110,19 +1109,19 @@ void glBindRenderbufferEXT ( GLenum p0 , GLuint p1 )
   int fnum=OVERRIDE_BASE+22;
   int fflags=0;
 
-  fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
-  fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
-  fifo_output(&cmd_fifo,&p0,4);
-  fifo_output(&cmd_fifo,&p1,4);
+  fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
+  fifo_output(&GLOMPcmd_fifo,&fflags,sizeof(fflags));
+  fifo_output(&GLOMPcmd_fifo,&p0,4);
+  fifo_output(&GLOMPcmd_fifo,&p1,4);
   return ;
   
 }
-void fglBindRenderbufferEXT()
+void GLOMPglBindRenderbufferEXT()
 {
   GLenum p0;
   GLuint p1;
-  fifo_input(&cmd_fifo,&p0,4);
-  fifo_input(&cmd_fifo,&p1,4);
+  fifo_input(&GLOMPcmd_fifo,&p0,4);
+  fifo_input(&GLOMPcmd_fifo,&p1,4);
   
   p1=id_translate(p1);
   
@@ -1136,31 +1135,31 @@ void glGenFramebuffersEXT ( GLsizei p0 , GLuint *p1 )
   int fnum=OVERRIDE_BASE+23;
   int fflags=0;
   GLuint id;
-  fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
-  fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
-  fifo_output(&cmd_fifo,&p0,4);
+  fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
+  fifo_output(&GLOMPcmd_fifo,&fflags,sizeof(fflags));
+  fifo_output(&GLOMPcmd_fifo,&p0,4);
 
   for(i=0;i<p0;i++)
     {
       GLuint id=id_server_generate(id_buffer);
       *p1=id;
-      fifo_output(&cmd_fifo,&id,4);
+      fifo_output(&GLOMPcmd_fifo,&id,4);
       p1++;
     }
 
 }
 
-void fglGenFramebuffersEXT()
+void GLOMPglGenFramebuffersEXT()
 {
   int i;
   GLuint id;
   GLsizei p0;
   GLuint p1;
-  fifo_input(&cmd_fifo,&p0,4);
+  fifo_input(&GLOMPcmd_fifo,&p0,4);
   for(i=0;i<p0;i++)
     {
 		
-      fifo_input(&cmd_fifo,&p1,4);
+      fifo_input(&GLOMPcmd_fifo,&p1,4);
       lib_glGenFramebuffersEXT ( p0 , &id );
       id_add(p1,id);
     }
@@ -1177,19 +1176,19 @@ void glBindFramebufferEXT ( GLenum p0 , GLuint p1 )
   int fnum=OVERRIDE_BASE+24;
   int fflags=0;
 
-  fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
-  fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
-  fifo_output(&cmd_fifo,&p0,4);
-  fifo_output(&cmd_fifo,&p1,4);
+  fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
+  fifo_output(&GLOMPcmd_fifo,&fflags,sizeof(fflags));
+  fifo_output(&GLOMPcmd_fifo,&p0,4);
+  fifo_output(&GLOMPcmd_fifo,&p1,4);
   return ;
   
 }
-void fglBindFramebufferEXT()
+void GLOMPglBindFramebufferEXT()
 {
   GLenum p0;
   GLuint p1;
-  fifo_input(&cmd_fifo,&p0,4);
-  fifo_input(&cmd_fifo,&p1,4);
+  fifo_input(&GLOMPcmd_fifo,&p0,4);
+  fifo_input(&GLOMPcmd_fifo,&p1,4);
   
   p1=id_translate(p1);
   
@@ -1205,11 +1204,11 @@ void glFlush(void){
   int fnum=OVERRIDE_BASE+25;
   int fflags=0;
   lib_glFlush();
-  fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
-  fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
+  fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
+  fifo_output(&GLOMPcmd_fifo,&fflags,sizeof(fflags));
 }
 
-void fglFlush()
+void GLOMPglFlush()
 {
   lib_glFlush();
 }
@@ -1218,12 +1217,12 @@ void fglFlush()
 void glFinish(void){
   int fnum=OVERRIDE_BASE+26;
   int fflags=0;
-  fifo_flush(&cmd_fifo);
-  fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
-  fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
+  fifo_flush(&GLOMPcmd_fifo);
+  fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
+  fifo_output(&GLOMPcmd_fifo,&fflags,sizeof(fflags));
 }
 
-void fglFinish()
+void GLOMPglFinish()
 {
   lib_glFinish();
 }
@@ -1236,28 +1235,28 @@ void glDeleteTextures (GLsizei p0, const GLuint * p1)
   int fnum=OVERRIDE_BASE+27;
   int fflags=0;
 
-  fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
-  fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
-  fifo_output(&cmd_fifo,&p0,4);
+  fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
+  fifo_output(&GLOMPcmd_fifo,&fflags,sizeof(fflags));
+  fifo_output(&GLOMPcmd_fifo,&p0,4);
 
   for(i=0;i<p0;i++)
     {
-      fifo_output(&cmd_fifo,&p1,4);
+      fifo_output(&GLOMPcmd_fifo,&p1,4);
       p1++;
 		
     }  
 }
-void fglDeleteTextures()
+void GLOMPglDeleteTextures()
 {
   int i;
   GLuint id;
   GLsizei p0;
   GLuint p1;
-  fifo_input(&cmd_fifo,&p0,4);
+  fifo_input(&GLOMPcmd_fifo,&p0,4);
   for(i=0;i<p0;i++)
     {
 		
-      fifo_input(&cmd_fifo,&p1,4);
+      fifo_input(&GLOMPcmd_fifo,&p1,4);
       id=id_translate(p1);
       lib_glDeleteTextures ( p0 , &id);
 		
@@ -1270,28 +1269,28 @@ void glDeleteQueries (GLsizei p0, const GLuint * p1)
   int fnum=OVERRIDE_BASE+28;
   int fflags=0;
 
-  fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
-  fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
-  fifo_output(&cmd_fifo,&p0,4);
+  fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
+  fifo_output(&GLOMPcmd_fifo,&fflags,sizeof(fflags));
+  fifo_output(&GLOMPcmd_fifo,&p0,4);
 
   for(i=0;i<p0;i++)
     {
-      fifo_output(&cmd_fifo,&p1,4);
+      fifo_output(&GLOMPcmd_fifo,&p1,4);
       p1++;
 		
     }  
 }
-void fglDeleteQueries()
+void GLOMPglDeleteQueries()
 {
   int i;
   GLuint id;
   GLsizei p0;
   GLuint p1;
-  fifo_input(&cmd_fifo,&p0,4);
+  fifo_input(&GLOMPcmd_fifo,&p0,4);
   for(i=0;i<p0;i++)
     {
 		
-      fifo_input(&cmd_fifo,&p1,4);
+      fifo_input(&GLOMPcmd_fifo,&p1,4);
       id=id_translate(p1);
       lib_glDeleteQueries ( p0 , &id);
 		
@@ -1303,28 +1302,28 @@ void glDeleteBuffers (GLsizei p0, const GLuint * p1)
   int fnum=OVERRIDE_BASE+29;
   int fflags=0;
 
-  fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
-  fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
-  fifo_output(&cmd_fifo,&p0,4);
+  fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
+  fifo_output(&GLOMPcmd_fifo,&fflags,sizeof(fflags));
+  fifo_output(&GLOMPcmd_fifo,&p0,4);
 
   for(i=0;i<p0;i++)
     {
-      fifo_output(&cmd_fifo,&p1,4);
+      fifo_output(&GLOMPcmd_fifo,&p1,4);
       p1++;
 		
     }  
 }
-void fglDeleteBuffers()
+void GLOMPglDeleteBuffers()
 {
   int i;
   GLuint id;
   GLsizei p0;
   GLuint p1;
-  fifo_input(&cmd_fifo,&p0,4);
+  fifo_input(&GLOMPcmd_fifo,&p0,4);
   for(i=0;i<p0;i++)
     {
 		
-      fifo_input(&cmd_fifo,&p1,4);
+      fifo_input(&GLOMPcmd_fifo,&p1,4);
       id=id_translate(p1);
       lib_glDeleteBuffers ( p0 , &id);
 		
@@ -1336,28 +1335,28 @@ void glDeleteProgramsARB (GLsizei p0, const GLuint * p1)
   int fnum=OVERRIDE_BASE+30;
   int fflags=0;
 
-  fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
-  fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
-  fifo_output(&cmd_fifo,&p0,4);
+  fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
+  fifo_output(&GLOMPcmd_fifo,&fflags,sizeof(fflags));
+  fifo_output(&GLOMPcmd_fifo,&p0,4);
 
   for(i=0;i<p0;i++)
     {
-      fifo_output(&cmd_fifo,&p1,4);
+      fifo_output(&GLOMPcmd_fifo,&p1,4);
       p1++;
 		
     }  
 }
-void fglDeleteProgramsARB()
+void GLOMPglDeleteProgramsARB()
 {
   int i;
   GLuint id;
   GLsizei p0;
   GLuint p1;
-  fifo_input(&cmd_fifo,&p0,4);
+  fifo_input(&GLOMPcmd_fifo,&p0,4);
   for(i=0;i<p0;i++)
     {
 		
-      fifo_input(&cmd_fifo,&p1,4);
+      fifo_input(&GLOMPcmd_fifo,&p1,4);
       id=id_translate(p1);
       lib_glDeleteProgramsARB ( p0 , &id);
 		
@@ -1371,28 +1370,28 @@ void glDeleteBuffersARB (GLsizei p0, const GLuint * p1)
   int fnum=OVERRIDE_BASE+31;
   int fflags=0;
 
-  fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
-  fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
-  fifo_output(&cmd_fifo,&p0,4);
+  fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
+  fifo_output(&GLOMPcmd_fifo,&fflags,sizeof(fflags));
+  fifo_output(&GLOMPcmd_fifo,&p0,4);
 
   for(i=0;i<p0;i++)
     {
-      fifo_output(&cmd_fifo,&p1,4);
+      fifo_output(&GLOMPcmd_fifo,&p1,4);
       p1++;
 		
     }  
 }
-void fglDeleteBuffersARB()
+void GLOMPglDeleteBuffersARB()
 {
   int i;
   GLuint id;
   GLsizei p0;
   GLuint p1;
-  fifo_input(&cmd_fifo,&p0,4);
+  fifo_input(&GLOMPcmd_fifo,&p0,4);
   for(i=0;i<p0;i++)
     {
 		
-      fifo_input(&cmd_fifo,&p1,4);
+      fifo_input(&GLOMPcmd_fifo,&p1,4);
       id=id_translate(p1);
       lib_glDeleteBuffersARB ( p0 , &id);
 		
@@ -1406,28 +1405,28 @@ void glDeleteQueriesARB (GLsizei p0, const GLuint * p1)
   int fnum=OVERRIDE_BASE+32;
   int fflags=0;
 
-  fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
-  fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
-  fifo_output(&cmd_fifo,&p0,4);
+  fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
+  fifo_output(&GLOMPcmd_fifo,&fflags,sizeof(fflags));
+  fifo_output(&GLOMPcmd_fifo,&p0,4);
 
   for(i=0;i<p0;i++)
     {
-      fifo_output(&cmd_fifo,&p1,4);
+      fifo_output(&GLOMPcmd_fifo,&p1,4);
       p1++;
 		
     }  
 }
-void fglDeleteQueriesARB()
+void GLOMPglDeleteQueriesARB()
 {
   int i;
   GLuint id;
   GLsizei p0;
   GLuint p1;
-  fifo_input(&cmd_fifo,&p0,4);
+  fifo_input(&GLOMPcmd_fifo,&p0,4);
   for(i=0;i<p0;i++)
     {
 		
-      fifo_input(&cmd_fifo,&p1,4);
+      fifo_input(&GLOMPcmd_fifo,&p1,4);
       id=id_translate(p1);
       lib_glDeleteQueriesARB ( p0 , &id);
 		
@@ -1441,28 +1440,28 @@ void glDeleteTexturesEXT (GLsizei p0, const GLuint * p1)
   int fnum=OVERRIDE_BASE+33;
   int fflags=0;
 
-  fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
-  fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
-  fifo_output(&cmd_fifo,&p0,4);
+  fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
+  fifo_output(&GLOMPcmd_fifo,&fflags,sizeof(fflags));
+  fifo_output(&GLOMPcmd_fifo,&p0,4);
 
   for(i=0;i<p0;i++)
     {
-      fifo_output(&cmd_fifo,&p1,4);
+      fifo_output(&GLOMPcmd_fifo,&p1,4);
       p1++;
 		
     }  
 }
-void fglDeleteTexturesEXT()
+void GLOMPglDeleteTexturesEXT()
 {
   int i;
   GLuint id;
   GLsizei p0;
   GLuint p1;
-  fifo_input(&cmd_fifo,&p0,4);
+  fifo_input(&GLOMPcmd_fifo,&p0,4);
   for(i=0;i<p0;i++)
     {
 		
-      fifo_input(&cmd_fifo,&p1,4);
+      fifo_input(&GLOMPcmd_fifo,&p1,4);
       id=id_translate(p1);
       lib_glDeleteTexturesEXT ( p0 , &id);
 		
@@ -1475,28 +1474,28 @@ void glDeleteFencesNV (GLsizei p0, const GLuint * p1)
   int fnum=OVERRIDE_BASE+34;
   int fflags=0;
 
-  fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
-  fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
-  fifo_output(&cmd_fifo,&p0,4);
+  fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
+  fifo_output(&GLOMPcmd_fifo,&fflags,sizeof(fflags));
+  fifo_output(&GLOMPcmd_fifo,&p0,4);
 
   for(i=0;i<p0;i++)
     {
-      fifo_output(&cmd_fifo,&p1,4);
+      fifo_output(&GLOMPcmd_fifo,&p1,4);
       p1++;
 		
     }  
 }
-void fglDeleteFencesNV()
+void GLOMPglDeleteFencesNV()
 {
   int i;
   GLuint id;
   GLsizei p0;
   GLuint p1;
-  fifo_input(&cmd_fifo,&p0,4);
+  fifo_input(&GLOMPcmd_fifo,&p0,4);
   for(i=0;i<p0;i++)
     {
 		
-      fifo_input(&cmd_fifo,&p1,4);
+      fifo_input(&GLOMPcmd_fifo,&p1,4);
       id=id_translate(p1);
       lib_glDeleteFencesNV ( p0 , &id);
 		
@@ -1509,28 +1508,28 @@ void glDeleteProgramsNV (GLsizei p0, const GLuint * p1)
   int fnum=OVERRIDE_BASE+35;
   int fflags=0;
 
-  fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
-  fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
-  fifo_output(&cmd_fifo,&p0,4);
+  fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
+  fifo_output(&GLOMPcmd_fifo,&fflags,sizeof(fflags));
+  fifo_output(&GLOMPcmd_fifo,&p0,4);
 
   for(i=0;i<p0;i++)
     {
-      fifo_output(&cmd_fifo,&p1,4);
+      fifo_output(&GLOMPcmd_fifo,&p1,4);
       p1++;
 		
     }  
 }
-void fglDeleteProgramsNV()
+void GLOMPglDeleteProgramsNV()
 {
   int i;
   GLuint id;
   GLsizei p0;
   GLuint p1;
-  fifo_input(&cmd_fifo,&p0,4);
+  fifo_input(&GLOMPcmd_fifo,&p0,4);
   for(i=0;i<p0;i++)
     {
 		
-      fifo_input(&cmd_fifo,&p1,4);
+      fifo_input(&GLOMPcmd_fifo,&p1,4);
       id=id_translate(p1);
       lib_glDeleteProgramsNV ( p0 , &id);
 		
@@ -1544,28 +1543,28 @@ void glDeleteOcclusionQueriesNV (GLsizei p0, const GLuint * p1)
   int fnum=OVERRIDE_BASE+36;
   int fflags=0;
 
-  fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
-  fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
-  fifo_output(&cmd_fifo,&p0,4);
+  fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
+  fifo_output(&GLOMPcmd_fifo,&fflags,sizeof(fflags));
+  fifo_output(&GLOMPcmd_fifo,&p0,4);
 
   for(i=0;i<p0;i++)
     {
-      fifo_output(&cmd_fifo,&p1,4);
+      fifo_output(&GLOMPcmd_fifo,&p1,4);
       p1++;
 		
     }  
 }
-void fglDeleteOcclusionQueriesNV()
+void GLOMPglDeleteOcclusionQueriesNV()
 {
   int i;
   GLuint id;
   GLsizei p0;
   GLuint p1;
-  fifo_input(&cmd_fifo,&p0,4);
+  fifo_input(&GLOMPcmd_fifo,&p0,4);
   for(i=0;i<p0;i++)
     {
 		
-      fifo_input(&cmd_fifo,&p1,4);
+      fifo_input(&GLOMPcmd_fifo,&p1,4);
       id=id_translate(p1);
       lib_glDeleteOcclusionQueriesNV ( p0 , &id);
 		
@@ -1580,28 +1579,28 @@ void glDeleteRenderbuffersEXT (GLsizei p0, const GLuint * p1)
   int fnum=OVERRIDE_BASE+37;
   int fflags=0;
 
-  fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
-  fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
-  fifo_output(&cmd_fifo,&p0,4);
+  fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
+  fifo_output(&GLOMPcmd_fifo,&fflags,sizeof(fflags));
+  fifo_output(&GLOMPcmd_fifo,&p0,4);
 
   for(i=0;i<p0;i++)
     {
-      fifo_output(&cmd_fifo,&p1,4);
+      fifo_output(&GLOMPcmd_fifo,&p1,4);
       p1++;
 		
     }  
 }
-void fglDeleteRenderbuffersEXT()
+void GLOMPglDeleteRenderbuffersEXT()
 {
   int i;
   GLuint id;
   GLsizei p0;
   GLuint p1;
-  fifo_input(&cmd_fifo,&p0,4);
+  fifo_input(&GLOMPcmd_fifo,&p0,4);
   for(i=0;i<p0;i++)
     {
 		
-      fifo_input(&cmd_fifo,&p1,4);
+      fifo_input(&GLOMPcmd_fifo,&p1,4);
       id=id_translate(p1);
       lib_glDeleteRenderbuffersEXT ( p0 , &id);
 		
@@ -1615,28 +1614,28 @@ void glDeleteFramebuffersEXT (GLsizei p0, const GLuint * p1)
   int fnum=OVERRIDE_BASE+38;
   int fflags=0;
 
-  fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
-  fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
-  fifo_output(&cmd_fifo,&p0,4);
+  fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
+  fifo_output(&GLOMPcmd_fifo,&fflags,sizeof(fflags));
+  fifo_output(&GLOMPcmd_fifo,&p0,4);
 
   for(i=0;i<p0;i++)
     {
-      fifo_output(&cmd_fifo,&p1,4);
+      fifo_output(&GLOMPcmd_fifo,&p1,4);
       p1++;
 		
     }  
 }
-void fglDeleteFramebuffersEXT()
+void GLOMPglDeleteFramebuffersEXT()
 {
   int i;
   GLuint id;
   GLsizei p0;
   GLuint p1;
-  fifo_input(&cmd_fifo,&p0,4);
+  fifo_input(&GLOMPcmd_fifo,&p0,4);
   for(i=0;i<p0;i++)
     {
 		
-      fifo_input(&cmd_fifo,&p1,4);
+      fifo_input(&GLOMPcmd_fifo,&p1,4);
       id=id_translate(p1);
       lib_glDeleteFramebuffersEXT ( p0 , &id);
 		
@@ -1649,24 +1648,24 @@ void glViewport ( GLint x,GLint y,GLsizei w,GLsizei h )
   int fnum=OVERRIDE_BASE+40;
   int fflags=0;
 
-  fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
-  fifo_output(&cmd_fifo,&fflags,sizeof(fflags));
-  fifo_output(&cmd_fifo,&x,4);
-  fifo_output(&cmd_fifo,&y,4);
-  fifo_output(&cmd_fifo,&w,4);
-  fifo_output(&cmd_fifo,&h,4);
+  fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
+  fifo_output(&GLOMPcmd_fifo,&fflags,sizeof(fflags));
+  fifo_output(&GLOMPcmd_fifo,&x,4);
+  fifo_output(&GLOMPcmd_fifo,&y,4);
+  fifo_output(&GLOMPcmd_fifo,&w,4);
+  fifo_output(&GLOMPcmd_fifo,&h,4);
 }
 
-void fglViewport()
+void GLOMPglViewport()
 {
   int i;
   
   GLsizei p2,p3,newp3;
   GLint p0,p1;
-  fifo_input(&cmd_fifo,&p0,4);
-  fifo_input(&cmd_fifo,&p1,4);
-  fifo_input(&cmd_fifo,&p2,4);
-  fifo_input(&cmd_fifo,&p3,4); 
+  fifo_input(&GLOMPcmd_fifo,&p0,4);
+  fifo_input(&GLOMPcmd_fifo,&p1,4);
+  fifo_input(&GLOMPcmd_fifo,&p2,4);
+  fifo_input(&GLOMPcmd_fifo,&p3,4); 
 
   
   int totalload=0;
@@ -1674,21 +1673,87 @@ void fglViewport()
     {
       totalload+=client_load[i];
     }
-    newp3=p3*(double)client_load[client_num]/(double)totalload;
-    
+  newp3=p3*(double)client_load[client_num]/(double)totalload;
+  //newp3=p3;//DEBUG
+  
   
   lib_glViewport(p0,p1,p2,newp3);
  
     
 }
 
-int XCloseDisplay ( Display * disp)
+void glOrtho ( GLdouble p0, GLdouble p1,GLdouble p2,GLdouble p3,GLdouble p4,GLdouble p5 )
+{
+
+  int fnum=OVERRIDE_BASE+41;
+  int fflags=0;
+  fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
+  fifo_output(&GLOMPcmd_fifo,&fflags,sizeof(fflags));
+  fifo_output(&GLOMPcmd_fifo,&p0,8);
+  fifo_output(&GLOMPcmd_fifo,&p1,8);
+  fifo_output(&GLOMPcmd_fifo,&p2,8);
+  fifo_output(&GLOMPcmd_fifo,&p3,8);
+  fifo_output(&GLOMPcmd_fifo,&p4,8);
+  fifo_output(&GLOMPcmd_fifo,&p5,8);
+
+}
+
+void GLOMPglOrtho()
+{
+
+  int i;
+
+  GLdouble p0;
+  GLdouble p1;
+  GLdouble p2;
+  GLdouble p3;
+  GLdouble p4;
+  GLdouble p5;
+  GLdouble newp2;
+  GLdouble newp3;
+  fifo_input(&GLOMPcmd_fifo,&p0,8);
+  fifo_input(&GLOMPcmd_fifo,&p1,8);
+  fifo_input(&GLOMPcmd_fifo,&p2,8);
+  fifo_input(&GLOMPcmd_fifo,&p3,8);
+  fifo_input(&GLOMPcmd_fifo,&p4,8);
+  fifo_input(&GLOMPcmd_fifo,&p5,8);
+  
+  int totalload=0;
+  int beforeload=0;
+  for(i=0;i<nbcarte;i++)
+    {
+      totalload+=client_load[i];
+      if (i<client_num)
+	beforeload+=client_load[i];
+    }
+  
+  
+  printf("%f %f\n",p2,p3);
+  
+  newp2=p2+(p3-p2)*((double)beforeload/(double)totalload);
+  newp3=p2+(p3-p2)*((double)(beforeload+client_load[client_num])/(double)totalload);
+
+  printf("new %f %f\n",newp2,newp3);
+  //  newp2=p2;
+  //newp3=p3;
+  
+
+  lib_glOrtho(p0,p1,newp2,newp3,p4,p5);
+ 
+    
+}
+
+int XDestroyWindow ( Display * disp, Window parent)
 
 {
-  lib_XCloseDisplay(disp);
+  lib_XDestroyWindow(disp,parent);
   kill(0,SIGKILL);
   
 }
 
-
+int XCloseDisplay ( Display * disp) 
+{
+  lib_XCloseDisplay(disp);
+  kill(0,SIGKILL);  
+}
 

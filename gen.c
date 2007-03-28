@@ -28,8 +28,9 @@ char * img_width[50];
 char * img_height[50];
 char * img_depth[50];
 char * img_type[50];
-int param_attrib[50][7];   // [0]=count [1]=variable_param [2]=img_width 
-			   //[3]=img_height [4]=img_depth [5]=img_type [6]=
+char * img_format[50];
+int param_attrib[50][8];   // [0]=count [1]=variable_param [2]=img_width 
+			   //[3]=img_height [4]=img_depth [5]=img_type [6]=output [7]=format
 
 
 typedef struct gl_type{
@@ -52,6 +53,7 @@ char * noParseFunction_table[]=
     "IsProgramNV",
     "IsTexture",
     "IsList",
+    "Ortho",
     "IsTextureEXT",
     "IsOcclusionQueryNV",
     "IsRenderbufferEXT",
@@ -334,6 +336,7 @@ int main()
       img_type[i]=malloc(sizeof(char)*50);
       count[i]=malloc(sizeof(char)*50);
       variable_param[i]=malloc(sizeof(char)*50);
+      img_format[i]=malloc(sizeof(char)*50);
     }
 
   return_type=malloc(sizeof(char)*50);
@@ -441,10 +444,10 @@ int main()
 		  fprintf(fout_c2,"gl%s(",attrib);
 		  fprintf(fout_h,"gl%s(",attrib);
 		  fprintf(fin_c,"\tglfunctable[%d]=(__GLXextFuncPtr)lib_glXGetProcAddressARB(\"gl%s\");\n",fnum,attrib);
-		  fprintf(ftmpc,"void fgl%s()\n{\n",attrib);
+		  fprintf(ftmpc,"void GLOMPgl%s()\n{\n",attrib);
 		  //if(DEBUG)fprintf(ftmpc,"printf(\"jsuis client fnum=%d\\n\");",fnum);
-		  fprintf(ftmpc2,"\tfunctable[%d]=&fgl%s;\n",fnum,attrib);
-		  fprintf(fin_h,"void fgl%s();\n",attrib);
+		  fprintf(ftmpc2,"\tfunctable[%d]=&GLOMPgl%s;\n",fnum,attrib);
+		  fprintf(fin_h,"void GLOMPgl%s();\n",attrib);
                   
 		  cur = cur->xmlChildrenNode;
 		  if(cur->next!=NULL)
@@ -535,6 +538,15 @@ int main()
 			}
 		      else param_attrib[np][6]=0;
 
+		      /*verification de presence de l'attribut img_format*/
+		      attrib=xmlGetProp(cur, "img_format");
+		      if( attrib!=NULL)
+			{
+			  param_attrib[np][7]=1;
+			  strcpy(img_format[np],attrib);
+			}
+		      else param_attrib[np][7]=0;
+
 
 		      /*if(param_attrib[np][0]==1)
 			fprintf(ftmpc,"\t%s %s[%d];\n",type_remove_etoile(type_remove_const(type[np])),
@@ -578,8 +590,8 @@ int main()
 		  fprintf(fout_c2,"\tint fnum=%d;\n",fnum);
 		  fprintf(fout_c2,"\n\tif(DEBUG){printf(\"serveur fnum = %%d\\n\",fnum);}\n");
 		  fprintf(fout_c2,"\tint fflags=0;\n");
-		  fprintf(fout_c2,"\tfifo_output(&cmd_fifo,&fnum,sizeof(fnum));\n");
-		  fprintf(fout_c2,"\tfifo_output(&cmd_fifo,&fflags,sizeof(fflags));\n");
+		  fprintf(fout_c2,"\tfifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));\n");
+		  fprintf(fout_c2,"\tfifo_output(&GLOMPcmd_fifo,&fflags,sizeof(fflags));\n");
 		  fprintf(fout_h,");\n");
 		  for(i=0;i<=np;i++)
 		    {
@@ -611,7 +623,7 @@ int main()
 			      //fprintf(ftmpc,"\tsizep=sizeGLenum(%s)*%d;\n",variable_param[i],type_size(type[i]));
 			    }
 
-			  fprintf(fout_c2,"\tfifo_flush(&cmd_fifo);\n");
+			  fprintf(fout_c2,"\tfifo_flush(&GLOMPcmd_fifo);\n");
 			  fprintf(fout_c2,"\tsem_wait(semadr);\n");
 			  fprintf(fout_c2,"\tmemcpy(%s,shmadr,sizep);\n",nameparam[i]);
 			}
@@ -629,15 +641,13 @@ int main()
 			    }
 			  else fprintf(fout_c2,"\tsizep=%s*sizeGLenum(%s);\n",img_width[i],img_type[i]);
 
+			  if(param_attrib[i][7]==1)
+				fprintf(fout_c2,"\tsizep=sizep*sizeGLenum(%s);\n",img_format[i]);
+
 			  fprintf(fout_c2,"\tsegment_create((char *)%s,sizep);\n",nameparam[i]);
 			  fprintf(ftmpc,"\t%s=(%s)segment_attach();\n",nameparam[i],type_remove_const(type[i]));
 			}
-		      /*else if(param_attrib[i][0]==1)
-			{   
-			fprintf(fout_c2,"\tfifo_output(&cmd_fifo,%s,%d);\n",nameparam[i],
-			type_size(type[i])*count[i]);
-			fprintf(ftmpc,"\tfifo_input(&cmd_fifo,%s,%d);\n",nameparam[i],type_size(type[i])*count[i]);
-			}*/
+	
 		      else if(param_attrib[i][0]==1)
 			{   
 			  fprintf(ftmpc,"\t%s %s[%s];\n",type_remove_etoile(type_remove_const(type[i])),
@@ -645,9 +655,9 @@ int main()
 			  fprintf(fout_c2,"\tsizep=%d*%s;\n",type_size(type[i]),count[i]);
 			  fprintf(ftmpc,"\tsizep=%d*%s;\n",type_size(type[i]),count[i]);
 
-			  fprintf(fout_c2,"\tfifo_output(&cmd_fifo,%s,sizep);\n",nameparam[i],
+			  fprintf(fout_c2,"\tfifo_output(&GLOMPcmd_fifo,%s,sizep);\n",nameparam[i],
 				  type_size(type[i]),count[i]);
-			  fprintf(ftmpc,"\tfifo_input(&cmd_fifo,%s,sizep);\n",nameparam[i],
+			  fprintf(ftmpc,"\tfifo_input(&GLOMPcmd_fifo,%s,sizep);\n",nameparam[i],
 				  type_size(type[i]),count[i]);
 			}
 		      else if(param_attrib[i][1]==1)
@@ -655,20 +665,16 @@ int main()
 			  fprintf(ftmpc,"\t%s %s[sizeGLenum(%s)];\n",type_remove_etoile(type_remove_const(type[i])),
 				  nameparam[i],variable_param[i]);
 			  fprintf(fout_c2,"\tsizep=sizeGLenum(%s)*%d;\n",variable_param[i],type_size(type[i]));
-			  fprintf(ftmpc,"\tsizep=sizeGLenum(%s)*%d;\n",variable_param[i],type_size(type[i]));
-
-			  //fprintf(ftmpc,"\t%s %s[%s];\n",type_remove_etoile(type_remove_const(type[i])),
-			  //						nameparam[i],count[i]);
-			  //DEBUG				
+			  fprintf(ftmpc,"\tsizep=sizeGLenum(%s)*%d;\n",variable_param[i],type_size(type[i]));				
 
 
-			  fprintf(fout_c2,"\tfifo_output(&cmd_fifo,%s,sizep);\n",nameparam[i]);		     
-			  fprintf(ftmpc,"\tfifo_input(&cmd_fifo,%s,sizep);\n",nameparam[i]);
+			  fprintf(fout_c2,"\tfifo_output(&GLOMPcmd_fifo,%s,sizep);\n",nameparam[i]);		     
+			  fprintf(ftmpc,"\tfifo_input(&GLOMPcmd_fifo,%s,sizep);\n",nameparam[i]);
 			}
 		      else
 			{
-			  fprintf(fout_c2,"\tfifo_output(&cmd_fifo,&%s,%d);\n",nameparam[i],type_size(type[i]));
-			  fprintf(ftmpc,"\tfifo_input(&cmd_fifo,&%s,%d);\n",nameparam[i],type_size(type[i]));
+			  fprintf(fout_c2,"\tfifo_output(&GLOMPcmd_fifo,&%s,%d);\n",nameparam[i],type_size(type[i]));
+			  fprintf(ftmpc,"\tfifo_input(&GLOMPcmd_fifo,&%s,%d);\n",nameparam[i],type_size(type[i]));
 			}
 		    }
 	

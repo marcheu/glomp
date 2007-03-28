@@ -10,116 +10,105 @@ void GLOMPunpack( )
  
   int func;
   int flags;
-  fifo_input(&cmd_fifo,&func,4);
-  fifo_input(&cmd_fifo,&flags,4);
-  //if(DEBUG&&client_num==0)printf("CLIENT %d :fnum:%d\n",client_num,func);
+  fifo_input(&GLOMPcmd_fifo,&func,4);
+  fifo_input(&GLOMPcmd_fifo,&flags,4);
+  if(DEBUG){printf("CLIENT %d :fnum:%d\n",client_num,func);}
   if(func<OVERRIDE_BASE)
     functable[func]();
   else if(func==OVERRIDE_BASE)
-    fglXSwapBuffers();
+    GLOMPglXSwapBuffers();
   else if(func==OVERRIDE_BASE+1)
-    fglFrustum();
+    GLOMPglFrustum();
   else if(func==OVERRIDE_BASE+2)
-    fglGenTextures();
+    GLOMPglGenTextures();
   else if(func==OVERRIDE_BASE+3)
-    fglBindTexture();
+    GLOMPglBindTexture();
   else if(func==OVERRIDE_BASE+4)
-    fglGenLists();
+    GLOMPglGenLists();
   else if(func==OVERRIDE_BASE+5)
-    fglCallList();
+    GLOMPglCallList();
   else if(func==OVERRIDE_BASE+6)
-    fglCallLists();
+    GLOMPglCallLists();
   else if(func==OVERRIDE_BASE+7)
-    fglGenTexturesEXT();
+    GLOMPglGenTexturesEXT();
   else if(func==OVERRIDE_BASE+8)
-    fglBindTextureEXT();
+    GLOMPglBindTextureEXT();
   else if(func==OVERRIDE_BASE+9)
-    fglGenQueries();
+    GLOMPglGenQueries();
   else if(func==OVERRIDE_BASE+10)
-    fglGenBuffers();
+    GLOMPglGenBuffers();
   else if(func==OVERRIDE_BASE+11)
-    fglBindBuffer();
+    GLOMPglBindBuffer();
   else if(func==OVERRIDE_BASE+12)
-    fglGenProgramsARB();
+    GLOMPglGenProgramsARB();
   else if(func==OVERRIDE_BASE+13)
-    fglBindProgramARB();
+    GLOMPglBindProgramARB();
   else if(func==OVERRIDE_BASE+14)
-    fglGenBuffersARB();
+    GLOMPglGenBuffersARB();
   else if(func==OVERRIDE_BASE+15)
-    fglBindBufferARB();
+    GLOMPglBindBufferARB();
   else if(func==OVERRIDE_BASE+16)
-    fglGenQueriesARB();
+    GLOMPglGenQueriesARB();
   else if(func==OVERRIDE_BASE+17)
-    fglGenFencesNV();
+    GLOMPglGenFencesNV();
   else if(func==OVERRIDE_BASE+18)
-    fglGenProgramsNV();
+    GLOMPglGenProgramsNV();
   else if(func==OVERRIDE_BASE+19)
-    fglBindProgramNV();
+    GLOMPglBindProgramNV();
   else if(func==OVERRIDE_BASE+20)
-    fglGenOcclusionQueriesNV();
+    GLOMPglGenOcclusionQueriesNV();
   else if(func==OVERRIDE_BASE+21)
-    fglGenRenderbuffersEXT();
+    GLOMPglGenRenderbuffersEXT();
   else if(func==OVERRIDE_BASE+22)
-    fglBindRenderbufferEXT();
+    GLOMPglBindRenderbufferEXT();
   else if(func==OVERRIDE_BASE+23)
-    fglGenFramebuffersEXT();
+    GLOMPglGenFramebuffersEXT();
   else if(func==OVERRIDE_BASE+24)
-    fglBindFramebufferEXT();
+    GLOMPglBindFramebufferEXT();
   else if(func==OVERRIDE_BASE+25)
-    fglFlush();
+    GLOMPglFlush();
   else if(func==OVERRIDE_BASE+26)
-    fglFinish();
+    GLOMPglFinish();
   else if(func==OVERRIDE_BASE+27)
-    fglDeleteTextures();
+    GLOMPglDeleteTextures();
   else if(func==OVERRIDE_BASE+28)
-    fglDeleteQueries();
+    GLOMPglDeleteQueries();
   else if(func==OVERRIDE_BASE+29)
-    fglDeleteBuffers();
+    GLOMPglDeleteBuffers();
   else if(func==OVERRIDE_BASE+30)
-    fglDeleteProgramsARB();
+    GLOMPglDeleteProgramsARB();
   else if(func==OVERRIDE_BASE+31)
-    fglDeleteBuffersARB();
+    GLOMPglDeleteBuffersARB();
   else if(func==OVERRIDE_BASE+32)
-    fglDeleteQueriesARB();
+    GLOMPglDeleteQueriesARB();
   else if(func==OVERRIDE_BASE+33)
-    fglDeleteTexturesEXT();
+    GLOMPglDeleteTexturesEXT();
   else if(func==OVERRIDE_BASE+34)
-    fglDeleteFencesNV();
+    GLOMPglDeleteFencesNV();
   else if(func==OVERRIDE_BASE+35)
-    fglDeleteProgramsNV();
+    GLOMPglDeleteProgramsNV();
   else if(func==OVERRIDE_BASE+36)
-    fglDeleteOcclusionQueriesNV();
+    GLOMPglDeleteOcclusionQueriesNV();
   else if(func==OVERRIDE_BASE+37)
-    fglDeleteRenderbuffersEXT();
+    GLOMPglDeleteRenderbuffersEXT();
   else if(func==OVERRIDE_BASE+38)
-    fglDeleteFramebuffersEXT();
+    GLOMPglDeleteFramebuffersEXT();
   else if(func==OVERRIDE_BASE+39)
-    fXCreateWindow();
+    GLOMPXCreateWindow();
   else if(func==OVERRIDE_BASE+40)
-    fglViewport();
+    GLOMPglViewport();
   else if(func==OVERRIDE_BASE+41)
-    fCreerShmClient();
+    GLOMPglOrtho();
 }
 
-
-void client_init()
-{
-  
+/*initialise un client*/
+void GLOMPclient_init()
+{  
+  /*recupere le pointeur de glXGetProcAddressARB pour pouvoir lancer les fonction glX*/
   lib_handle_libGL2 = dlopen("/usr/lib/libGL.so", RTLD_LAZY);
-
   lib_glXGetProcAddressARB = dlsym(lib_handle_libGL2, "glXGetProcAddressARB");
-
-  //extern void (*glXGetProcAddressARB(const GLubyte *procName))(void);
-  
-  initPointers();
-
-  creertabfunc();
-
-
-
-  
-  printf("client init OKI %d\n",client_num);
-  return; 
+  initPointers();/*recupere toutes les add des fonction glX (cf dewarped)*/
+  creertabfunc();/*creer le tableau des fonction deriver GLOMP...*/ 
 }
 
 

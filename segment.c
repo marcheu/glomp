@@ -41,26 +41,31 @@ int segment_create(char* p,int size)
     }
   
   if (p)  
-    fifo_output(&cmd_fifo,&snd_key,4);
+    fifo_output(&GLOMPcmd_fifo,&snd_key,4);
   else
-    fifo_output(&cmd_fifo,&zero_key,4);
-  fifo_output(&cmd_fifo,&snd_size,4);
+    fifo_output(&GLOMPcmd_fifo,&zero_key,4);
+  fifo_output(&GLOMPcmd_fifo,&snd_size,4);
+  printf("[serveur] cree segment key %x size %d\n",snd_key,snd_size);
 }
 
 // recupere un segment dans la fifo et l'attache
 char* segment_attach()
 {
   segmat* s=(segmat*)malloc(sizeof(segmat));
-  fifo_input(&cmd_fifo,&s->key,4);
-  fifo_input(&cmd_fifo,&s->size,4);
+  fifo_input(&GLOMPcmd_fifo,&s->key,4);
+  fifo_input(&GLOMPcmd_fifo,&s->size,4);
+printf("[%d] fifo input ok key %x size %d\n",client_num,s->key, s->size);
 
   if (s->key)  
     s->shm=shmat(shmget(s->key+client_num,s->size,0666),0,0);
   else
     s->shm=NULL;
+printf("[%d] attach ok %x\n",client_num,s->shm);
+
   
   s->next=seglist;
   seglist=s;
+printf("[%d] attach ok ok\n",client_num);
   return s->shm;
 }
 
@@ -87,15 +92,14 @@ void segment_delete()
 
 
 
-int segment_create_retour()
+int GLOMPsegment_create_retour()
 {
   int shmid;
   
   shmadr=shmat(shmget(IPC_PRIVATE,4080,0666|IPC_CREAT),0,0);
-
-
   semadr=(sem_t *)shmat(shmget(IPC_PRIVATE,sizeof(sem_t),0666),0,0);
   sem_init(semadr,0,0);
+  
   
 
 }

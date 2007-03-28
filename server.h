@@ -7,9 +7,6 @@
 #include <GL/glxext.h>
 #include "wrapped.h"
 
-
-extern void server_init();
-
 int sizeGLenum(GLenum);
 
 

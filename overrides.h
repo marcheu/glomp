@@ -7,54 +7,51 @@
 #include "transfertFenetre.h"
 #include <sys/types.h>
 #include <signal.h>
+#include <unistd.h>
 
 #define OVERRIDE_BASE 8000
 
 
-extern int width,height;//taille de la zone
-
-
-
 void load_library(void);
 
-void fglFrustum();
-void fglGenTextures();
-void fglBindTexture();
-void fglXSwapBuffers();
-void fglGenLists();
-void fglCallList();
-void fglCallLists();
-void fglBindTextureEXT();
-void fglGenTexturesEXT();
-void fglGenQueries();
-void fglGenBuffers();
-void fglBindBuffer();
-void fglGenProgramsARB();
-void fglBindProgramARB();
-void fglGenBuffersARB();
-void fglBindBufferARB();
-void fglGenQueriesARB();
-void fglGenFencesNV();
-void fglGenProgramsNV();
-void fglBindProgramNV();
-void fglGenOcclusionQueriesNV();
-void fglGenRenderbuffersEXT();
-void fglBindRenderbufferEXT();
-void fglGenFramebuffersEXT();
-void fglBindFramebufferEXT();
-void fglDeleteTextures();
-void fglFlush();
-void fglFinish();
-void fglDeleteQueries();
-void fglDeleteBuffers();
-void fglDeleteProgramARB();
-void fglDeleteBuffersARB();
-void fglDeleteQueriesARB();
-void fglDeleteTexturesEXT();
-void fglDeleteFencesNV();
-void fglDeleteProgramsNV();
-void fglDeleteOcclusionQueriesNV();
-void fglDeleteRenderbuffersEXT();
-void fglDeleteFramebuffersEXT();
-void fXCreateWindow();
+void GLOMPglFrustum();
+void GLOMPglGenTextures();
+void GLOMPglBindTexture();
+void GLOMPglXSwapBuffers();
+void GLOMPglGenLists();
+void GLOMPglCallList();
+void GLOMPglCallLists();
+void GLOMPglBindTextureEXT();
+void GLOMPglGenTexturesEXT();
+void GLOMPglGenQueries();
+void GLOMPglGenBuffers();
+void GLOMPglBindBuffer();
+void GLOMPglGenProgramsARB();
+void GLOMPglBindProgramARB();
+void GLOMPglGenBuffersARB();
+void GLOMPglBindBufferARB();
+void GLOMPglGenQueriesARB();
+void GLOMPglGenFencesNV();
+void GLOMPglGenProgramsNV();
+void GLOMPglBindProgramNV();
+void GLOMPglGenOcclusionQueriesNV();
+void GLOMPglGenRenderbuffersEXT();
+void GLOMPglBindRenderbufferEXT();
+void GLOMPglGenFramebuffersEXT();
+void GLOMPglBindFramebufferEXT();
+void GLOMPglDeleteTextures();
+void GLOMPglFlush();
+void GLOMPglFinish();
+void GLOMPglDeleteQueries();
+void GLOMPglDeleteBuffers();
+void GLOMPglDeleteProgramARB();
+void GLOMPglDeleteBuffersARB();
+void GLOMPglDeleteQueriesARB();
+void GLOMPglDeleteTexturesEXT();
+void GLOMPglDeleteFencesNV();
+void GLOMPglDeleteProgramsNV();
+void GLOMPglDeleteOcclusionQueriesNV();
+void GLOMPglDeleteRenderbuffersEXT();
+void GLOMPglDeleteFramebuffersEXT();
+void GLOMPXCreateWindow();
 #endif
