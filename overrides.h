@@ -8,6 +8,7 @@
 #include <sys/types.h>
 #include <signal.h>
 #include <unistd.h>
+#include <math.h>
 
 #define OVERRIDE_BASE 8000
 

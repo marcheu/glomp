@@ -43,7 +43,7 @@ int sizeGLenum(GLenum type)
     }
 
 
-  printf("Attention sizeGLenum=0!!\n");
+  printf("Attention sizeGLenum=0 %x!!\n",type);
   return 0;
 }
 
