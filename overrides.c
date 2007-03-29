@@ -22,6 +22,7 @@ static void (*lib_glOrtho) ( GLdouble left,
 			     GLdouble top,
 			     GLdouble zNear,
 			     GLdouble zFar	)=0;
+static GLubyte (*lib_glGetString)( GLenum name )=0;
 
 static int (*lib_XSetStandardProperties)(
 					 Display*		/* display */,
@@ -142,7 +143,7 @@ void load_library(void)
   lib_glRasterPos2i = dlsym(lib_handle_libGL, "glRasterPos2i");
   lib_glDrawPixels = dlsym(lib_handle_libGL, "glDrawPixels");
   lib_glReadPixels = dlsym(lib_handle_libGL, "glReadPixels");  
-
+  lib_glGetString = dlsym(lib_handle_libGL, "glGetString");
   /*les extensions*/
   lib_glBindTextureEXT = dlsym(lib_handle_libGL, "glBindTextureEXT");    
   lib_glGenTexturesEXT = dlsym(lib_handle_libGL, "glGenTexturesEXT");
@@ -323,7 +324,6 @@ void GLOMPglFrustum()
 
   newp2=p2+(p3-p2)*((double)beforeload/(double)totalload);
   newp3=p2+(p3-p2)*((double)(beforeload+client_load[client_num])/(double)totalload);
-  printf("[%d] les anciennes %f %f --- les nexs %f %f\n",client_num,p2,p3,newp2,newp3);
  
   lib_glFrustum(p0,p1,newp2,newp3,p4,p5);
 }
@@ -335,7 +335,6 @@ void glGenTextures ( GLsizei p0 , GLuint *p1 )
   int fnum=OVERRIDE_BASE+2;
   int fflags=0;
   GLuint id;
-  printf("je genere une texture %d\n",id);
   fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
   fifo_output(&GLOMPcmd_fifo,&fflags,sizeof(fflags));
   fifo_output(&GLOMPcmd_fifo,&p0,4);
@@ -380,8 +379,6 @@ void glBindTexture ( GLenum p0 , GLuint p1 )
   fifo_output(&GLOMPcmd_fifo,&fflags,sizeof(fflags));
   fifo_output(&GLOMPcmd_fifo,&p0,4);
   fifo_output(&GLOMPcmd_fifo,&p1,4);
-  printf("id du server:%d\n",p1);
-  return ;
 
 }
 
@@ -469,7 +466,7 @@ const GLubyte* glGetString( GLenum name )
   const GLubyte* vendor="Vendor";
   const GLubyte* renderer="Glomp ";
   const GLubyte* version="1.2 Glomp " ;
-  const GLubyte* extensions="";
+  GLubyte* extensions=lib_glGetString(GL_EXTENSIONS);
   switch(name)
     {
     case GL_VENDOR:
@@ -482,6 +479,26 @@ const GLubyte* glGetString( GLenum name )
       return extensions;
     }
 }
+void GLOMPglGetString( GLenum name )
+{
+  const GLubyte* vendor="Vendor";
+  const GLubyte* renderer="Glomp ";
+  const GLubyte* version="1.2 Glomp " ;
+  GLubyte* extensions=lib_glGetString(GL_EXTENSIONS);
+  switch(name)
+    {
+    case GL_VENDOR:
+      return vendor;
+    case GL_RENDERER:
+      return renderer;
+    case GL_VERSION:
+      return version;
+    case GL_EXTENSIONS:
+      return extensions;
+    }
+}
+
+
 
 /*pas sur d'avoir la bonne taille dasn segment_create*/
 void glCallLists (GLsizei n, GLenum type, const GLvoid *lists)
@@ -1681,12 +1698,6 @@ void GLOMPglViewport()
 
   
   printf("viewport:%d    %d %d %d %d",client_num,p1,p3,newp1,newp3);
-
-  /*
-    newp2=(p3-p2)*((double)beforeload/(double)totalload-0.5);
-    newp3=(p3-p2)*((double)(beforeload+client_load[client_num])/(double)totalload-0.5);
-  */
-
   
   lib_glViewport(p0,newp1,p2,newp3);
  
@@ -1738,15 +1749,10 @@ void GLOMPglOrtho()
 	beforeload+=client_load[i];
     }
   
-  
-  printf("%f %f\n",p2,p3);
+
   
   newp2=p2+(p3-p2)*((double)beforeload/(double)totalload);
   newp3=p2+(p3-p2)*((double)(beforeload+client_load[client_num])/(double)totalload);
-
-  printf("new %f %f\n",newp2,newp3);
-  //  newp2=p2;
-  //newp3=p3;
   
 
   lib_glOrtho(p0,p1,newp2,newp3,p4,p5);
@@ -1758,13 +1764,12 @@ int XDestroyWindow ( Display * disp, Window parent)
 
 {
   lib_XDestroyWindow(disp,parent);
-  kill(0,SIGKILL);
-  
+  kill(0,SIGKILL); 
 }
 
 int XCloseDisplay ( Display * disp) 
 {
-  lib_XCloseDisplay(disp);
+  lib_XCloseDisplay(disp);  
   kill(0,SIGKILL);  
 }
 

@@ -11,7 +11,7 @@ extern sem_t * semadr;
 extern char * semadrShm;
 
 // creer le segment et ecrit dans la fifo
-extern int segment_create(char* p,int size);
+extern void segment_create(char* p,int size);
 
 // recupere un segment dans la fifo et l'attache
 extern char * segment_attach();

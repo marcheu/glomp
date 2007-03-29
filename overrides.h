@@ -55,4 +55,9 @@ void GLOMPglDeleteOcclusionQueriesNV();
 void GLOMPglDeleteRenderbuffersEXT();
 void GLOMPglDeleteFramebuffersEXT();
 void GLOMPXCreateWindow();
+void GLOMPglDeleteProgramsARB ();
+void GLOMPglViewport();
+void GLOMPglOrtho();
+
+
 #endif
