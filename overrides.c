@@ -1,5 +1,9 @@
 #include"overrides.h"
 
+
+
+
+
 /* functions we implement ourselves */
 
 static void (*lib_glXSwapBuffers)(Display *dpy, GLXDrawable drawable)=0;
@@ -463,10 +467,13 @@ void GLOMPglCallList ()
 
 const GLubyte* glGetString( GLenum name )
 {
+  lib_glGetString(name);
+  /*
   const GLubyte* vendor="Vendor";
   const GLubyte* renderer="Glomp ";
   const GLubyte* version="1.2 Glomp " ;
-  GLubyte* extensions=lib_glGetString(GL_EXTENSIONS);
+  GLubyte* extensions;
+  extensions=lib_glGetString(GL_EXTENSIONS);
   switch(name)
     {
     case GL_VENDOR:
@@ -478,26 +485,8 @@ const GLubyte* glGetString( GLenum name )
     case GL_EXTENSIONS:
       return extensions;
     }
+  */
 }
-void GLOMPglGetString( GLenum name )
-{
-  const GLubyte* vendor="Vendor";
-  const GLubyte* renderer="Glomp ";
-  const GLubyte* version="1.2 Glomp " ;
-  GLubyte* extensions=lib_glGetString(GL_EXTENSIONS);
-  switch(name)
-    {
-    case GL_VENDOR:
-      return vendor;
-    case GL_RENDERER:
-      return renderer;
-    case GL_VERSION:
-      return version;
-    case GL_EXTENSIONS:
-      return extensions;
-    }
-}
-
 
 
 /*pas sur d'avoir la bonne taille dasn segment_create*/
@@ -1786,4 +1775,48 @@ void gluPerspective(GLdouble fovy, GLdouble aspect, GLdouble zNear, GLdouble zFa
    glFrustum(xmin, xmax, ymin, ymax, zNear, zFar);
 }
 
-
+void (*functable_override[])(void)=
+{
+  &GLOMPglXSwapBuffers,
+  &GLOMPglFrustum,
+  &GLOMPglGenTextures,
+  &GLOMPglBindTexture,
+  &GLOMPglGenLists,
+  &GLOMPglCallList,
+  &GLOMPglCallLists,
+  &GLOMPglGenTexturesEXT,
+  &GLOMPglBindTextureEXT,
+  &GLOMPglGenQueries,
+  &GLOMPglGenBuffers,
+  &GLOMPglBindBuffer,
+  &GLOMPglGenProgramsARB,
+  &GLOMPglBindProgramARB,
+  &GLOMPglGenBuffersARB,
+  &GLOMPglBindBufferARB,
+  &GLOMPglGenQueriesARB,
+  &GLOMPglGenFencesNV,
+  &GLOMPglGenProgramsNV,
+  &GLOMPglBindProgramNV,
+  &GLOMPglGenOcclusionQueriesNV,
+  &GLOMPglGenRenderbuffersEXT,
+  &GLOMPglBindRenderbufferEXT,
+  &GLOMPglGenFramebuffersEXT,
+  &GLOMPglBindFramebufferEXT,
+  &GLOMPglFlush,
+  &GLOMPglFinish,
+  &GLOMPglDeleteTextures,
+  &GLOMPglDeleteQueries,
+  &GLOMPglDeleteBuffers,
+  &GLOMPglDeleteProgramsARB,
+  &GLOMPglDeleteBuffersARB,
+  &GLOMPglDeleteQueriesARB,
+  &GLOMPglDeleteTexturesEXT,
+  &GLOMPglDeleteFencesNV,
+  &GLOMPglDeleteProgramsNV,
+  &GLOMPglDeleteOcclusionQueriesNV,
+  &GLOMPglDeleteRenderbuffersEXT,
+  &GLOMPglDeleteFramebuffersEXT,
+  &GLOMPXCreateWindow,
+  &GLOMPglViewport,
+  &GLOMPglOrtho,
+};
