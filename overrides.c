@@ -1682,12 +1682,8 @@ void GLOMPglViewport()
 	beforeload+=client_load[i];
     }
   newp1=p1+p3*((double)beforeload/(double)totalload);
-
   newp3=p3*(double)client_load[client_num]/(double)totalload;
 
-  
-  printf("viewport:%d    %d %d %d %d",client_num,p1,p3,newp1,newp3);
-  
   lib_glViewport(p0,newp1,p2,newp3);
  
     
@@ -1775,9 +1771,186 @@ void gluPerspective(GLdouble fovy, GLdouble aspect, GLdouble zNear, GLdouble zFa
    glFrustum(xmin, xmax, ymin, ymax, zNear, zFar);
 }
 
+
+/************les fonctions map********************************/
+void glMap1f(GLenum target,GLfloat u1,GLfloat u2,GLint stride,GLint order,const GLfloat * points)
+{
+	int sizep;
+	int fnum=OVERRIDE_BASE+42;
+
+	if(DEBUG){printf("serveur fnum = %d\n",fnum);}
+	int fflags=0;
+	fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
+	fifo_output(&GLOMPcmd_fifo,&fflags,sizeof(fflags));
+	fifo_output(&GLOMPcmd_fifo,&target,4);
+	fifo_output(&GLOMPcmd_fifo,&u1,4);
+	fifo_output(&GLOMPcmd_fifo,&u2,4);
+	fifo_output(&GLOMPcmd_fifo,&stride,4);
+	fifo_output(&GLOMPcmd_fifo,&order,4);
+	sizep=order*sizeof(GLfloat);
+	fifo_output(&GLOMPcmd_fifo,points,sizep);
+}
+
+void GLOMPglMap1f()
+{
+	GLenum target;
+	GLfloat u1;
+	GLfloat u2;
+	GLint stride;
+	GLint order;
+	int sizep;
+	fifo_input(&GLOMPcmd_fifo,&target,4);
+	fifo_input(&GLOMPcmd_fifo,&u1,4);
+	fifo_input(&GLOMPcmd_fifo,&u2,4);
+	fifo_input(&GLOMPcmd_fifo,&stride,4);
+	fifo_input(&GLOMPcmd_fifo,&order,4);
+	GLfloat  points[order];
+	sizep=order*sizeof(GLfloat);
+	fifo_input(&GLOMPcmd_fifo,points,sizep);
+	((void (*)(GLenum,GLfloat,GLfloat,GLint,GLint,GLfloat *))glfunctable[216])(target,u1,u2,stride,order,(GLfloat *)points);
+}
+
+
+
+void glMap1d(GLenum target,GLdouble u1,GLdouble u2,GLint stride,GLint order,const GLdouble * points)
+{
+	int sizep;
+	int fnum=OVERRIDE_BASE+43;
+
+	if(DEBUG){printf("serveur fnum = %d\n",fnum);}
+	int fflags=0;
+	fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
+	fifo_output(&GLOMPcmd_fifo,&fflags,sizeof(fflags));
+	fifo_output(&GLOMPcmd_fifo,&target,4);
+	fifo_output(&GLOMPcmd_fifo,&u1,8);
+	fifo_output(&GLOMPcmd_fifo,&u2,8);
+	fifo_output(&GLOMPcmd_fifo,&stride,4);
+	fifo_output(&GLOMPcmd_fifo,&order,4);
+	sizep=order*sizeof(GLdouble);
+	fifo_output(&GLOMPcmd_fifo,points,sizep);
+}
+
+void GLOMPglMap1d()
+{
+	GLenum target;
+	GLdouble u1;
+	GLdouble u2;
+	GLint stride;
+	GLint order;
+	int sizep;
+	fifo_input(&GLOMPcmd_fifo,&target,4);
+	fifo_input(&GLOMPcmd_fifo,&u1,8);
+	fifo_input(&GLOMPcmd_fifo,&u2,8);
+	fifo_input(&GLOMPcmd_fifo,&stride,4);
+	fifo_input(&GLOMPcmd_fifo,&order,4);
+	GLdouble  points[order];
+	sizep=order*sizeof(GLdouble);
+	fifo_input(&GLOMPcmd_fifo,points,sizep);
+	((void (*)(GLenum,GLdouble,GLdouble,GLint,GLint,GLdouble *))glfunctable[215])(target,u1,u2,stride,order,(GLdouble *)points);
+}
+
+void glMap2f(GLenum target,GLfloat u1,GLfloat u2,GLint ustride,GLint uorder,GLfloat v1,GLfloat v2,GLint vstride,GLint vorder,const GLfloat * points)
+{
+	int sizep;
+	int fnum=OVERRIDE_BASE+44;
+
+	if(DEBUG){printf("serveur fnum = %d\n",fnum);}
+	int fflags=0;
+	fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
+	fifo_output(&GLOMPcmd_fifo,&fflags,sizeof(fflags));
+	fifo_output(&GLOMPcmd_fifo,&target,4);
+	fifo_output(&GLOMPcmd_fifo,&u1,4);
+	fifo_output(&GLOMPcmd_fifo,&u2,4);
+	fifo_output(&GLOMPcmd_fifo,&ustride,4);
+	fifo_output(&GLOMPcmd_fifo,&uorder,4);
+	fifo_output(&GLOMPcmd_fifo,&v1,4);
+	fifo_output(&GLOMPcmd_fifo,&v2,4);
+	fifo_output(&GLOMPcmd_fifo,&vstride,4);
+	fifo_output(&GLOMPcmd_fifo,&vorder,4);
+	sizep=uorder*vorder*sizeof(GLfloat);
+	fifo_output(&GLOMPcmd_fifo,points,sizep);
+}
+
+void GLOMPglMap2f()
+{
+	GLenum target;
+	GLfloat u1;
+	GLfloat u2;
+	GLint ustride;
+	GLint uorder;
+	GLfloat v1;
+	GLfloat v2;
+	GLint vstride;
+	GLint vorder;
+	int sizep;
+	fifo_input(&GLOMPcmd_fifo,&target,4);
+	fifo_input(&GLOMPcmd_fifo,&u1,4);
+	fifo_input(&GLOMPcmd_fifo,&u2,4);
+	fifo_input(&GLOMPcmd_fifo,&ustride,4);
+	fifo_input(&GLOMPcmd_fifo,&uorder,4);
+	fifo_input(&GLOMPcmd_fifo,&v1,4);
+	fifo_input(&GLOMPcmd_fifo,&v2,4);
+	fifo_input(&GLOMPcmd_fifo,&vstride,4);
+	fifo_input(&GLOMPcmd_fifo,&vorder,4);
+	GLfloat  points[uorder*vorder];
+	sizep=uorder*vorder*sizeof(GLfloat);
+	fifo_input(&GLOMPcmd_fifo,points,sizep);
+	((void (*)(GLenum,GLfloat,GLfloat,GLint,GLint,GLfloat,GLfloat,GLint,GLint,GLfloat *))glfunctable[218])(target,u1,u2,ustride,uorder,v1,v2,vstride,vorder,(GLfloat *)points);
+}
+
+
+void glMap2d(GLenum target,GLdouble u1,GLdouble u2,GLint ustride,GLint uorder,GLdouble v1,GLdouble v2,GLint vstride,GLint vorder,const GLdouble * points)
+{
+	int sizep;
+	int fnum=OVERRIDE_BASE+45;
+
+	if(DEBUG){printf("serveur fnum = %d\n",fnum);}
+	int fflags=0;
+	fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
+	fifo_output(&GLOMPcmd_fifo,&fflags,sizeof(fflags));
+	fifo_output(&GLOMPcmd_fifo,&target,4);
+	fifo_output(&GLOMPcmd_fifo,&u1,8);
+	fifo_output(&GLOMPcmd_fifo,&u2,8);
+	fifo_output(&GLOMPcmd_fifo,&ustride,4);
+	fifo_output(&GLOMPcmd_fifo,&uorder,4);
+	fifo_output(&GLOMPcmd_fifo,&v1,8);
+	fifo_output(&GLOMPcmd_fifo,&v2,8);
+	fifo_output(&GLOMPcmd_fifo,&vstride,4);
+	fifo_output(&GLOMPcmd_fifo,&vorder,4);
+	sizep=uorder*vorder*sizeof(GLdouble);
+	fifo_output(&GLOMPcmd_fifo,points,sizep);
+}
+
+void GLOMPglMap2d()
+{
+	GLenum target;
+	GLdouble u1;
+	GLdouble u2;
+	GLint ustride;
+	GLint uorder;
+	GLdouble v1;
+	GLdouble v2;
+	GLint vstride;
+	GLint vorder;
+	int sizep;
+	fifo_input(&GLOMPcmd_fifo,&target,4);
+	fifo_input(&GLOMPcmd_fifo,&u1,8);
+	fifo_input(&GLOMPcmd_fifo,&u2,8);
+	fifo_input(&GLOMPcmd_fifo,&ustride,4);
+	fifo_input(&GLOMPcmd_fifo,&uorder,4);
+	fifo_input(&GLOMPcmd_fifo,&v1,8);
+	fifo_input(&GLOMPcmd_fifo,&v2,8);
+	fifo_input(&GLOMPcmd_fifo,&vstride,4);
+	fifo_input(&GLOMPcmd_fifo,&vorder,4);
+	GLdouble  points[uorder*vorder];
+	sizep=uorder*vorder*sizeof(GLdouble);
+	fifo_input(&GLOMPcmd_fifo,points,sizep);
+	((void (*)(GLenum,GLdouble,GLdouble,GLint,GLint,GLdouble,GLdouble,GLint,GLint,GLdouble *))glfunctable[217])(target,u1,u2,ustride,uorder,v1,v2,vstride,vorder,(GLdouble *)points);
+}
+
 void (*functable_override[])(void)=
 {
-  &GLOMPglXSwapBuffers,
+  &GLOMPglXSwapBuffers,//0
   &GLOMPglFrustum,
   &GLOMPglGenTextures,
   &GLOMPglBindTexture,
@@ -1787,7 +1960,7 @@ void (*functable_override[])(void)=
   &GLOMPglGenTexturesEXT,
   &GLOMPglBindTextureEXT,
   &GLOMPglGenQueries,
-  &GLOMPglGenBuffers,
+  &GLOMPglGenBuffers,//10
   &GLOMPglBindBuffer,
   &GLOMPglGenProgramsARB,
   &GLOMPglBindProgramARB,
@@ -1797,7 +1970,7 @@ void (*functable_override[])(void)=
   &GLOMPglGenFencesNV,
   &GLOMPglGenProgramsNV,
   &GLOMPglBindProgramNV,
-  &GLOMPglGenOcclusionQueriesNV,
+  &GLOMPglGenOcclusionQueriesNV,//20
   &GLOMPglGenRenderbuffersEXT,
   &GLOMPglBindRenderbufferEXT,
   &GLOMPglGenFramebuffersEXT,
@@ -1807,7 +1980,7 @@ void (*functable_override[])(void)=
   &GLOMPglDeleteTextures,
   &GLOMPglDeleteQueries,
   &GLOMPglDeleteBuffers,
-  &GLOMPglDeleteProgramsARB,
+  &GLOMPglDeleteProgramsARB,//30
   &GLOMPglDeleteBuffersARB,
   &GLOMPglDeleteQueriesARB,
   &GLOMPglDeleteTexturesEXT,
@@ -1817,6 +1990,10 @@ void (*functable_override[])(void)=
   &GLOMPglDeleteRenderbuffersEXT,
   &GLOMPglDeleteFramebuffersEXT,
   &GLOMPXCreateWindow,
-  &GLOMPglViewport,
+  &GLOMPglViewport,//40
   &GLOMPglOrtho,
+  &GLOMPglMap1f,
+  &GLOMPglMap1d,
+  &GLOMPglMap2f,
+  &GLOMPglMap2d,
 };

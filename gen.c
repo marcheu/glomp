@@ -42,7 +42,10 @@ typedef struct gl_type{
 
 /*------tableau des fonction ne devant pas etre traite par le parseur xml---*/
 char * noParseFunction_table[]=
-  {
+  { "Map1d",
+    "Map1f",
+    "Map2d",
+    "Map2f",
     "Viewport",
     "IsQuery",
     "IsBuffer",
@@ -115,7 +118,7 @@ char * noParseFunction_table[]=
     "CompressedTexSubImage1DARB",
     "ProgramStringARB",
     /*et dans wrapped pb*/
-    "GetMapdv",
+     "GetMapdv",
     "GetMapfv",
     "GetMapiv",
     "GetTexImage",
