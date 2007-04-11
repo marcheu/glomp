@@ -5,15 +5,15 @@ sem_t * semadr;
 
 typedef struct segmat
 {
-  int key;
-  int size;
-  char* shm;
-  struct segmat* next;
+	int key;
+	int size;
+	char* shm;
+	struct segmat* next;
 }segmat;
 
 segmat* seglist=NULL;
 
-#define FAST_PATH_SIZE 2000
+#define FAST_PATH_SIZE 1000
 
 // creer le segment et ecrit dans la fifo
 void segment_create(char* p,int size)
@@ -47,7 +47,7 @@ void segment_create(char* p,int size)
 	{
 		// default path : create an shm
 		// for each client, create a segment, attach it, copy the contents, detach
-		for(i=0;i<nbcarte;i++)
+		for(i=1;i<nbcarte;i++)
 		{
 			char* shm=shmat(shmget(segkey,size,0666|IPC_CREAT),0,0);
 			segkey++;
@@ -61,7 +61,7 @@ void segment_create(char* p,int size)
 		fifo_output(&GLOMPcmd_fifo,&snd_size,4);
 	}
 	//printf("[serveur] cree segment key %x size %d\n",p?snd_key:zero_key,snd_size);
-	fflush(stdout);
+	//fflush(stdout);
 }
 
 // recupere un segment dans la fifo et l'attache
@@ -83,7 +83,7 @@ char* segment_attach()
 		segmat* s=(segmat*)malloc(sizeof(segmat));
 		s->key=0;
 		s->shm=(char*)malloc(size);
-		fifo_input(&GLOMPcmd_fifo,s->shm,size);		
+		fifo_input(&GLOMPcmd_fifo,s->shm,size);
 		return s->shm;
 	}
 	else
@@ -92,12 +92,11 @@ char* segment_attach()
 		segmat* s=(segmat*)malloc(sizeof(segmat));
 		s->key=key;
 		s->size=size;
-		s->shm=shmat(shmget(s->key+client_num,s->size,0666),0,0);
+		s->shm=shmat(shmget(s->key+client_num-1,s->size,0666),0,0);
 		s->next=seglist;
 		seglist=s;
 		return s->shm;
 	}
-	//printf("[%d] attach ok ok\n",client_num);
 }
 
 // delete all the segments
@@ -112,7 +111,7 @@ void segment_delete()
 			if (s->key!=0)
 			{
 				// delete the segment
-				shmctl(shmget(s->key+client_num,s->size,0666), IPC_RMID, NULL);
+				shmctl(shmget(s->key+client_num-1,s->size,0666), IPC_RMID, NULL);
 				shmdt(s->shm);
 			}
 			else
@@ -130,16 +129,14 @@ void segment_delete()
 
 
 
-int GLOMPsegment_create_retour()
+void GLOMPsegment_create_retour()
 {
-  int shmid;
-  
-  shmadr=shmat(shmget(IPC_PRIVATE,4080,0666|IPC_CREAT),0,0);
-  semadr=(sem_t *)shmat(shmget(IPC_PRIVATE,sizeof(sem_t),0666),0,0);
-  sem_init(semadr,0,0);
-  
-  
+	int shmid,i;
 
+	shmadr=shmat(shmget(IPC_PRIVATE,4096*nbcarte,0666|IPC_CREAT),0,0);
+	semadr=(sem_t *)shmat(shmget(IPC_PRIVATE,sizeof(sem_t)*nbcarte,0666),0,0);
+	for(i=0;i<nbcarte;i++)
+		sem_init(semadr+i,0,0);
 }
 
 

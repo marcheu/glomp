@@ -25,7 +25,7 @@
 variable globale a tous le programe
 ************************************/
 
-/*les fils de 0 a nbcarte-1, le pere = nbcarte
+/*les fils de 1 a nbcarte-1, le pere = 0
 numeros du client, va nous permettre de selectionner les processus*/
 extern int client_num;
 extern int nbcarte;/*nombre de GPU dispo*/

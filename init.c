@@ -88,7 +88,7 @@ donc il s'agit de retrouver les pointeur avec des dlopen dlsym */
     client_load[i]=1;
 
 	
-  client_num=nbcarte;/*on met client_num a nbcarte pour que le pere ait la bonne valeur*/
+  client_num=0;/*on met client_num a 0 pour que le pere ait la bonne valeur*/
   
   GLOMPfifo_init(&GLOMPcmd_fifo);/*avant le fork, on initialise la fifo*/
 
@@ -98,7 +98,7 @@ donc il s'agit de retrouver les pointeur avec des dlopen dlsym */
   GLOMPinitTabKey();
 
   /*spawn client processes*/
-  for(i=0;i<nbcarte;i++)
+  for(i=1;i<nbcarte;i++)
     {
       pid_t pid;
       pid=fork();
@@ -109,11 +109,12 @@ donc il s'agit de retrouver les pointeur avec des dlopen dlsym */
 	  break;
 	}
     }
+  printf("init client %d ok\n",client_num);
 
   /*pour les client on les initialise et on les lances*/
-#if 0
-  if (client_num!=nbcarte){  
+#if 1
     GLOMPclient_init();/*creer les tab des fonction GLOMP, initialise les pointeur glX, ...*/
+  if (client_num!=0){  
     GLOMPclient_run();/*tourne en boucle*/
     }
 #else
@@ -121,26 +122,18 @@ donc il s'agit de retrouver les pointeur avec des dlopen dlsym */
   /*pour le debugage les segfault des client ne sont pas afficher*/
   /*ce bout de code inverse les serveur et cleint et permet donc l'affichage des segfault*/
   
-    switch(client_num)
-    {
-    case 0:
-      client_num=4;     
-      //server_init();//tout le monde a besoin ! des pointeurs cf ligne 88
-      
-      break;
-      
-    case 4:
-      client_num=0;
-    case 1:
-    case 2:
-    case 3:
-      GLOMPclient_init();
-      GLOMPclient_run(); 
-    }
-#endif
-  
+  GLOMPclient_init();
+  if (client_num==nbcarte-1)
+  	client_num=0;
+  else if (client_num==0)
+	  client_num=nbcarte-1;
 
-  
+  if (client_num!=0) 
+    GLOMPclient_run();/*tourne en boucle*/
+
+#endif
+printf("client init ok\n");
+
 }
 
 
@@ -156,7 +149,7 @@ int __libc_start_main(int(*main_fct)(int, char **), int argc,
     
   }
   initGLOMP();/*lance l'initilisation de GLOMP*/
-  func(main_fct, argc, ubp_av, init, fini, rtld_fini, stack_end);/*lance le main du prog OpenGL*/
+  return func(main_fct, argc, ubp_av, init, fini, rtld_fini, stack_end);/*lance le main du prog OpenGL*/
 }
 
 

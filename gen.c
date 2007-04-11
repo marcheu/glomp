@@ -42,10 +42,8 @@ typedef struct gl_type{
 
 /*------tableau des fonction ne devant pas etre traite par le parseur xml---*/
 char * noParseFunction_table[]=
-  { "Map1d",
-    "Map1f",
-    "Map2d",
-    "Map2f",
+  {
+    "NewList",
     "Viewport",
     "IsQuery",
     "IsBuffer",
@@ -118,7 +116,7 @@ char * noParseFunction_table[]=
     "CompressedTexSubImage1DARB",
     "ProgramStringARB",
     /*et dans wrapped pb*/
-     "GetMapdv",
+    "GetMapdv",
     "GetMapfv",
     "GetMapiv",
     "GetTexImage",
@@ -317,6 +315,7 @@ int main()
   xmlNodePtr cur;
   xmlNodePtr retour,retourcategory;
   xmlChar *attrib;
+  xmlChar *func_name;
 
   FILE * fout_c=fopen(out_c_file,"wb");
   FILE * fout_h=fopen(out_h_file,"wb");
@@ -371,7 +370,7 @@ int main()
 
   fprintf(fout_c,"/* Auto-generated, do not edit ! */\n#include \""out_h_file"\"\n\n");
   fprintf(fout_c,"gl_type type_table[]=\n{\n");
-  fprintf(fout_h,"/* Auto-generated, do not edit ! */\n\n#ifndef _WRAPPED_H_\n#define _WRAPPED_H_\n\n#include \"fifo.h\"\n#include \"segment.h\"\n#include <GL/gl.h>\n#include <GL/glext.h>\n#include \"server.h\"\n#include \"overrides.h\"\n\n");
+  fprintf(fout_h,"/* Auto-generated, do not edit ! */\n\n#ifndef _WRAPPED_H_\n#define _WRAPPED_H_\n\n#include \"fifo.h\"\n#include \"segment.h\"\n#include \"glheader.h\"\n#include \"server.h\"\n#include \"overrides.h\"\n\n");
   fprintf(fout_h,"typedef struct gl_type{\n\tint name;\n\tint size;\n}gl_type;\n\n\n");
 
   fprintf(fout_h,"\nextern gl_type type_table[];\n\n\n");	
@@ -380,7 +379,7 @@ int main()
   fprintf(fin_c,"/* Auto-generated, do not edit ! */\n#include \""in_h_file"\"\n\n");
   fprintf(fin_c,"void initPointers()\n{\n");
 
-  fprintf(fin_h,"/* Auto-generated, do not edit ! */\n#ifndef _DEWRAPPED_H_\n#define _DEWRAPPED_H_\n\n\n#include \"fifo.h\"\n#include \"segment.h\"\n#include <GL/gl.h>\n#include <GL/glext.h>\n#include <GL/glx.h>\n#include <GL/glxext.h>\n#include \"server.h\"\n#include \"wrapped.h\" \n#include \"client.h\"\n\n");
+  fprintf(fin_h,"/* Auto-generated, do not edit ! */\n#ifndef _DEWRAPPED_H_\n#define _DEWRAPPED_H_\n\n\n#include \"fifo.h\"\n#include \"segment.h\"\n#include \"glheader.h\"\n#include <GL/glx.h>\n#include <GL/glxext.h>\n#include \"server.h\"\n#include \"wrapped.h\" \n#include \"client.h\"\n\n");
   
   fprintf(fin_h,"void creertabfunc();\n\n");//provient de init  (a l'orrigine)
 
@@ -443,14 +442,14 @@ int main()
 		    }
 		  cur = retour;
 
-		  attrib = xmlGetProp(cur, "name");
-		  fprintf(fout_c2,"gl%s(",attrib);
-		  fprintf(fout_h,"gl%s(",attrib);
-		  fprintf(fin_c,"\tglfunctable[%d]=(__GLXextFuncPtr)lib_glXGetProcAddressARB(\"gl%s\");\n",fnum,attrib);
-		  fprintf(ftmpc,"void GLOMPgl%s()\n{\n",attrib);
+		  func_name = xmlGetProp(cur, "name");
+		  fprintf(fout_c2,"gl%s(",func_name);
+		  fprintf(fout_h,"gl%s(",func_name);
+		  fprintf(fin_c,"\tglfunctable[%d]=(__GLXextFuncPtr)lib_glXGetProcAddressARB(\"gl%s\");\n",fnum,func_name);
+		  fprintf(ftmpc,"void GLOMPgl%s()\n{\n",func_name);
 		  //if(DEBUG)fprintf(ftmpc,"printf(\"jsuis client fnum=%d\\n\");",fnum);
-		  fprintf(ftmpc2,"\tfunctable[%d]=&GLOMPgl%s;\n",fnum,attrib);
-		  fprintf(fin_h,"void GLOMPgl%s();\n",attrib);
+		  fprintf(ftmpc2,"\tfunctable[%d]=&GLOMPgl%s;\n",fnum,func_name);
+		  fprintf(fin_h,"void GLOMPgl%s();\n",func_name);
                   
 		  cur = cur->xmlChildrenNode;
 		  if(cur->next!=NULL)
@@ -575,7 +574,14 @@ int main()
 		    }
 		  fprintf(fout_c2,")\n{\n");
 			
+		  // find if the function is master only
+		  int master_only=0;
+		  for(i=0;i<=np;i++)
+		    if(param_attrib[i][6]==1)
+		  	master_only=1;
 
+
+		// generate the function body
 		  for(i=0;i<=np;i++)
 		    {
 		      if(param_attrib[i][2]==1 || param_attrib[i][6]==1)
@@ -590,11 +596,15 @@ int main()
 			  break;
 			}
 		    }
+		  if (!master_only)
+		  {
 		  fprintf(fout_c2,"\tint fnum=%d;\n",fnum);
 		  fprintf(fout_c2,"\n\tif(DEBUG){printf(\"serveur fnum = %%d\\n\",fnum);}\n");
-		  fprintf(fout_c2,"\tint fflags=0;\n");
+//		  fprintf(fout_c2,"\tint fflags=0;\n");
 		  fprintf(fout_c2,"\tfifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));\n");
-		  fprintf(fout_c2,"\tfifo_output(&GLOMPcmd_fifo,&fflags,sizeof(fflags));\n");
+//		  fprintf(fout_c2,"\tfifo_output(&GLOMPcmd_fifo,&fflags,sizeof(fflags));\n");
+		  }
+
 		  fprintf(fout_h,");\n");
 		  for(i=0;i<=np;i++)
 		    {
@@ -626,9 +636,6 @@ int main()
 			      //fprintf(ftmpc,"\tsizep=sizeGLenum(%s)*%d/8;\n",variable_param[i],type_size(type[i]));
 			    }
 
-			  fprintf(fout_c2,"\tfifo_flush(&GLOMPcmd_fifo);\n");
-			  fprintf(fout_c2,"\tsem_wait(semadr);\n");
-			  fprintf(fout_c2,"\tmemcpy(%s,shmadr,sizep);\n",nameparam[i]);
 			}
 			
 
@@ -658,10 +665,9 @@ int main()
 			  fprintf(fout_c2,"\tsizep=%d*%s;\n",type_size(type[i]),count[i]);
 			  fprintf(ftmpc,"\tsizep=%d*%s;\n",type_size(type[i]),count[i]);
 
-			  fprintf(fout_c2,"\tfifo_output(&GLOMPcmd_fifo,%s,sizep);\n",nameparam[i],
-				  type_size(type[i]),count[i]);
-			  fprintf(ftmpc,"\tfifo_input(&GLOMPcmd_fifo,%s,sizep);\n",nameparam[i],
-				  type_size(type[i]),count[i]);
+			  if (!master_only)
+				  fprintf(fout_c2,"\tfifo_output(&GLOMPcmd_fifo,%s,sizep);\n",nameparam[i]);
+			  fprintf(ftmpc,"\tfifo_input(&GLOMPcmd_fifo,%s,sizep);\n",nameparam[i]);
 			}
 		      else if(param_attrib[i][1]==1)
 			{   
@@ -671,30 +677,42 @@ int main()
 			  fprintf(ftmpc,"\tsizep=sizeGLenum(%s)*%d/8;\n",variable_param[i],type_size(type[i]));				
 
 
-			  fprintf(fout_c2,"\tfifo_output(&GLOMPcmd_fifo,%s,sizep);\n",nameparam[i]);		     
+			  if (!master_only)
+				  fprintf(fout_c2,"\tfifo_output(&GLOMPcmd_fifo,%s,sizep);\n",nameparam[i]);		     
 			  fprintf(ftmpc,"\tfifo_input(&GLOMPcmd_fifo,%s,sizep);\n",nameparam[i]);
 			}
 		      else
 			{
-			  fprintf(fout_c2,"\tfifo_output(&GLOMPcmd_fifo,&%s,%d);\n",nameparam[i],type_size(type[i]));
+				if (!master_only)
+					fprintf(fout_c2,"\tfifo_output(&GLOMPcmd_fifo,&%s,%d);\n",nameparam[i],type_size(type[i]));
 			  fprintf(ftmpc,"\tfifo_input(&GLOMPcmd_fifo,&%s,%d);\n",nameparam[i],type_size(type[i]));
 			}
 		    }
 	
-			
+		  // call the function for the first node
+		  fprintf(fout_c2,"\t((%s (*)(",return_type);
+		  for(i=0;i<=np;i++)
+		    fprintf(fout_c2,"%s,",type[i]);
+		  if(np==-1)
+		    fprintf(fout_c2,"void");
+		  else fseek(fout_c2,-1,SEEK_CUR);
+		  fprintf(fout_c2,"))glfunctable[%d])(",fnum);                
+		  for(i=0;i<=np;i++)
+		    {
+/*		      if(param_attrib[i][0]==1 || param_attrib[i][1]==1 || param_attrib[i][2]==1 || 
+			 param_attrib[i][6]==1   )
+			fprintf(fout_c2,"(%s)",type[i]);*/
+		      fprintf(fout_c2,"%s,",nameparam[i]);
+		    }
+
+		  if(np!=-1)
+		    fseek(fout_c2,-1,SEEK_CUR);
+		  fprintf(fout_c2,");\n");
+		  
 
 		  fprintf(fout_c2,"\treturn %s;\n",type_return(return_type));
 		  fprintf(fout_c2,"}\n\n");
 	
-		  for(i=0;i<=np;i++){
-			  
-		    if(param_attrib[i][6]==1)
-		      {
-			fprintf(ftmpc,"\tif(client_num==0)\n\t{\n\t");
-			break;
-		      }
-		  }
-			
 
 		  fprintf(ftmpc,"\t((%s (*)(",return_type);
 		  for(i=0;i<=np;i++)
@@ -705,11 +723,11 @@ int main()
 		  fprintf(ftmpc,"))glfunctable[%d])(",fnum);                
 		  for(i=0;i<=np;i++)
 		    {
-		      if(param_attrib[i][0]==1 || param_attrib[i][1]==1 || param_attrib[i][2]==1 || 
-			 param_attrib[i][6]==1   )
+		      if(param_attrib[i][0]==1 || param_attrib[i][1]==1 || param_attrib[i][2]==1)
+		      {
 			fprintf(ftmpc,"(%s)",type_remove_const(type[i]));
-		      if(param_attrib[i][6]==1)
-			fprintf(ftmpc,"shmadr,",nameparam[i]);
+		        fprintf(ftmpc,"%s,",nameparam[i]);
+		      }
 		      else fprintf(ftmpc,"%s,",nameparam[i]);
 		    }
 
@@ -719,14 +737,9 @@ int main()
 
 
 		  for(i=0;i<=np;i++)
-		    if(param_attrib[i][2]==1 && param_attrib[i][6]==0)
+		    if(param_attrib[i][2]==1)
 		      fprintf(ftmpc,"\tsegment_delete();\n");
 
-		  for(i=0;i<=np;i++) //DEBUG2
-		    if(param_attrib[i][6]==1){		       
-		      fprintf(ftmpc,"\t\tsem_post(semadr);\n\t}\n",nameparam[i]);break;
-		    }
-			
 		  fprintf(ftmpc,"}\n\n");
 
 	

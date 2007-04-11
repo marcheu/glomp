@@ -124,6 +124,7 @@ if test "x$enable_debug" = xyes; then
   fi
 dnl  LIBS="$LIBS -lefence"
 else
+  CFLAGS="$CFLAGS -O2 -Wall"
   if test "x$GXX" = xyes; then
     CXXFLAGS="$CXXFLAGS -s"
   fi

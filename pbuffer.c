@@ -30,7 +30,7 @@ static int RuntimeQueryGLXVersion(Display *dpy, int screen)
   void * lib_strstr;
 
 
-  clientstring=lib_glXGetProcAddressARB("glXGetClientString");
+  //clientstring=lib_glXGetProcAddressARB("glXGetClientString");
  
   clientstring=dlsym(lib_handle_libG, "glXGetClientString");
 
@@ -108,7 +108,6 @@ static GLXPbuffer MakePbuffer( Display *dpy, int screen, int width, int height )
 
 
   /* Create the pbuffer using first fbConfig in the list that works. */
-  //glomppoint=(__GLXextFuncPtr)lib_glXGetProcAddressARB("glXCreatePbuffer");
   glomppoint=dlsym(lib_handle_libG, "glXCreatePbuffer");
   pBuffer = ((GLXPbuffer  (*)(Display *,GLXFBConfig,int *))glomppoint)(dpy, chosenFBConfig, pbAttribs);
 
@@ -128,12 +127,7 @@ static GLXPbuffer MakePbuffer( Display *dpy, int screen, int width, int height )
 }
 
 
-/*
- *La fonction creerpbuffer va creer un pbuffer vide avec makePBuffer
- *celui-ci va etre renplit par ce que la GPU a calculer (ici 1/4 de l'ecran)
- *avant d'etre renvoyer (evec transfertFentre) au maitre
- */
-
+/* creates a pbuffer */
 int creerpbuffer(int width,int height)
 {
   lib_handle_libX = dlopen("/usr/lib/libX11.so", RTLD_LAZY);
@@ -145,6 +139,8 @@ int creerpbuffer(int width,int height)
  
 
   sprintf(envDisplay,":0.%d",client_num);
+  if (getenv("FORCE_GPU"))
+	  sprintf(envDisplay,":0.0");
 
 
 
@@ -210,7 +206,7 @@ int creerpbuffer(int width,int height)
   }
 
 
-  printf("PbufferCreer %d %d\n", height,width);
+  printf("Created pbuffer (%d %d)\n", height,width);
 
   return 1;
 

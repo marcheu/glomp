@@ -7,8 +7,6 @@
 extern PFNGLXGETPROCADDRESSARBPROC lib_glXGetProcAddressARB;
 
 
-void (*functable_override[100])(void);
-
 extern void GLOMPunpack();
 extern void GLOMPclient_init();
 

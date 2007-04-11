@@ -20,7 +20,7 @@ extern char * segment_attach();
 extern void segment_delete();
 
 /*procedure de creation du segment de retour*/
-extern int GLOMPsegment_create_retour();
+extern void GLOMPsegment_create_retour();
 
 
 #endif

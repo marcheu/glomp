@@ -3,7 +3,7 @@ pkglib_LTLIBRARIES=libGL.la
 
 gen_SOURCES = gen.c
 gen_LDFLAGS = `pkg-config --libs libxml-2.0`
-CFLAGS = `pkg-config --cflags libxml-2.0`
+CFLAGS = @CFLAGS@ `pkg-config --cflags libxml-2.0` 
 
 wrapped.c: gen 
 	@./gen

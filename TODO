@@ -9,3 +9,6 @@ Optimization ideas
 Place the biggest surface on the master board
 Use GL extensions for efficient readbacks/uploads
 
+
+dans glMap?? (glMap2d) on a un variable_param="une variable qui n'est pas un GLEnum"
+

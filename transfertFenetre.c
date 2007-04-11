@@ -98,7 +98,6 @@ static void screen_dump(char* filename)
   fclose(f);
   */
   int i;
-  GLint port[4];
   int width=500, height=400;
   char* mem=(char*)malloc(sizeof(char)*width*3);
   FILE* f=fopen(filename,"wb");
@@ -141,12 +140,13 @@ void lire_fenetre()
   if(fenetreactive==0){
     lib_glReadPixels(0,startload,width,heightclient,GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, shmadr_fenetre1[client_num]);
   
-  }else
+  }else {
   lib_glReadPixels(0,startload,width,heightclient,GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, shmadr_fenetre2[client_num]);
+  }
   sem_post(&semadrfen_in[client_num]);
   fenetreactive=(fenetreactive+1)%2;
-  int aa;
-  sem_getvalue(&semadrfen_in[client_num],&aa);
+//  int aa;
+//  sem_getvalue(&semadrfen_in[client_num],&aa);
   
 }
 
@@ -156,10 +156,18 @@ void ecrire_fenetre()
 {
   int * heightclient;
   heightclient = malloc(sizeof(int)*nbcarte);
-  float position=-1;
+  float position=0.f;
   int totalload=0;
-
-
+ 
+  lib_glMatrixMode( GL_PROJECTION );
+  lib_glPushMatrix();
+  lib_glLoadIdentity();
+  lib_glOrtho( 0.0, width, 0.0, height, 0.0, 2.0 );
+  lib_glMatrixMode( GL_MODELVIEW );
+  lib_glPushMatrix();
+  lib_glLoadIdentity();
+  lib_glViewport( 0, 0, width, height );
+ 
   for(i=0;i<nbcarte;i++)
     {
       totalload+=client_load[i];
@@ -170,28 +178,33 @@ void ecrire_fenetre()
       heightclient[i]=((double)client_load[i]/(double)totalload)*height;
     }
   
-
+  position=heightclient[0];
   if(fenetreactive==0)  
-    for(i=0;i<nbcarte;i++)
-      {
-	lib_glRasterPos2f(-1,position);
-	position=position+((double)client_load[i]/(double)totalload)*(double)2;
-	sem_wait(&semadrfen_in[i]);
-	/*pb ici*/
-        lib_glDrawPixels(width,heightclient[i],GL_BGRA,GL_UNSIGNED_INT_8_8_8_8_REV,shmadr_fenetre1[i]);	
-	//screen_dump("./toto.pnm");
-	sem_post(&semadrfen_out[i]);
-      } 
-  else for(i=0;i<nbcarte;i++)
-    {
-    
+	  for(i=1;i<nbcarte;i++)
+	  {
+		  lib_glRasterPos2f(0.f,position);
+		  sem_wait(&semadrfen_in[i]);
+		  lib_glDrawPixels(width,heightclient[i],GL_BGRA,GL_UNSIGNED_INT_8_8_8_8_REV,shmadr_fenetre1[i]);	
+//		  screen_dump("./toto.pnm");
+		  sem_post(&semadrfen_out[i]);
+		  position=position+heightclient[i];
+	  } 
+  else 
+	  for(i=1;i<nbcarte;i++)
+	  {
+		  lib_glRasterPos2f(0.f,position);
+		  sem_wait(&semadrfen_in[i]);
+		  lib_glDrawPixels(width,heightclient[i],GL_BGRA,GL_UNSIGNED_INT_8_8_8_8_REV,shmadr_fenetre2[i]);
+		  sem_post(&semadrfen_out[i]);
+		  position=position+heightclient[i];
+	  }
 
-      lib_glRasterPos2f(-1,position);
-      position=position+((double)client_load[i]/(double)totalload)*(double)2;
-      sem_wait(&semadrfen_in[i]);
-      lib_glDrawPixels(width,heightclient[i],GL_BGRA,GL_UNSIGNED_INT_8_8_8_8_REV,shmadr_fenetre2[i]);
-      sem_post(&semadrfen_out[i]);
-    }
+  lib_glMatrixMode( GL_PROJECTION );
+  lib_glPopMatrix();
+  lib_glMatrixMode( GL_MODELVIEW );
+  lib_glPopMatrix();
+  // XXX FIXME replace /nbcarte with load balancing
+  lib_glViewport(0,0,width,height/nbcarte);
 
   fenetreactive=(fenetreactive+1)%2;
   free(heightclient);

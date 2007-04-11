@@ -36,6 +36,7 @@ int id_server_generate(id_type type)
   id_server_table_size++;
   id_server_table=(id_type*)realloc(id_server_table,id_server_table_size*sizeof(id_type));
   id_server_table[id_server_table_size-1]=type;
+  printf("id:generated %d\n",id_server_table_size-1);
   return id_server_table_size-1; //la aussi !!
 }
 

@@ -22,6 +22,23 @@ extern void (*lib_glReadPixels)( GLint x,
 				GLenum format,
 				GLenum type,
 				GLvoid *pixels );
+extern void (*lib_glViewport)( GLint x,GLint y,GLsizei width,GLsizei height);
+extern void (*lib_glFrustum) ( GLdouble left,
+			       GLdouble right,
+			       GLdouble bottom,
+			       GLdouble top,
+			       GLdouble zNear,
+			       GLdouble zFar	);
+extern void (*lib_glMatrixMode) (GLenum mode);
+extern void (*lib_glPushMatrix) (void);
+extern void (*lib_glPopMatrix) (void);
+extern void (*lib_glLoadIdentity) (void);
+extern void (*lib_glOrtho) ( GLdouble left,
+			     GLdouble right,
+			     GLdouble bottom,
+			     GLdouble top,
+			     GLdouble zNear,
+			     GLdouble zFar	);
 
 
 extern void **shmadr_fenetre1;
