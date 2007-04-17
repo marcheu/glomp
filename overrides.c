@@ -92,14 +92,18 @@ void (*lib_glDrawPixels)( GLsizei width,
 			  GLsizei height,
 			  GLenum format,
 			  GLenum type,
-			  const GLvoid *pixels );
+			  const GLvoid *pixels )=0;
 void (*lib_glReadPixels)( GLint x,
 			  GLint y,
 			  GLsizei width,
 			  GLsizei height,
 			  GLenum format,
 			  GLenum type,
-			  GLvoid *pixels );
+			  GLvoid *pixels )=0;
+void (*lib_glMap1d) (GLenum target, GLdouble u1, GLdouble u2, GLint stride, GLint order, const GLdouble *points)=0;
+void (*lib_glMap1f) (GLenum target, GLfloat u1, GLfloat u2, GLint stride, GLint order, const GLfloat *points)=0;
+void (*lib_glMap2d) (GLenum target, GLdouble u1, GLdouble u2, GLint ustride, GLint uorder, GLdouble v1, GLdouble v2, GLint vstride, GLint vorder, const GLdouble *points)=0;
+void (*lib_glMap2f) (GLenum target, GLfloat u1, GLfloat u2, GLint ustride, GLint uorder, GLfloat v1, GLfloat v2, GLint vstride, GLint vorder, const GLfloat *points)=0;
 
 
 
@@ -110,10 +114,12 @@ static Window (*lib_XCreateWindow)(Display *display, Window parent, int x, int y
 				   unsigned long valuemask, XSetWindowAttributes *attributes)=0;
 static int (*lib_XDestroyWindow)( Display * disp, Window parent)=0;
 static int (*lib_XCloseDisplay)(Display * dis)=0;
+	
 
 /* library interception variables */
 static void* lib_handle_libGL = 0;
 static void* lib_handle_libX11 = 0;
+
 
 
 /*
@@ -121,82 +127,91 @@ static void* lib_handle_libX11 = 0;
  */
 void load_library(void)
 {
-  /* open library (NOTE: you may need to change this filename!) */
-  lib_handle_libGL = dlopen("/usr/lib/libGL.so", RTLD_LAZY);
+	static int loaded=0;
+	if (loaded)
+		return;
+	loaded=1;
 
-  if (!lib_handle_libGL){perror("lib");exit(0);}
+	/* open library (NOTE: you may need to change this filename!) */
+	lib_handle_libGL = dlopen("/usr/lib/libGL.so", RTLD_LAZY);
 
-  /* intercept library GL function */
-  lib_glXSwapBuffers = dlsym(lib_handle_libGL, "glXSwapBuffers");
-  lib_glXCreateWindow = dlsym(lib_handle_libGL, "glXCreateWindow");   
-  lib_glBindTexture = dlsym(lib_handle_libGL, "glBindTexture");
-  lib_glGenTextures = dlsym(lib_handle_libGL, "glGenTextures");    
-  lib_glFrustum = dlsym(lib_handle_libGL, "glFrustum"); 
-  lib_glOrtho = dlsym(lib_handle_libGL, "glOrtho"); 
-  lib_glNewList= dlsym(lib_handle_libGL, "glNewList");
-  lib_glGenLists= dlsym(lib_handle_libGL, "glGenLists");
-  lib_glCallList= dlsym(lib_handle_libGL, "glCallList");
-  lib_glCallLists= dlsym(lib_handle_libGL, "glCallLists");
-  lib_glCopyPixels= dlsym(lib_handle_libGL, "glCopyPixels");
-  lib_glCopyTexImage1D= dlsym(lib_handle_libGL, "glCopyTexImage1D");
-  lib_glCopyTexImage2D= dlsym(lib_handle_libGL, "glCopyTexImage2D");
-  lib_glCopyTexSubImage1D= dlsym(lib_handle_libGL, "glCopyTexSubImage1D");
-  lib_glCopyTexSubImage2D= dlsym(lib_handle_libGL, "glCopyTexSubImage2D");
-  lib_glDeleteTextures= dlsym(lib_handle_libGL, "glDeleteTextures");
-  lib_glFlush= dlsym(lib_handle_libGL, "glFlush");
-  lib_glFinish= dlsym(lib_handle_libGL, "glFinish");
-  lib_glGetIntegerv=dlsym(lib_handle_libGL, "glGetIntegerv");
-  lib_glGetString=dlsym(lib_handle_libGL, "glGetString");
-  lib_glViewport=dlsym(lib_handle_libGL, "glViewport");
-  lib_glRasterPos2f = dlsym(lib_handle_libGL, "glRasterPos2f");
-  lib_glRasterPos2i = dlsym(lib_handle_libGL, "glRasterPos2i");
-  lib_glDrawPixels = dlsym(lib_handle_libGL, "glDrawPixels");
-  lib_glReadPixels = dlsym(lib_handle_libGL, "glReadPixels");  
-  lib_glMatrixMode = dlsym(lib_handle_libGL, "glMatrixMode"); 
-  lib_glPushMatrix = dlsym(lib_handle_libGL, "glPushMatrix"); 
-  lib_glPopMatrix = dlsym(lib_handle_libGL, "glPopMatrix"); 
-  lib_glLoadIdentity = dlsym(lib_handle_libGL, "glLoadIdentity"); 
+	if (!lib_handle_libGL){perror("lib");exit(0);}
 
-  /*les extensions*/
-  lib_glBindTextureEXT = dlsym(lib_handle_libGL, "glBindTextureEXT");    
-  lib_glGenTexturesEXT = dlsym(lib_handle_libGL, "glGenTexturesEXT");
-  lib_glGenQueries = dlsym(lib_handle_libGL, "glGenQueries"); 
-  lib_glBindBuffer = dlsym(lib_handle_libGL, "glBindBuffer");    
-  lib_glGenBuffers = dlsym(lib_handle_libGL, "glGenBuffers");
-  lib_glBindProgramARB = dlsym(lib_handle_libGL, "glBindProgramARB");    
-  lib_glGenProgramsARB = dlsym(lib_handle_libGL, "glGenProgramsARB");
-  lib_glBindBufferARB = dlsym(lib_handle_libGL, "glBindBufferARB");    
-  lib_glGenBuffersARB = dlsym(lib_handle_libGL, "glGenBuffersARB");
-  lib_glGenQueriesARB = dlsym(lib_handle_libGL, "glGenQueriesARB"); 
-  lib_glGenFencesNV = dlsym(lib_handle_libGL, "glGenFencesARB"); 
-  lib_glBindProgramNV = dlsym(lib_handle_libGL, "glBindProgramNV");    
-  lib_glGenProgramsNV = dlsym(lib_handle_libGL, "glGenProgramsNV");
-  lib_glGenOcclusionQueriesNV = dlsym(lib_handle_libGL, "glGenOcclusionQueriesNV");
-  lib_glBindRenderbufferEXT = dlsym(lib_handle_libGL, "glBindRenderbufferEXT"); 
-  lib_glGenRenderbuffersEXT = dlsym(lib_handle_libGL, "glGenRenderbuffersEXT");
-  lib_glBindFramebufferEXT = dlsym(lib_handle_libGL, "glBindFramebufferEXT"); 
-  lib_glGenFramebuffersEXT = dlsym(lib_handle_libGL, "glGenFramebuffersEXT");
-  lib_glDeleteQueries= dlsym(lib_handle_libGL, "glDeleteQueries");
-  lib_glDeleteBuffers= dlsym(lib_handle_libGL, "glDeleteBuffers");
-  lib_glDeleteProgramsARB = dlsym(lib_handle_libGL, "glDeleteProgramsARB");
-  lib_glDeleteBuffersARB= dlsym(lib_handle_libGL, "glDeleteBuffersARB");
-  lib_glDeleteQueriesARB= dlsym(lib_handle_libGL, "glDeleteQueriesARB");
-  lib_glDeleteTexturesEXT= dlsym(lib_handle_libGL, "glDeleteTexturesEXT");
-  lib_glDeleteFencesNV= dlsym(lib_handle_libGL, "glDeleteFencesNV");
-  lib_glDeleteProgramsNV = dlsym(lib_handle_libGL, "glDeleteProgramsNV");
-  lib_glDeleteOcclusionQueriesNV = dlsym(lib_handle_libGL, "glDeleteOcclusionQueriesNV");
-  lib_glDeleteRenderbuffersEXT = dlsym(lib_handle_libGL, "glDeleteRenderbuffersEXT");
-  lib_glDeleteFramebuffersEXT = dlsym(lib_handle_libGL, "glDeleteFramebuffersEXT");
+	/* intercept library GL function */
+	lib_glXSwapBuffers = dlsym(lib_handle_libGL, "glXSwapBuffers");
+	lib_glXCreateWindow = dlsym(lib_handle_libGL, "glXCreateWindow");   
+	lib_glBindTexture = dlsym(lib_handle_libGL, "glBindTexture");
+	lib_glGenTextures = dlsym(lib_handle_libGL, "glGenTextures");    
+	lib_glFrustum = dlsym(lib_handle_libGL, "glFrustum"); 
+	lib_glOrtho = dlsym(lib_handle_libGL, "glOrtho"); 
+	lib_glNewList= dlsym(lib_handle_libGL, "glNewList");
+	lib_glGenLists= dlsym(lib_handle_libGL, "glGenLists");
+	lib_glCallList= dlsym(lib_handle_libGL, "glCallList");
+	lib_glCallLists= dlsym(lib_handle_libGL, "glCallLists");
+	lib_glCopyPixels= dlsym(lib_handle_libGL, "glCopyPixels");
+	lib_glCopyTexImage1D= dlsym(lib_handle_libGL, "glCopyTexImage1D");
+	lib_glCopyTexImage2D= dlsym(lib_handle_libGL, "glCopyTexImage2D");
+	lib_glCopyTexSubImage1D= dlsym(lib_handle_libGL, "glCopyTexSubImage1D");
+	lib_glCopyTexSubImage2D= dlsym(lib_handle_libGL, "glCopyTexSubImage2D");
+	lib_glDeleteTextures= dlsym(lib_handle_libGL, "glDeleteTextures");
+	lib_glFlush= dlsym(lib_handle_libGL, "glFlush");
+	lib_glFinish= dlsym(lib_handle_libGL, "glFinish");
+	lib_glGetIntegerv=dlsym(lib_handle_libGL, "glGetIntegerv");
+	lib_glGetString=dlsym(lib_handle_libGL, "glGetString");
+	lib_glViewport=dlsym(lib_handle_libGL, "glViewport");
+	lib_glRasterPos2f = dlsym(lib_handle_libGL, "glRasterPos2f");
+	lib_glRasterPos2i = dlsym(lib_handle_libGL, "glRasterPos2i");
+	lib_glDrawPixels = dlsym(lib_handle_libGL, "glDrawPixels");
+	lib_glReadPixels = dlsym(lib_handle_libGL, "glReadPixels");  
+	lib_glMatrixMode = dlsym(lib_handle_libGL, "glMatrixMode"); 
+	lib_glPushMatrix = dlsym(lib_handle_libGL, "glPushMatrix"); 
+	lib_glPopMatrix = dlsym(lib_handle_libGL, "glPopMatrix"); 
+	lib_glLoadIdentity = dlsym(lib_handle_libGL, "glLoadIdentity"); 
 
-  /* intercept XSetStandardProperties */
-  lib_handle_libX11 = dlopen("/usr/lib/libX11.so", RTLD_LAZY);
+	/*les extensions*/
+	lib_glBindTextureEXT = dlsym(lib_handle_libGL, "glBindTextureEXT");    
+	lib_glGenTexturesEXT = dlsym(lib_handle_libGL, "glGenTexturesEXT");
+	lib_glGenQueries = dlsym(lib_handle_libGL, "glGenQueries"); 
+	lib_glBindBuffer = dlsym(lib_handle_libGL, "glBindBuffer");    
+	lib_glGenBuffers = dlsym(lib_handle_libGL, "glGenBuffers");
+	lib_glBindProgramARB = dlsym(lib_handle_libGL, "glBindProgramARB");    
+	lib_glGenProgramsARB = dlsym(lib_handle_libGL, "glGenProgramsARB");
+	lib_glBindBufferARB = dlsym(lib_handle_libGL, "glBindBufferARB");    
+	lib_glGenBuffersARB = dlsym(lib_handle_libGL, "glGenBuffersARB");
+	lib_glGenQueriesARB = dlsym(lib_handle_libGL, "glGenQueriesARB"); 
+	lib_glGenFencesNV = dlsym(lib_handle_libGL, "glGenFencesARB"); 
+	lib_glBindProgramNV = dlsym(lib_handle_libGL, "glBindProgramNV");    
+	lib_glGenProgramsNV = dlsym(lib_handle_libGL, "glGenProgramsNV");
+	lib_glGenOcclusionQueriesNV = dlsym(lib_handle_libGL, "glGenOcclusionQueriesNV");
+	lib_glBindRenderbufferEXT = dlsym(lib_handle_libGL, "glBindRenderbufferEXT"); 
+	lib_glGenRenderbuffersEXT = dlsym(lib_handle_libGL, "glGenRenderbuffersEXT");
+	lib_glBindFramebufferEXT = dlsym(lib_handle_libGL, "glBindFramebufferEXT"); 
+	lib_glGenFramebuffersEXT = dlsym(lib_handle_libGL, "glGenFramebuffersEXT");
+	lib_glDeleteQueries= dlsym(lib_handle_libGL, "glDeleteQueries");
+	lib_glDeleteBuffers= dlsym(lib_handle_libGL, "glDeleteBuffers");
+	lib_glDeleteProgramsARB = dlsym(lib_handle_libGL, "glDeleteProgramsARB");
+	lib_glDeleteBuffersARB= dlsym(lib_handle_libGL, "glDeleteBuffersARB");
+	lib_glDeleteQueriesARB= dlsym(lib_handle_libGL, "glDeleteQueriesARB");
+	lib_glDeleteTexturesEXT= dlsym(lib_handle_libGL, "glDeleteTexturesEXT");
+	lib_glDeleteFencesNV= dlsym(lib_handle_libGL, "glDeleteFencesNV");
+	lib_glDeleteProgramsNV = dlsym(lib_handle_libGL, "glDeleteProgramsNV");
+	lib_glDeleteOcclusionQueriesNV = dlsym(lib_handle_libGL, "glDeleteOcclusionQueriesNV");
+	lib_glDeleteRenderbuffersEXT = dlsym(lib_handle_libGL, "glDeleteRenderbuffersEXT");
+	lib_glDeleteFramebuffersEXT = dlsym(lib_handle_libGL, "glDeleteFramebuffersEXT");
+	lib_glMap1f = dlsym(lib_handle_libGL, "glMap1f");
+	lib_glMap1d = dlsym(lib_handle_libGL, "glMap1d");
+	lib_glMap2f = dlsym(lib_handle_libGL, "glMap2f");
+	lib_glMap2d = dlsym(lib_handle_libGL, "glMap2d");
 
-  if (!lib_handle_libX11){perror("lib");exit(0);}
+	/* intercept XSetStandardProperties */
+	lib_handle_libX11 = dlopen("/usr/lib/libX11.so", RTLD_LAZY);
 
-  lib_XSetStandardProperties = dlsym(lib_handle_libX11, "XSetStandardProperties");
-  lib_XCreateWindow = dlsym(lib_handle_libX11, "XCreateWindow");
-  lib_XDestroyWindow= dlsym(lib_handle_libX11, "XDestroyWindow");
-  lib_XCloseDisplay = dlsym(lib_handle_libX11, "XCloseDisplay");
+	if (!lib_handle_libX11){perror("lib");exit(0);}
+
+	lib_XSetStandardProperties = dlsym(lib_handle_libX11, "XSetStandardProperties");
+	lib_XCreateWindow = dlsym(lib_handle_libX11, "XCreateWindow");
+	lib_XDestroyWindow= dlsym(lib_handle_libX11, "XDestroyWindow");
+	lib_XCloseDisplay = dlsym(lib_handle_libX11, "XCloseDisplay");
 }
 
 
@@ -219,8 +234,10 @@ void glXSwapBuffers(Display *dpy, GLXDrawable drawable)
 
 void GLOMPglXSwapBuffers()
 { 
-  lire_fenetre();
+	lire_fenetre();
 }
+
+
 
 /*on recupere les proprite de la fenetre (taille) pour les diviser par le nbr de cartes, afin de repartire les taches,puis on la lance*/
 int XSetStandardProperties(
@@ -1948,5 +1965,178 @@ void gluPerspective(GLdouble fovy, GLdouble aspect, GLdouble zNear, GLdouble zFa
    
    glFrustum(xmin, xmax, ymin, ymax, zNear, zFar);
 }
+
+void glMap1f(GLenum target,GLfloat u1,GLfloat u2,GLint stride,GLint order,const GLfloat * points)
+{
+	int sizep;
+	int fnum=OVERRIDE_BASE+44;
+
+	if(DEBUG){printf("serveur fnum = %d\n",fnum);}
+	fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
+	fifo_output(&GLOMPcmd_fifo,&target,4);
+	fifo_output(&GLOMPcmd_fifo,&u1,4);
+	fifo_output(&GLOMPcmd_fifo,&u2,4);
+	fifo_output(&GLOMPcmd_fifo,&stride,4);
+	fifo_output(&GLOMPcmd_fifo,&order,4);
+	sizep=order*sizeof(GLfloat);
+	fifo_output(&GLOMPcmd_fifo,points,sizep);
+	lib_glMap1f(target,u1,u2,stride,order,points);
+}
+
+void GLOMPglMap1f()
+{
+	GLenum target;
+	GLfloat u1;
+	GLfloat u2;
+	GLint stride;
+	GLint order;
+	int sizep;
+	fifo_input(&GLOMPcmd_fifo,&target,4);
+	fifo_input(&GLOMPcmd_fifo,&u1,4);
+	fifo_input(&GLOMPcmd_fifo,&u2,4);
+	fifo_input(&GLOMPcmd_fifo,&stride,4);
+	fifo_input(&GLOMPcmd_fifo,&order,4);
+	GLfloat  points[order];
+	sizep=order*sizeof(GLfloat);
+	fifo_input(&GLOMPcmd_fifo,points,sizep);
+	lib_glMap1f(target,u1,u2,stride,order,(GLfloat *)points);
+}
+
+
+
+void glMap1d(GLenum target,GLdouble u1,GLdouble u2,GLint stride,GLint order,const GLdouble * points)
+{
+	int sizep;
+	int fnum=OVERRIDE_BASE+45;
+
+	if(DEBUG){printf("serveur fnum = %d\n",fnum);}
+	fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
+	fifo_output(&GLOMPcmd_fifo,&target,4);
+	fifo_output(&GLOMPcmd_fifo,&u1,8);
+	fifo_output(&GLOMPcmd_fifo,&u2,8);
+	fifo_output(&GLOMPcmd_fifo,&stride,4);
+	fifo_output(&GLOMPcmd_fifo,&order,4);
+	sizep=order*sizeof(GLdouble);
+	fifo_output(&GLOMPcmd_fifo,points,sizep);
+	lib_glMap1d(target,u1,u2,stride,order,points);
+}
+
+void GLOMPglMap1d()
+{
+	GLenum target;
+	GLdouble u1;
+	GLdouble u2;
+	GLint stride;
+	GLint order;
+	int sizep;
+	fifo_input(&GLOMPcmd_fifo,&target,4);
+	fifo_input(&GLOMPcmd_fifo,&u1,8);
+	fifo_input(&GLOMPcmd_fifo,&u2,8);
+	fifo_input(&GLOMPcmd_fifo,&stride,4);
+	fifo_input(&GLOMPcmd_fifo,&order,4);
+	GLdouble  points[order];
+	sizep=order*sizeof(GLdouble);
+	fifo_input(&GLOMPcmd_fifo,points,sizep);
+	lib_glMap1d(target,u1,u2,stride,order,(GLdouble *)points);
+}
+
+void glMap2f(GLenum target,GLfloat u1,GLfloat u2,GLint ustride,GLint uorder,GLfloat v1,GLfloat v2,GLint vstride,GLint vorder,const GLfloat * points)
+{
+	int sizep;
+	int fnum=OVERRIDE_BASE+46;
+
+	if(DEBUG){printf("serveur fnum = %d\n",fnum);}
+	fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
+	fifo_output(&GLOMPcmd_fifo,&target,4);
+	fifo_output(&GLOMPcmd_fifo,&u1,4);
+	fifo_output(&GLOMPcmd_fifo,&u2,4);
+	fifo_output(&GLOMPcmd_fifo,&ustride,4);
+	fifo_output(&GLOMPcmd_fifo,&uorder,4);
+	fifo_output(&GLOMPcmd_fifo,&v1,4);
+	fifo_output(&GLOMPcmd_fifo,&v2,4);
+	fifo_output(&GLOMPcmd_fifo,&vstride,4);
+	fifo_output(&GLOMPcmd_fifo,&vorder,4);
+	sizep=uorder*vorder*sizeof(GLfloat);
+	fifo_output(&GLOMPcmd_fifo,points,sizep);
+	lib_glMap2f(target,u1,u2,ustride,uorder,v1,v2,vstride,vorder,points);
+}
+
+void GLOMPglMap2f()
+{
+	GLenum target;
+	GLfloat u1;
+	GLfloat u2;
+	GLint ustride;
+	GLint uorder;
+	GLfloat v1;
+	GLfloat v2;
+	GLint vstride;
+	GLint vorder;
+	int sizep;
+	fifo_input(&GLOMPcmd_fifo,&target,4);
+	fifo_input(&GLOMPcmd_fifo,&u1,4);
+	fifo_input(&GLOMPcmd_fifo,&u2,4);
+	fifo_input(&GLOMPcmd_fifo,&ustride,4);
+	fifo_input(&GLOMPcmd_fifo,&uorder,4);
+	fifo_input(&GLOMPcmd_fifo,&v1,4);
+	fifo_input(&GLOMPcmd_fifo,&v2,4);
+	fifo_input(&GLOMPcmd_fifo,&vstride,4);
+	fifo_input(&GLOMPcmd_fifo,&vorder,4);
+	GLfloat  points[uorder*vorder];
+	sizep=uorder*vorder*sizeof(GLfloat);
+	fifo_input(&GLOMPcmd_fifo,points,sizep);
+	lib_glMap2f(target,u1,u2,ustride,uorder,v1,v2,vstride,vorder,(GLfloat *)points);
+}
+
+
+void glMap2d(GLenum target,GLdouble u1,GLdouble u2,GLint ustride,GLint uorder,GLdouble v1,GLdouble v2,GLint vstride,GLint vorder,const GLdouble * points)
+{
+	int sizep;
+	int fnum=OVERRIDE_BASE+47;
+
+	if(DEBUG){printf("serveur fnum = %d\n",fnum);}
+	fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
+	fifo_output(&GLOMPcmd_fifo,&target,4);
+	fifo_output(&GLOMPcmd_fifo,&u1,8);
+	fifo_output(&GLOMPcmd_fifo,&u2,8);
+	fifo_output(&GLOMPcmd_fifo,&ustride,4);
+	fifo_output(&GLOMPcmd_fifo,&uorder,4);
+	fifo_output(&GLOMPcmd_fifo,&v1,8);
+	fifo_output(&GLOMPcmd_fifo,&v2,8);
+	fifo_output(&GLOMPcmd_fifo,&vstride,4);
+	fifo_output(&GLOMPcmd_fifo,&vorder,4);
+	sizep=uorder*vorder*sizeof(GLdouble);
+	fifo_output(&GLOMPcmd_fifo,points,sizep);
+	lib_glMap2d(target,u1,u2,ustride,uorder,v1,v2,vstride,vorder,points);
+}
+
+void GLOMPglMap2d()
+{
+	GLenum target;
+	GLdouble u1;
+	GLdouble u2;
+	GLint ustride;
+	GLint uorder;
+	GLdouble v1;
+	GLdouble v2;
+	GLint vstride;
+	GLint vorder;
+	int sizep;
+	fifo_input(&GLOMPcmd_fifo,&target,4);
+	fifo_input(&GLOMPcmd_fifo,&u1,8);
+	fifo_input(&GLOMPcmd_fifo,&u2,8);
+	fifo_input(&GLOMPcmd_fifo,&ustride,4);
+	fifo_input(&GLOMPcmd_fifo,&uorder,4);
+	fifo_input(&GLOMPcmd_fifo,&v1,8);
+	fifo_input(&GLOMPcmd_fifo,&v2,8);
+	fifo_input(&GLOMPcmd_fifo,&vstride,4);
+	fifo_input(&GLOMPcmd_fifo,&vorder,4);
+	GLdouble  points[uorder*vorder];
+	sizep=uorder*vorder*sizeof(GLdouble);
+	fifo_input(&GLOMPcmd_fifo,points,sizep);
+	lib_glMap2d(target,u1,u2,ustride,uorder,v1,v2,vstride,vorder,(GLdouble*)points);
+}
+
+
 
 

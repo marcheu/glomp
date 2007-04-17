@@ -107,6 +107,10 @@ char * noParseFunction_table[]=
     "GenProgramsNV",
     "GenFencesNV",
     "BindProgramNV",
+    "Map1d",
+    "Map1f",
+    "Map2d",
+    "Map2f",
     /*on en vire elle serve pas ...*/
     "CompressedTexImage3DARB",
     "CompressedTexImage2DARB",
