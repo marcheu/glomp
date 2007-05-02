@@ -131,7 +131,7 @@ void segment_delete()
 
 void GLOMPsegment_create_retour()
 {
-	int shmid,i;
+	int i;
 
 	shmadr=shmat(shmget(IPC_PRIVATE,4096*nbcarte,0666|IPC_CREAT),0,0);
 	semadr=(sem_t *)shmat(shmget(IPC_PRIVATE,sizeof(sem_t)*nbcarte,0666),0,0);

@@ -3,6 +3,8 @@
 
 #include <GL/gl.h>
 #include <GL/glext.h>
+#include <GL/glx.h>
+#include <GL/glxext.h>
 
 #ifdef GL_EXT_timer_query
 #else

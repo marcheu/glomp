@@ -24,7 +24,6 @@ void GLOMPfifo_init(GLOMPfifo* f)
 		}
 
 		msgctl(f->message_queue[i], IPC_STAT, &buf);
-		printf("queue size before %d bytes adjusting to %d\n",(int)buf.msg_qbytes,FIFO_SIZE);
 		buf.msg_qbytes=FIFO_SIZE;
 		msgctl(f->message_queue[i], IPC_SET, &buf);
 	}

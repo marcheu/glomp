@@ -3,8 +3,8 @@
 
 #include "dewrapped.h"
 #include "init.h"
+#include "lib_funcs.h"
 
-extern PFNGLXGETPROCADDRESSARBPROC lib_glXGetProcAddressARB;
 
 
 extern void GLOMPunpack();

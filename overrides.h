@@ -4,7 +4,7 @@
 
 #include "init.h"
 #include "id.h"
-#include "transfertFenetre.h"
+#include "single_screen.h"
 #include <sys/types.h>
 #include <signal.h>
 #include <unistd.h>
@@ -21,6 +21,7 @@ void GLOMPglBindTexture();
 void GLOMPglXSwapBuffers();
 void GLOMPglGenLists();
 void GLOMPglCallList();
+void GLOMPglGetString();
 void GLOMPglCallLists();
 void GLOMPglBindTextureEXT();
 void GLOMPglGenTexturesEXT();

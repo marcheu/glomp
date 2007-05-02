@@ -1,7 +1,7 @@
 #ifndef _ID_H_
 #define _ID_H_
 
-#include <GL/gl.h>
+#include "glheader.h"
 
 typedef enum
 {

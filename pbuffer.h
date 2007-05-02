@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <string.h>
 
-extern int creerpbuffer(int,int);
+extern int pbuffer_init(int,int);
 
 #endif
 
