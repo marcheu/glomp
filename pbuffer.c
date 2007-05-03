@@ -84,7 +84,7 @@ static GLXPbuffer MakePbuffer( Display *dpy, int screen, int width, int height )
 		gFBconfig = chosenFBConfig;
 	}
 
-	lib_Xfree(fbConfigs);
+	lib_XFree(fbConfigs);
 
 	return pBuffer;
 }

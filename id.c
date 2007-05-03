@@ -22,12 +22,15 @@ void id_add(int value,int translated_value)
 // translates an id
 int id_translate(int value)
 {
-  if (value>=id_table_size)
-    {
-      printf("oops id %d not found, table size %d  (bug in the application ?)\n",value,id_table_size);
-      return 0;
-    }
-  return id_table[value];
+	if (value>=id_table_size)
+	{
+		GLuint v;
+		// oops we didn't find the id in the table
+		// that probably means the application doesn't use glGen*
+		// in which case we don't need to handle the ids anyway
+		return value;
+	}
+	return id_table[value];
 }
 
 // generates an id for the server

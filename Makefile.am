@@ -3,7 +3,7 @@ pkglib_LTLIBRARIES=libGL.la
 
 gen_SOURCES = gen.c
 gen_LDFLAGS = `pkg-config --libs libxml-2.0`
-CFLAGS = @CFLAGS@ `pkg-config --cflags libxml-2.0` 
+CFLAGS = @CFLAGS@ `pkg-config --cflags libxml-2.0` -I/usr/include/ 
 
 wrapped.c: gen 
 	@./gen
@@ -11,7 +11,7 @@ wrapped.c: gen
 dewrapped.c: gen
 	@./gen
 
-libGL_la_SOURCES = dewrapped.c wrapped.c client.c fifo.c id.c init.c lib_funcs.c multi_screen.c overrides.c pbuffer.c segment.c server.c single_screen.c 
+libGL_la_SOURCES = dewrapped.c wrapped.c client.c fifo.c id.c init.c lib_funcs.c multi_screen.c overrides.c pbuffer.c segment.c server.c single_screen.c tile_screen.c
 
 wrapped.o: wrapped.c
 

@@ -5,6 +5,7 @@
 #include <GL/glext.h>
 #include <libxml/xmlmemory.h>
 #include <libxml/parser.h>
+#include "config.h"
 //#include "init.h"
 
 #define DEBUG 1
@@ -44,7 +45,10 @@ typedef struct gl_type{
 char * noParseFunction_table[]=
   {
     "NewList",
+
+#ifdef ENABLE_SINGLE_SCREEN
     "Viewport",
+#endif
     "IsQuery",
     "IsBuffer",
     "IsProgramARB",
@@ -111,14 +115,15 @@ char * noParseFunction_table[]=
     "Map1f",
     "Map2d",
     "Map2f",
+    "IsEnabled",
     /*on en vire elle serve pas ...*/
-    "CompressedTexImage3DARB",
-    "CompressedTexImage2DARB",
-    "CompressedTexImage1DARB",
-    "CompressedTexSubImage3DARB",
-    "CompressedTexSubImage2DARB",
-    "CompressedTexSubImage1DARB",
-    "ProgramStringARB",
+//    "CompressedTexImage3DARB",
+//    "CompressedTexImage2DARB",
+//    "CompressedTexImage1DARB",
+//    "CompressedTexSubImage3DARB",
+//    "CompressedTexSubImage2DARB",
+//    "CompressedTexSubImage1DARB",
+//    "ProgramStringARB",
     /*et dans wrapped pb*/
     "GetMapdv",
     "GetMapfv",

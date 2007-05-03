@@ -3,9 +3,10 @@
 #include <stdlib.h>
 #include "lib_funcs.h"
 
-/* library interception variables */
+/* handles for dlopen/dlclose */
 static void* lib_handle_libGL = 0;
 static void* lib_handle_libX11 = 0;
+static void* lib_handle_libXxf86vm = 0;
 static void* lib_handle_libC = 0;
 
 /* GLX stuff */
@@ -26,6 +27,9 @@ GLXContext (*lib_glXCreateNewContext)(Display *dpy, GLXFBConfig config,
 Bool (*lib_glXIsDirect)(Display *dpy, GLXContext ctx)=0;
 Bool (*lib_glXMakeCurrent)(Display *dpy, GLXDrawable drawable,
                            GLXContext ctx)=0;
+XVisualInfo* (*lib_glXChooseVisual)(Display *dpy, int screen,int *attrib_list)=0;
+Bool (*lib_glXQueryVersion)(Display *dpy, int *major, int *minor)=0;
+GLXContext (*lib_glXCreateContext)(Display *dpy, XVisualInfo *vis,GLXContext share_list, Bool direct)=0;
 
 
 
@@ -110,9 +114,10 @@ void (*lib_glMap1d) (GLenum target, GLdouble u1, GLdouble u2, GLint stride, GLin
 void (*lib_glMap1f) (GLenum target, GLfloat u1, GLfloat u2, GLint stride, GLint order, const GLfloat *points)=0;
 void (*lib_glMap2d) (GLenum target, GLdouble u1, GLdouble u2, GLint ustride, GLint uorder, GLdouble v1, GLdouble v2, GLint vstride, GLint vorder, const GLdouble *points)=0;
 void (*lib_glMap2f) (GLenum target, GLfloat u1, GLfloat u2, GLint ustride, GLint uorder, GLfloat v1, GLfloat v2, GLint vstride, GLint vorder, const GLfloat *points)=0;
+GLboolean (*lib_glIsEnabled) (GLenum cap)=0;
 
 
-
+/* X stuff */
 Window (*lib_XCreateWindow)(Display *display, Window parent, int x, int y,
  			   unsigned int width, unsigned int height,
  			   unsigned int border_width, int depth,
@@ -131,10 +136,21 @@ int (*lib_XSetStandardProperties)(
 					 int			/* argc */,
 					 XSizeHints*		/* hints */
 					 )=0;
-int (*lib_Xfree) (void *)=0;
+int (*lib_XFree) (void *)=0;
+int (*lib_XMapRaised)(Display*,Window)=0;
+Colormap (*lib_XCreateColormap)(Display*,Window,Visual*,int)=0;
 
+/* XF86vm stuff */
+Bool (*lib_XF86VidModeQueryVersion)(Display*,int*,int*)=0;
+Bool (*lib_XF86VidModeGetAllModeLines)(Display*,int,int*,XF86VidModeModeInfo***)=0;
+Bool (*lib_XF86VidModeSwitchToMode)(Display*,int,XF86VidModeModeInfo*)=0;
+Bool (*lib_XF86VidModeSetViewPort)(Display*,int,int,int)=0;
+
+/* libc stuff */
 void * (*lib_strstr)(char*,char*)=0;
-	
+
+
+
 
 
 /*
@@ -157,12 +173,16 @@ void lib_funcs_init()
 	lib_glXSwapBuffers = dlsym(lib_handle_libGL, "glXSwapBuffers");
 	lib_glXCreateWindow = dlsym(lib_handle_libGL, "glXCreateWindow");   
 	lib_glXQueryServerString = dlsym(lib_handle_libGL, "glXQueryServerString");
+	/* FIXME */
 	lib_glXChooseFBConfig = lib_glXGetProcAddressARB("glXChooseFBConfig");
 	lib_glXGetFBConfigAttrib = dlsym(lib_handle_libGL, "glXGetFBConfigAttrib");
 	lib_glXCreatePbuffer = dlsym(lib_handle_libGL, "glXCreatePbuffer");
 	lib_glXCreateNewContext = dlsym(lib_handle_libGL, "glXCreateNewContext");
 	lib_glXIsDirect = dlsym(lib_handle_libGL, "glXIsDirect");
 	lib_glXMakeCurrent = dlsym(lib_handle_libGL, "glXMakeCurrent");
+	lib_glXChooseVisual = dlsym(lib_handle_libGL, "glXChooseVisual");
+	lib_glXQueryVersion = dlsym(lib_handle_libGL, "glXQueryVersion");
+	lib_glXCreateContext = dlsym(lib_handle_libGL, "glXCreateContext");
 
 	/* intercept library GL function */
 	lib_glBindTexture = dlsym(lib_handle_libGL, "glBindTexture");
@@ -227,6 +247,7 @@ void lib_funcs_init()
 	lib_glMap1d = dlsym(lib_handle_libGL, "glMap1d");
 	lib_glMap2f = dlsym(lib_handle_libGL, "glMap2f");
 	lib_glMap2d = dlsym(lib_handle_libGL, "glMap2d");
+	lib_glIsEnabled = dlsym(lib_handle_libGL, "glIsEnabled");
 
 	/* X11 stuff */
 	lib_handle_libX11 = dlopen("/usr/lib/libX11.so", RTLD_LAZY);
@@ -238,7 +259,16 @@ void lib_funcs_init()
 	lib_XDestroyWindow= dlsym(lib_handle_libX11, "XDestroyWindow");
 	lib_XOpenDisplay = dlsym(lib_handle_libX11, "XOpenDisplay");
 	lib_XCloseDisplay = dlsym(lib_handle_libX11, "XCloseDisplay");
-	lib_Xfree = dlsym(lib_handle_libX11, "XFree");
+	lib_XFree = dlsym(lib_handle_libX11, "XFree");
+	lib_XMapRaised = dlsym(lib_handle_libX11, "XMapRaised");
+	lib_XCreateColormap = dlsym(lib_handle_libX11, "XCreateColormap");
+
+	/* libXxf86vm stuff */
+	lib_handle_libXxf86vm = dlopen("/usr/lib/libXxf86vm.so", RTLD_LAZY);
+	lib_XF86VidModeQueryVersion = dlsym(lib_handle_libXxf86vm, "XF86VidModeQueryVersion");
+	lib_XF86VidModeGetAllModeLines = dlsym(lib_handle_libXxf86vm, "XF86VidModeGetAllModeLines");
+	lib_XF86VidModeSwitchToMode = dlsym(lib_handle_libXxf86vm, "XF86VidModeSwitchToMode");
+	lib_XF86VidModeSetViewPort = dlsym(lib_handle_libXxf86vm, "XF86VidModeSetViewPort");
 
 	/* libc stuff */
 	lib_handle_libC = dlopen("/lib/libc.so", RTLD_LAZY);  

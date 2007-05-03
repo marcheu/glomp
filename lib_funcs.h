@@ -1,3 +1,6 @@
+#ifndef _LIB_FUNCS_H_
+#define _LIB_FUNCS_H_
+
 #include "glheader.h"
 
 extern void lib_funcs_init();
@@ -20,6 +23,11 @@ extern GLXContext (*lib_glXCreateNewContext)(Display *dpy, GLXFBConfig config,
 extern Bool (*lib_glXIsDirect)(Display *dpy, GLXContext ctx);
 extern Bool (*lib_glXMakeCurrent)(Display *dpy, GLXDrawable drawable,
                            GLXContext ctx);
+extern Bool (*lib_glXMakeCurrent)(Display *dpy, GLXDrawable drawable,
+                           GLXContext ctx);
+extern XVisualInfo* (*lib_glXChooseVisual)(Display *dpy, int screen,int *attrib_list);
+extern Bool (*lib_glXQueryVersion)(Display *dpy, int *major, int *minor);
+extern GLXContext (*lib_glXCreateContext)(Display *dpy, XVisualInfo *vis,GLXContext share_list, Bool direct);
 
 /* GL */
 extern void (*lib_glBindTexture) ( GLenum p0 , GLuint p1 );
@@ -102,6 +110,7 @@ extern void (*lib_glMap1d) (GLenum target, GLdouble u1, GLdouble u2, GLint strid
 extern void (*lib_glMap1f) (GLenum target, GLfloat u1, GLfloat u2, GLint stride, GLint order, const GLfloat *points);
 extern void (*lib_glMap2d) (GLenum target, GLdouble u1, GLdouble u2, GLint ustride, GLint uorder, GLdouble v1, GLdouble v2, GLint vstride, GLint vorder, const GLdouble *points);
 extern void (*lib_glMap2f) (GLenum target, GLfloat u1, GLfloat u2, GLint ustride, GLint uorder, GLfloat v1, GLfloat v2, GLint vstride, GLint vorder, const GLfloat *points);
+extern GLboolean (*lib_glIsEnabled) (GLenum cap);
 
 
 
@@ -124,8 +133,18 @@ extern int (*lib_XSetStandardProperties)(
 					 int			/* argc */,
 					 XSizeHints*		/* hints */
 					 );
-extern int (*lib_Xfree) (void *);
+extern int (*lib_XFree) (void *);
+extern int (*lib_XMapRaised)(Display*,Window);
+extern Colormap (*lib_XCreateColormap)(Display*,Window,Visual*,int);
+
+/* XF86vm stuff */
+extern Bool (*lib_XF86VidModeQueryVersion)(Display*,int*,int*);
+extern Bool (*lib_XF86VidModeGetAllModeLines)(Display*,int,int*,XF86VidModeModeInfo***);
+extern Bool (*lib_XF86VidModeSwitchToMode)(Display*,int,XF86VidModeModeInfo*);
+extern Bool (*lib_XF86VidModeSetViewPort)(Display*,int,int,int);
 
 /* C */	
 extern void * (*lib_strstr)(char*,char*);
+
+#endif
 

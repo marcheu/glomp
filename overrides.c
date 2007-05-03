@@ -1,6 +1,11 @@
 #define _GNU_SOURCE
 #include <string.h>
 #include "overrides.h"
+#ifdef ENABLE_SINGLE_SCREEN
+#include "single_screen.h"
+#else
+#include "multi_screen.h"
+#endif
 
 /* functions we implement ourselves */
 
@@ -77,7 +82,6 @@ GLXWindow XCreateWindow(Display *display, Window parent, int x, int y,
 
 void GLOMPXCreateWindow()
 {
-	printf("pouet %d\n",client_num);
 	fifo_input(&GLOMPcmd_fifo,&width,4);
 	fifo_input(&GLOMPcmd_fifo,&height,4);
 
@@ -93,6 +97,7 @@ GLXContext glXCreateNewContext(Display *dpy, GLXFBConfig config,
                                       Bool direct)
 {
 	printf("glXCreateNewContext called !!!!!!!\n");
+	return lib_glXCreateNewContext(dpy,config,render_type,share_list,direct);
 }
 
 
@@ -101,6 +106,14 @@ GLXWindow glXCreateWindow(Display *dpy, GLXFBConfig config, Window win, const in
 {
 	printf("glXCreateWindow called !!!!!!!\n");
 	return lib_glXCreateWindow(dpy,config,win,attrib_list);
+}
+
+
+GLXContext glXCreateContext(Display *dpy, XVisualInfo *vis,
+                                   GLXContext share_list, Bool direct)
+{
+	printf("glXCreateContext called !!!!!!!\n");
+	return lib_glXCreateContext(dpy,vis,share_list,direct);
 }
 
 
@@ -115,6 +128,7 @@ void glFrustum ( GLdouble p0 , GLdouble p1 , GLdouble p2 , GLdouble p3 , GLdoubl
 	fifo_output(&GLOMPcmd_fifo,&p4,8);
 	fifo_output(&GLOMPcmd_fifo,&p5,8);
 
+#ifdef ENABLE_SINGLE_SCREEN
 	int totalload=0;
 	int beforeload=0;
 	int i;
@@ -129,6 +143,9 @@ void glFrustum ( GLdouble p0 , GLdouble p1 , GLdouble p2 , GLdouble p3 , GLdoubl
 	newp2=p2+(p3-p2)*((double)beforeload/(double)totalload);
 	newp3=p2+(p3-p2)*((double)(beforeload+client_load[client_num])/(double)totalload);
 	lib_glFrustum(p0,p1,newp2,newp3,p4,p5);
+#else
+	tile_screen_glFrustum(client_num,p0,p1,p2,p3,p4,p5);
+#endif
 }
 
 
@@ -152,6 +169,7 @@ void GLOMPglFrustum()
 	fifo_input(&GLOMPcmd_fifo,&p4,8);
 	fifo_input(&GLOMPcmd_fifo,&p5,8);
 
+#ifdef ENABLE_SINGLE_SCREEN
 	int totalload=0;
 	int beforeload=0;
 	for(i=0;i<nbcarte;i++)
@@ -167,6 +185,9 @@ void GLOMPglFrustum()
 	printf("[%d] les anciennes %f %f --- les nexs %f %f\n",client_num,p2,p3,newp2,newp3);
 
 	lib_glFrustum(p0,p1,newp2,newp3,p4,p5);
+#else
+	tile_screen_glFrustum(client_num,p0,p1,p2,p3,p4,p5);
+#endif
 }
 
 
@@ -366,6 +387,8 @@ const GLubyte* glGetString( GLenum name )
 			return version;
 		case GL_EXTENSIONS:
 		{
+			/* blacklist extensions that can't be auto genereted and aren't written yet */
+			char* blacklisted_extensions = "GL_EXT_vertex_array GL_EXT_compiled_vertex_array GL_NV_vertex_array_range GL_NV_vertex_array_range2";
 			/* we have different cards, but need to expose a single extension string
 			 * so we query each card for its extensions and intersect */
 			int fnum=OVERRIDE_BASE+43;
@@ -400,8 +423,9 @@ const GLubyte* glGetString( GLenum name )
 					if (!memmem(client_extensions[c],strlen(client_extensions[c]),&extensions[i],j))
 						found=0;
 				}
+
 				// found the extension in all clients, expose it
-				if (found)
+				if ((!memmem(blacklisted_extensions,strlen(blacklisted_extensions),&extensions[i],j))&&(found))
 				{
 					strncat(return_extensions,&extensions[i],j);
 					strncat(return_extensions,white_space,1);
@@ -1607,6 +1631,7 @@ void GLOMPglDeleteFramebuffersEXT()
     }
 }
 
+#ifdef ENABLE_SINGLE_SCREEN
 void glViewport ( GLint x,GLint y,GLsizei w,GLsizei h )
 {
   int i;
@@ -1675,6 +1700,8 @@ void GLOMPglViewport()
  
     
 }
+#endif
+
 
 void glOrtho ( GLdouble p0, GLdouble p1,GLdouble p2,GLdouble p3,GLdouble p4,GLdouble p5 )
 {
@@ -1688,6 +1715,7 @@ void glOrtho ( GLdouble p0, GLdouble p1,GLdouble p2,GLdouble p3,GLdouble p4,GLdo
   fifo_output(&GLOMPcmd_fifo,&p4,8);
   fifo_output(&GLOMPcmd_fifo,&p5,8);
 
+#ifdef ENABLE_SINGLE_SCREEN
   int totalload=0;
   int beforeload=0;
   int i;
@@ -1701,17 +1729,17 @@ void glOrtho ( GLdouble p0, GLdouble p1,GLdouble p2,GLdouble p3,GLdouble p4,GLdo
     }
   
   
-  printf("%f %f\n",p2,p3);
-  
   newp2=p2+(p3-p2)*((double)beforeload/(double)totalload);
   newp3=p2+(p3-p2)*((double)(beforeload+client_load[client_num])/(double)totalload);
 
-  printf("new %f %f\n",newp2,newp3);
   //  newp2=p2;
   //newp3=p3;
   
 
   lib_glOrtho(p0,p1,newp2,newp3,p4,p5);
+#else
+  tile_screen_glOrtho(client_num,p0,p1,p2,p3,p4,p5);
+#endif
 }
 
 void GLOMPglOrtho()
@@ -1734,6 +1762,7 @@ void GLOMPglOrtho()
   fifo_input(&GLOMPcmd_fifo,&p4,8);
   fifo_input(&GLOMPcmd_fifo,&p5,8);
   
+#ifdef ENABLE_SINGLE_SCREEN
   int totalload=0;
   int beforeload=0;
   for(i=0;i<nbcarte;i++)
@@ -1755,6 +1784,9 @@ void GLOMPglOrtho()
   
 
   lib_glOrtho(p0,p1,newp2,newp3,p4,p5);
+#else
+  tile_screen_glOrtho(client_num,p0,p1,p2,p3,p4,p5);
+#endif
  
     
 }
@@ -1865,6 +1897,7 @@ void glMap2f(GLenum target,GLfloat u1,GLfloat u2,GLint ustride,GLint uorder,GLfl
 {
 	int sizep;
 	int fnum=OVERRIDE_BASE+46;
+	printf("glMap2f\n");
 
 	if(DEBUG){printf("serveur fnum = %d\n",fnum);}
 	fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
@@ -1914,6 +1947,11 @@ void glMap2d(GLenum target,GLdouble u1,GLdouble u2,GLint ustride,GLint uorder,GL
 {
 	int sizep;
 	int fnum=OVERRIDE_BASE+47;
+	printf("glMap2d %d %f %f %d %d %f %f %d %d \n",target,u1,u2,ustride,uorder,v1,v2,vstride,vorder);
+	int i;
+	for(i=0;i<10;i++)
+	printf("%f ",points[i]);
+	printf("\n");
 
 	if(DEBUG){printf("serveur fnum = %d\n",fnum);}
 	fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
@@ -1952,10 +1990,21 @@ void GLOMPglMap2d()
 	fifo_input(&GLOMPcmd_fifo,&v2,8);
 	fifo_input(&GLOMPcmd_fifo,&vstride,4);
 	fifo_input(&GLOMPcmd_fifo,&vorder,4);
-	GLdouble  points[uorder*vorder];
 	sizep=uorder*vorder*sizeof(GLdouble);
+	GLdouble  points[uorder*vorder];
 	fifo_input(&GLOMPcmd_fifo,points,sizep);
+	printf("client glMap2d %d %f %f %d %d %f %f %d %d \n",target,u1,u2,ustride,uorder,v1,v2,vstride,vorder);
+	int i;
+	for(i=0;i<10;i++)
+	printf("%f ",points[i]);
+	printf("\n");
 	lib_glMap2d(target,u1,u2,ustride,uorder,v1,v2,vstride,vorder,(GLdouble*)points);
+}
+
+GLboolean glIsEnabled(GLenum cap)
+{
+	if(DEBUG){printf("serveur glIsEnabled\n");}
+	return lib_glIsEnabled(cap);
 }
 
 

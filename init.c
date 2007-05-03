@@ -1,5 +1,6 @@
 #include "init.h"
 #include "lib_funcs.h"
+#include "tile_screen.h"
 #include <dlfcn.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -61,6 +62,17 @@ static void GLOMP_init()
 	}
 	printf("\n");
 
+	/* init the screen tiling */
+	switch(nbcarte)
+	{
+		case 4:tile_screen_init(2,2);break;
+		case 6:tile_screen_init(3,2);break;
+		case 8:tile_screen_init(4,2);break;
+		case 10:tile_screen_init(5,2);break;
+		case 12:tile_screen_init(4,3);break;
+		default:tile_screen_init(nbcarte,1);break;
+	}
+
 	GLOMPsegment_create_retour();/*procedure de creation d'un segmant pour le retour*/
 
 
@@ -101,7 +113,7 @@ static void GLOMP_init()
 	/*pour les client on les initialise et on les lances*/
 	GLOMPclient_init();
 
-#if 1
+#if 0
 	if (client_num!=0){  
 		GLOMPclient_run();/*tourne en boucle*/
 	}

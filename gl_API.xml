@@ -3127,7 +3127,7 @@
         <param name="size" type="GLint"/>
         <param name="type" type="GLenum"/>
         <param name="stride" type="GLsizei"/>
-        <param name="pointer" type="const GLvoid *"/>
+        <param name="pointer" type="const GLvoid *" img_width="size" img_type="type"/>
         <glx handcode="true"/>
     </function>
 
@@ -3147,7 +3147,7 @@
         <param name="mode" type="GLenum"/>
         <param name="count" type="GLsizei"/>
         <param name="type" type="GLenum"/>
-        <param name="indices" type="const GLvoid *"/>
+        <param name="indices" type="const GLvoid *" img_width="count" img_type="type"/>
         <glx handcode="true"/>
     </function>
 
@@ -3703,6 +3703,7 @@
         <param name="count" type="GLsizei"/>
         <param name="type" type="GLenum"/>
         <param name="indices" type="const GLvoid *"/>
+	<!-- XXX ennuyeux - on ne peut pas calculer la taille d'un coup -->
         <glx handcode="true"/>
     </function>
 
@@ -4441,7 +4442,7 @@
         <param name="depth" type="GLsizei"/>
         <param name="border" type="GLint"/>
         <param name="imageSize" type="GLsizei"/>
-        <param name="data" type="const GLvoid *"/>
+        <param name="data" type="const GLvoid *" img_width="imageSize" img_type="GL_UNSIGNED_BYTE"/>
     </function>
 
     <function name="CompressedTexImage2D" alias="CompressedTexImage2DARB">
@@ -4452,7 +4453,7 @@
         <param name="height" type="GLsizei"/>
         <param name="border" type="GLint"/>
         <param name="imageSize" type="GLsizei"/>
-        <param name="data" type="const GLvoid *"/>
+        <param name="data" type="const GLvoid *" img_width="imageSize" img_type="GL_UNSIGNED_BYTE"/>
     </function>
 
     <function name="CompressedTexImage1D" alias="CompressedTexImage1DARB">
@@ -4462,7 +4463,7 @@
         <param name="width" type="GLsizei"/>
         <param name="border" type="GLint"/>
         <param name="imageSize" type="GLsizei"/>
-        <param name="data" type="const GLvoid *"/>
+        <param name="data" type="const GLvoid *" img_width="imageSize" img_type="GL_UNSIGNED_BYTE"/>
     </function>
 
     <function name="CompressedTexSubImage3D" alias="CompressedTexSubImage3DARB">
@@ -4476,7 +4477,7 @@
         <param name="depth" type="GLsizei"/>
         <param name="format" type="GLenum"/>
         <param name="imageSize" type="GLsizei"/>
-        <param name="data" type="const GLvoid *"/>
+        <param name="data" type="const GLvoid *" img_width="imageSize" img_type="GL_UNSIGNED_BYTE"/>
     </function>
 
     <function name="CompressedTexSubImage2D" alias="CompressedTexSubImage2DARB">
@@ -4488,7 +4489,7 @@
         <param name="height" type="GLsizei"/>
         <param name="format" type="GLenum"/>
         <param name="imageSize" type="GLsizei"/>
-        <param name="data" type="const GLvoid *"/>
+        <param name="data" type="const GLvoid *" img_width="imageSize" img_type="GL_UNSIGNED_BYTE"/>
     </function>
 
     <function name="CompressedTexSubImage1D" alias="CompressedTexSubImage1DARB">
@@ -4498,7 +4499,7 @@
         <param name="width" type="GLsizei"/>
         <param name="format" type="GLenum"/>
         <param name="imageSize" type="GLsizei"/>
-        <param name="data" type="const GLvoid *"/>
+        <param name="data" type="const GLvoid *" img_width="imageSize" img_type="GL_UNSIGNED_BYTE"/>
     </function>
 
     <function name="GetCompressedTexImage" alias="GetCompressedTexImageARB">
@@ -6105,7 +6106,7 @@
         <param name="depth" type="GLsizei"/>
         <param name="border" type="GLint"/>
         <param name="imageSize" type="GLsizei" counter="true"/>
-        <param name="data" type="const GLvoid *" count="imageSize"/>
+        <param name="data" type="const GLvoid *" img_width="imageSize" img_type="GL_UNSIGNED_BYTE"/>
         <glx rop="216" handcode="client"/>
     </function>
 
@@ -6117,7 +6118,7 @@
         <param name="height" type="GLsizei"/>
         <param name="border" type="GLint"/>
         <param name="imageSize" type="GLsizei" counter="true"/>
-        <param name="data" type="const GLvoid *" count="imageSize"/>
+        <param name="data" type="const GLvoid *" img_width="imageSize" img_type="GL_UNSIGNED_BYTE"/>
         <glx rop="215" handcode="client"/>
     </function>
 
@@ -6128,7 +6129,7 @@
         <param name="width" type="GLsizei"/>
         <param name="border" type="GLint"/>
         <param name="imageSize" type="GLsizei" counter="true"/>
-        <param name="data" type="const GLvoid *" count="imageSize"/>
+        <param name="data" type="const GLvoid *" img_width="imageSize" img_type="GL_UNSIGNED_BYTE"/>
         <glx rop="214" handcode="client"/>
     </function>
 
@@ -6143,7 +6144,7 @@
         <param name="depth" type="GLsizei"/>
         <param name="format" type="GLenum"/>
         <param name="imageSize" type="GLsizei" counter="true"/>
-        <param name="data" type="const GLvoid *" count="imageSize"/>
+        <param name="data" type="const GLvoid *" img_width="imageSize" img_type="GL_UNSIGNED_BYTE"/>
         <glx rop="219" handcode="client"/>
     </function>
 
@@ -6156,7 +6157,7 @@
         <param name="height" type="GLsizei"/>
         <param name="format" type="GLenum"/>
         <param name="imageSize" type="GLsizei" counter="true"/>
-        <param name="data" type="const GLvoid *" count="imageSize"/>
+        <param name="data" type="const GLvoid *" img_width="imageSize" img_type="GL_UNSIGNED_BYTE"/>
         <glx rop="218" handcode="client"/>
     </function>
 
@@ -6167,7 +6168,7 @@
         <param name="width" type="GLsizei"/>
         <param name="format" type="GLenum"/>
         <param name="imageSize" type="GLsizei" counter="true"/>
-        <param name="data" type="const GLvoid *" count="imageSize"/>
+        <param name="data" type="const GLvoid *" img_width="imageSize" img_type="GL_UNSIGNED_BYTE"/>
         <glx rop="217" handcode="client"/>
     </function>
 
@@ -7063,7 +7064,7 @@
         <param name="target" type="GLenum"/>
         <param name="format" type="GLenum"/>
         <param name="len" type="GLsizei" counter="true"/>
-        <param name="string" type="const GLvoid *" count="len"/>
+        <param name="string" type="const GLvoid *" img_width="len" img_type="GL_UNSIGNED_BYTE"/>
         <glx rop="4217" large="true"/>
     </function>
 

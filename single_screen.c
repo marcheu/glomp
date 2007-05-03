@@ -94,19 +94,6 @@ void GLOMP_single_screen_init_window()
 		}
 }
 
-void GLOMP_single_screen_swap(Display *dpy, GLXDrawable drawable)
-{
-	if (client_num>0)
-	{
-		lire_fenetre();
-	}
-	else
-	{
-		ecrire_fenetre();//si on est dans le maitre, on recupere les buffers
-		lib_glXSwapBuffers(dpy, drawable);//et on utilise la vrai fonction swapbuffer
-	}
-}
-
 static void screen_dump(char* filename)
 {
   /*
@@ -228,4 +215,19 @@ void ecrire_fenetre()
 	free(heightclient);
 	//if(DEBUG){printf("fin ECRIREFEN !!\n");}
 }  
+
+
+void GLOMP_single_screen_swap(Display *dpy, GLXDrawable drawable)
+{
+	if (client_num>0)
+	{
+		lire_fenetre();
+	}
+	else
+	{
+		ecrire_fenetre();//si on est dans le maitre, on recupere les buffers
+		lib_glXSwapBuffers(dpy, drawable);//et on utilise la vrai fonction swapbuffer
+	}
+}
+
 

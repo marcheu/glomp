@@ -100,6 +100,14 @@ void GLOMPunpack()
 		GLOMPglNewList();
 	else if(func==OVERRIDE_BASE+43)
 		GLOMPglGetString();
+	else if(func==OVERRIDE_BASE+44)
+		GLOMPglMap1f();
+	else if(func==OVERRIDE_BASE+45)
+		GLOMPglMap1d();
+	else if(func==OVERRIDE_BASE+46)
+		GLOMPglMap2f();
+	else if(func==OVERRIDE_BASE+47)
+		GLOMPglMap2d();
 }
 
 

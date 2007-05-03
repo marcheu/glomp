@@ -13,6 +13,8 @@ static gl_type colorcomponents[]={
 	{ GL_LUMINANCE,8},
 	{ GL_LUMINANCE_ALPHA,16},
 	{ GL_BITMAP,1},
+	{ 0x84F9 /*GL_DEPTH_STENCIL_NV*/,32},
+	{ 0x84FA /*GL_UNSIGNED_INT_24_8_NV*/,32},
 	{ 0,0},
 };
 
