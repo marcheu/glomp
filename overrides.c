@@ -101,7 +101,6 @@ GLXContext glXCreateNewContext(Display *dpy, GLXFBConfig config,
 }
 
 
-/*bugged! please use XCreateWindows*/
 GLXWindow glXCreateWindow(Display *dpy, GLXFBConfig config, Window win, const int *attrib_list)
 {
 	printf("glXCreateWindow called !!!!!!!\n");
@@ -349,9 +348,9 @@ const GLubyte* glGetString( GLenum name )
 {
 	const GLubyte* vendor="Stephane Marchesin";
  	const GLubyte* renderer="Glomp on ";
-	static GLubyte return_renderer[4096];
-	const GLubyte* version="1.2 Glomp";
 	const GLubyte* extensions=NULL;
+	static GLubyte return_renderer[4096];
+	static GLubyte return_version[128];
 	static GLubyte return_extensions[4096];
 	GLubyte* white_space=" ";
 
@@ -384,7 +383,42 @@ const GLubyte* glGetString( GLenum name )
 			return return_renderer;
 		}
 		case GL_VERSION:
-			return version;
+		{
+			/* find the lowest version among the cards */
+			int fnum=OVERRIDE_BASE+43;
+			int c;
+			int major,minor;
+			fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
+			fifo_output(&GLOMPcmd_fifo,&name,4);
+			fifo_flush(&GLOMPcmd_fifo);
+			const GLubyte* version=lib_glGetString(name);
+			int r=sscanf(version,"%d.%d",&major,&minor);
+			if (r!=2)
+			{
+				printf("unparseable GL version !\n");
+				major=1;
+				minor=0;
+			}
+
+			for(c=1;c<nbcarte;c++)
+			{
+				int mymaj, mymin;
+				sem_wait(&semadr[c]);
+				int r=sscanf(shmadr+4096*c,"%d.%d",&mymaj,&mymin);
+				if (r!=2)
+				{
+					printf("unparseable GL version !\n");
+					continue;
+				}
+				if (mymaj*1000+mymin<major*1000+minor)
+				{
+					major=mymaj;
+					minor=mymin;
+				}
+			}
+			sprintf(return_version,"%d.%d Glomp",major,minor);
+			return return_version;
+		}
 		case GL_EXTENSIONS:
 		{
 			/* blacklist extensions that can't be auto genereted and aren't written yet */
