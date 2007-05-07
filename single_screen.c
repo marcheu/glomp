@@ -76,7 +76,7 @@ void GLOMP_single_screen_init()
 
 //creer le segment de memoire partage qui va contenir toute l'image
 //c'est a dire les nbcarte pBuffer
-void GLOMP_single_screen_init_window()
+void GLOMP_single_screen_init_window(int* glxattribs)
 {
 	/*creation de la shm des fenetre des differentes cartes*/
 	shmadr_fenetre1=malloc(sizeof(void *)*nbcarte);

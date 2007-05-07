@@ -150,6 +150,15 @@ extern int (*lib_XSetStandardProperties)(
 extern int (*lib_XFree) (void *);
 extern int (*lib_XMapRaised)(Display*,Window);
 extern Colormap (*lib_XCreateColormap)(Display*,Window,Visual*,int);
+extern int (*lib_XGrabKeyboard)(
+    Display*		/* display */,
+    Window		/* grab_window */,
+    Bool		/* owner_events */,
+    int			/* pointer_mode */,
+    int			/* keyboard_mode */,
+    Time		/* time */
+);
+
 
 /* XF86vm stuff */
 extern Bool (*lib_XF86VidModeQueryVersion)(Display*,int*,int*);

@@ -58,6 +58,7 @@ static func_dispatch_entry func_dispatch[]=
 	GLOMPglMap2f,			// OVERRIDE_BASE + 46
 	GLOMPglMap2d,			// OVERRIDE_BASE + 47
 	GLOMPdraw_array,		// OVERRIDE_BASE + 48
+	GLOMPquit,			// OVERRIDE_BASE + 49
 };
 
 void GLOMPunpack()
@@ -82,7 +83,6 @@ void GLOMPclient_init()
 	lib_funcs_init();/* initialiser tous les lib_* */
 	array_init();
 }
-
 
 
 

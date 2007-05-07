@@ -154,6 +154,14 @@ int (*lib_XSetStandardProperties)(
 int (*lib_XFree) (void *)=0;
 int (*lib_XMapRaised)(Display*,Window)=0;
 Colormap (*lib_XCreateColormap)(Display*,Window,Visual*,int)=0;
+int (*lib_XGrabKeyboard)(
+    Display*		/* display */,
+    Window		/* grab_window */,
+    Bool		/* owner_events */,
+    int			/* pointer_mode */,
+    int			/* keyboard_mode */,
+    Time		/* time */
+)=0;
 
 /* XF86vm stuff */
 Bool (*lib_XF86VidModeQueryVersion)(Display*,int*,int*)=0;
@@ -292,6 +300,7 @@ void lib_funcs_init()
 	lib_XFree = dlsym(lib_handle_libX11, "XFree");
 	lib_XMapRaised = dlsym(lib_handle_libX11, "XMapRaised");
 	lib_XCreateColormap = dlsym(lib_handle_libX11, "XCreateColormap");
+	lib_XGrabKeyboard = dlsym(lib_handle_libX11, "XGrabKeyboard");
 
 	/* libXxf86vm stuff */
 	lib_handle_libXxf86vm = dlopen("/usr/lib/libXxf86vm.so", RTLD_LAZY);

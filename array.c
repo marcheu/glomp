@@ -5,12 +5,19 @@
  * on them, so no way to ensure they don't get modified in between)
  * we have to resend the vertex data each time. We do that by sending  
  * the relevant array pieces, which is about as good as it can get.
+ *
+ * Shortcomings :
+ * - ClientActiveTextureARB not handled, so arrays don't work with multitextures
+ * - DrawElement not handled
+ * - generic attributes not handled
+ * - we screw the client opengl state a bit, but I can't see a scenario where that's an issue
  */
 
+
+#include <stdio.h>
 #include "glheader.h"
 #include "overrides.h"
 #include "lib_funcs.h"
-#include <stdio.h>
 
 #define MAX_ARRAY 16
 
@@ -151,6 +158,7 @@ static inline void output_array_draw_elements(
 	for(i=0;i<count;i++)
 	{
 		index=0;
+		// put this switch() out of the for() for performance improvements ?
 		switch(type)
 		{
 			case GL_UNSIGNED_BYTE:index=((GLubyte*)indices)[i];break;

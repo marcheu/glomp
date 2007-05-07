@@ -11,7 +11,7 @@
 
 
 extern void GLOMP_multi_screen_init();
-extern void GLOMP_multi_screen_init_window();
+extern void GLOMP_multi_screen_init_window(int* glxattribs);
 extern void GLOMP_multi_screen_swap(Display *dpy, GLXDrawable drawable);
 
 

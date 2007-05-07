@@ -10,31 +10,22 @@ void GLOMP_multi_screen_init()
 }
 
 typedef struct {
-    Display *dpy;
-    int screen;
-    Window win;
-    GLXContext ctx;
-    XSetWindowAttributes attr;
-    Bool fs;
-    Bool doubleBuffered;
-    XF86VidModeModeInfo deskMode;
-    int x, y;
-    unsigned int width, height;
-    unsigned int depth;    
+	Display *dpy;
+	int screen;
+	Window win;
+	GLXContext ctx;
+	XSetWindowAttributes attr;
+	Bool fs;
+	Bool doubleBuffered;
+	XF86VidModeModeInfo deskMode;
+	int x, y;
+	unsigned int width, height;
+	unsigned int depth;    
 } GLWindow;
 
-GLWindow GLWin;
+static GLWindow GLWin;
 
-/* attributes for a double buffered visual in RGBA format with at least
- * 4 bits per color and a 16 bit depth buffer */
-static int attrListDbl[] = { GLX_RGBA, GLX_DOUBLEBUFFER, 
-    GLX_RED_SIZE, 4, 
-    GLX_GREEN_SIZE, 4, 
-    GLX_BLUE_SIZE, 4, 
-    GLX_DEPTH_SIZE, 16,
-    None };
-
-void GLOMP_multi_screen_init_window()
+void GLOMP_multi_screen_init_window(int* glxattribs)
 {
 	if (client_num>0)
 	{
@@ -42,12 +33,10 @@ void GLOMP_multi_screen_init_window()
 		// voir nehe lesson 02
 		XVisualInfo *vi;
 		Colormap cmap;
-		int i;
 		int glxMajorVersion, glxMinorVersion;
 		int vidModeMajorVersion, vidModeMinorVersion;
 		XF86VidModeModeInfo **modes;
 		int modeNum;
-		int bestMode;
 		char envDisplay[16];
 
 		printf("creating win\n");
@@ -57,8 +46,6 @@ void GLOMP_multi_screen_init_window()
 			sprintf(envDisplay,":0.0");
 
 		GLWin.fs = 0;
-		/* set best mode to current */
-		bestMode = 0;
 		/* get a connection */
 		GLWin.dpy = lib_XOpenDisplay(envDisplay);
 		GLWin.screen = DefaultScreen(GLWin.dpy);
@@ -67,18 +54,15 @@ void GLOMP_multi_screen_init_window()
 		printf("XF86VidModeExtension-Version %d.%d\n", vidModeMajorVersion,
 				vidModeMinorVersion);
 		lib_XF86VidModeGetAllModeLines(GLWin.dpy, GLWin.screen, &modeNum, &modes);
-		/* save desktop-resolution before switching modes */
+		/* use the desktop resolution */ 
 		GLWin.deskMode = *modes[0];
-		/* look for mode with requested resolution */
-		for (i = 0; i < modeNum; i++)
+		if (!getenv("FORCE_GPU"))
 		{
-			if ((modes[i]->hdisplay == width) && (modes[i]->vdisplay == height))
-			{
-				bestMode = i;
-			}
+			width=modes[0]->hdisplay;
+			height=modes[0]->vdisplay;
 		}
 		/* get an appropriate visual */
-		vi = lib_glXChooseVisual(GLWin.dpy, GLWin.screen, attrListDbl);
+		vi = lib_glXChooseVisual(GLWin.dpy, GLWin.screen, glxattribs);
 
 		lib_glXQueryVersion(GLWin.dpy, &glxMajorVersion, &glxMinorVersion);
 		printf("glX-Version %d.%d\n", glxMajorVersion, glxMinorVersion);
@@ -90,34 +74,16 @@ void GLOMP_multi_screen_init_window()
 		GLWin.attr.colormap = cmap;
 		GLWin.attr.border_pixel = 0;
 
-#if 0
-		/* full screen */
-		lib_XF86VidModeSwitchToMode(GLWin.dpy, GLWin.screen, modes[bestMode]);
-		lib_XF86VidModeSetViewPort(GLWin.dpy, GLWin.screen, 0, 0);
-		dpyWidth = modes[bestMode]->hdisplay;
-		dpyHeight = modes[bestMode]->vdisplay;
-		printf("Resolution %dx%d\n", dpyWidth, dpyHeight);
-		lib_XFree(modes);
-
 		/* create a fullscreen window */
 		GLWin.attr.override_redirect = True;
 		GLWin.attr.event_mask = ExposureMask | KeyPressMask | ButtonPressMask |
 			StructureNotifyMask;
-		GLWin.win = lib_XCreateWindow(GLWin.dpy, RootWindow(GLWin.dpy, vi->screen),
-				0, 0, dpyWidth, dpyHeight, 0, vi->depth, InputOutput, vi->visual,
-				CWBorderPixel | CWColormap | CWEventMask | CWOverrideRedirect,
-				&GLWin.attr);
-//		XWarpPointer(GLWin.dpy, None, GLWin.win, 0, 0, 0, 0, 0, 0);
-		lib_XMapRaised(GLWin.dpy, GLWin.win);
-//		XGrabKeyboard(GLWin.dpy, GLWin.win, True, GrabModeAsync,
-//				GrabModeAsync, CurrentTime);
-//		XGrabPointer(GLWin.dpy, GLWin.win, True, ButtonPressMask,
-//				GrabModeAsync, GrabModeAsync, GLWin.win, None, CurrentTime);
-#else
-		/* create a window in window mode*/
-		GLWin.attr.event_mask = ExposureMask | KeyPressMask | ButtonPressMask |
-			StructureNotifyMask;
-		GLWin.win = lib_XCreateWindow(GLWin.dpy, RootWindow(GLWin.dpy, vi->screen),
+		if (!getenv("FORCE_GPU"))
+			GLWin.win = lib_XCreateWindow(GLWin.dpy, RootWindow(GLWin.dpy, vi->screen),
+				0, 0, width, height, 0, vi->depth, InputOutput, vi->visual,
+				CWBorderPixel | CWColormap | CWEventMask | CWOverrideRedirect, &GLWin.attr);
+		else
+			GLWin.win = lib_XCreateWindow(GLWin.dpy, RootWindow(GLWin.dpy, vi->screen),
 				0, 0, width, height, 0, vi->depth, InputOutput, vi->visual,
 				CWBorderPixel | CWColormap | CWEventMask, &GLWin.attr);
 		/* only set window title and handle wm_delete_events if in windowed mode */
@@ -126,8 +92,6 @@ void GLOMP_multi_screen_init_window()
 		//XSetStandardProperties(GLWin.dpy, GLWin.win, title,
 		//		title, None, NULL, 0, NULL);
 		lib_XMapRaised(GLWin.dpy, GLWin.win);
-
-#endif
 
 		/* connect the glx-context to the window */
 		lib_glXMakeCurrent(GLWin.dpy, GLWin.win, GLWin.ctx);
@@ -140,5 +104,10 @@ void GLOMP_multi_screen_swap(Display *dpy, GLXDrawable drawable)
 		lib_glXSwapBuffers(GLWin.dpy, GLWin.win);
 	else
 		lib_glXSwapBuffers(dpy, drawable);
+}
+
+void GLOMP_multi_screen_close()
+{
+	lib_XCloseDisplay(GLWin.dpy);
 }
 
