@@ -60,4 +60,8 @@ void GLOMPXCreateWindow();
 void GLOMPglViewport();
 void GLOMPglOrtho();
 void GLOMPglNewList();
+void GLOMPglMap1f();
+void GLOMPglMap1d();
+void GLOMPglMap2f();
+void GLOMPglMap2d();
 #endif

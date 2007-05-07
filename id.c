@@ -24,7 +24,6 @@ int id_translate(int value)
 {
 	if (value>=id_table_size)
 	{
-		GLuint v;
 		// oops we didn't find the id in the table
 		// that probably means the application doesn't use glGen*
 		// in which case we don't need to handle the ids anyway

@@ -101,6 +101,7 @@ GLXContext glXCreateNewContext(Display *dpy, GLXFBConfig config,
 }
 
 
+/*bugged! please use XCreateWindows*/
 GLXWindow glXCreateWindow(Display *dpy, GLXFBConfig config, Window win, const int *attrib_list)
 {
 	printf("glXCreateWindow called !!!!!!!\n");
@@ -346,11 +347,11 @@ void GLOMPglCallList ()
 
 const GLubyte* glGetString( GLenum name )
 {
-	const GLubyte* vendor="Stephane Marchesin";
+	const GLubyte* vendor="http://glomp.sf.net";
  	const GLubyte* renderer="Glomp on ";
-	const GLubyte* extensions=NULL;
 	static GLubyte return_renderer[4096];
-	static GLubyte return_version[128];
+	const GLubyte* version="1.2 Glomp";
+	const GLubyte* extensions=NULL;
 	static GLubyte return_extensions[4096];
 	GLubyte* white_space=" ";
 
@@ -383,42 +384,7 @@ const GLubyte* glGetString( GLenum name )
 			return return_renderer;
 		}
 		case GL_VERSION:
-		{
-			/* find the lowest version among the cards */
-			int fnum=OVERRIDE_BASE+43;
-			int c;
-			int major,minor;
-			fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
-			fifo_output(&GLOMPcmd_fifo,&name,4);
-			fifo_flush(&GLOMPcmd_fifo);
-			const GLubyte* version=lib_glGetString(name);
-			int r=sscanf(version,"%d.%d",&major,&minor);
-			if (r!=2)
-			{
-				printf("unparseable GL version !\n");
-				major=1;
-				minor=0;
-			}
-
-			for(c=1;c<nbcarte;c++)
-			{
-				int mymaj, mymin;
-				sem_wait(&semadr[c]);
-				int r=sscanf(shmadr+4096*c,"%d.%d",&mymaj,&mymin);
-				if (r!=2)
-				{
-					printf("unparseable GL version !\n");
-					continue;
-				}
-				if (mymaj*1000+mymin<major*1000+minor)
-				{
-					major=mymaj;
-					minor=mymin;
-				}
-			}
-			sprintf(return_version,"%d.%d Glomp",major,minor);
-			return return_version;
-		}
+			return version;
 		case GL_EXTENSIONS:
 		{
 			/* blacklist extensions that can't be auto genereted and aren't written yet */
@@ -1214,7 +1180,6 @@ void GLOMPglBindFramebufferEXT()
 
 
 
-/*glFlush à n'utiliser que sur le maitre ? -> donc pas de fifo*/
 void glFlush(void){
   int fnum=OVERRIDE_BASE+25;
   fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
@@ -1226,7 +1191,6 @@ void GLOMPglFlush()
   lib_glFlush();
 }
 
-/*glFlush à n'utiliser que sur le maitre ? -> donc pas de fifo*/
 void glFinish(void){
   int fnum=OVERRIDE_BASE+26;
   fifo_flush(&GLOMPcmd_fifo);
@@ -1851,188 +1815,6 @@ void gluPerspective(GLdouble fovy, GLdouble aspect, GLdouble zNear, GLdouble zFa
 
    
    glFrustum(xmin, xmax, ymin, ymax, zNear, zFar);
-}
-
-void glMap1f(GLenum target,GLfloat u1,GLfloat u2,GLint stride,GLint order,const GLfloat * points)
-{
-	int sizep;
-	int fnum=OVERRIDE_BASE+44;
-
-	if(DEBUG){printf("serveur fnum = %d\n",fnum);}
-	fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
-	fifo_output(&GLOMPcmd_fifo,&target,4);
-	fifo_output(&GLOMPcmd_fifo,&u1,4);
-	fifo_output(&GLOMPcmd_fifo,&u2,4);
-	fifo_output(&GLOMPcmd_fifo,&stride,4);
-	fifo_output(&GLOMPcmd_fifo,&order,4);
-	sizep=order*sizeof(GLfloat);
-	fifo_output(&GLOMPcmd_fifo,points,sizep);
-	lib_glMap1f(target,u1,u2,stride,order,points);
-}
-
-void GLOMPglMap1f()
-{
-	GLenum target;
-	GLfloat u1;
-	GLfloat u2;
-	GLint stride;
-	GLint order;
-	int sizep;
-	fifo_input(&GLOMPcmd_fifo,&target,4);
-	fifo_input(&GLOMPcmd_fifo,&u1,4);
-	fifo_input(&GLOMPcmd_fifo,&u2,4);
-	fifo_input(&GLOMPcmd_fifo,&stride,4);
-	fifo_input(&GLOMPcmd_fifo,&order,4);
-	GLfloat  points[order];
-	sizep=order*sizeof(GLfloat);
-	fifo_input(&GLOMPcmd_fifo,points,sizep);
-	lib_glMap1f(target,u1,u2,stride,order,(GLfloat *)points);
-}
-
-
-
-void glMap1d(GLenum target,GLdouble u1,GLdouble u2,GLint stride,GLint order,const GLdouble * points)
-{
-	int sizep;
-	int fnum=OVERRIDE_BASE+45;
-
-	if(DEBUG){printf("serveur fnum = %d\n",fnum);}
-	fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
-	fifo_output(&GLOMPcmd_fifo,&target,4);
-	fifo_output(&GLOMPcmd_fifo,&u1,8);
-	fifo_output(&GLOMPcmd_fifo,&u2,8);
-	fifo_output(&GLOMPcmd_fifo,&stride,4);
-	fifo_output(&GLOMPcmd_fifo,&order,4);
-	sizep=order*sizeof(GLdouble);
-	fifo_output(&GLOMPcmd_fifo,points,sizep);
-	lib_glMap1d(target,u1,u2,stride,order,points);
-}
-
-void GLOMPglMap1d()
-{
-	GLenum target;
-	GLdouble u1;
-	GLdouble u2;
-	GLint stride;
-	GLint order;
-	int sizep;
-	fifo_input(&GLOMPcmd_fifo,&target,4);
-	fifo_input(&GLOMPcmd_fifo,&u1,8);
-	fifo_input(&GLOMPcmd_fifo,&u2,8);
-	fifo_input(&GLOMPcmd_fifo,&stride,4);
-	fifo_input(&GLOMPcmd_fifo,&order,4);
-	GLdouble  points[order];
-	sizep=order*sizeof(GLdouble);
-	fifo_input(&GLOMPcmd_fifo,points,sizep);
-	lib_glMap1d(target,u1,u2,stride,order,(GLdouble *)points);
-}
-
-void glMap2f(GLenum target,GLfloat u1,GLfloat u2,GLint ustride,GLint uorder,GLfloat v1,GLfloat v2,GLint vstride,GLint vorder,const GLfloat * points)
-{
-	int sizep;
-	int fnum=OVERRIDE_BASE+46;
-	printf("glMap2f\n");
-
-	if(DEBUG){printf("serveur fnum = %d\n",fnum);}
-	fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
-	fifo_output(&GLOMPcmd_fifo,&target,4);
-	fifo_output(&GLOMPcmd_fifo,&u1,4);
-	fifo_output(&GLOMPcmd_fifo,&u2,4);
-	fifo_output(&GLOMPcmd_fifo,&ustride,4);
-	fifo_output(&GLOMPcmd_fifo,&uorder,4);
-	fifo_output(&GLOMPcmd_fifo,&v1,4);
-	fifo_output(&GLOMPcmd_fifo,&v2,4);
-	fifo_output(&GLOMPcmd_fifo,&vstride,4);
-	fifo_output(&GLOMPcmd_fifo,&vorder,4);
-	sizep=uorder*vorder*sizeof(GLfloat);
-	fifo_output(&GLOMPcmd_fifo,points,sizep);
-	lib_glMap2f(target,u1,u2,ustride,uorder,v1,v2,vstride,vorder,points);
-}
-
-void GLOMPglMap2f()
-{
-	GLenum target;
-	GLfloat u1;
-	GLfloat u2;
-	GLint ustride;
-	GLint uorder;
-	GLfloat v1;
-	GLfloat v2;
-	GLint vstride;
-	GLint vorder;
-	int sizep;
-	fifo_input(&GLOMPcmd_fifo,&target,4);
-	fifo_input(&GLOMPcmd_fifo,&u1,4);
-	fifo_input(&GLOMPcmd_fifo,&u2,4);
-	fifo_input(&GLOMPcmd_fifo,&ustride,4);
-	fifo_input(&GLOMPcmd_fifo,&uorder,4);
-	fifo_input(&GLOMPcmd_fifo,&v1,4);
-	fifo_input(&GLOMPcmd_fifo,&v2,4);
-	fifo_input(&GLOMPcmd_fifo,&vstride,4);
-	fifo_input(&GLOMPcmd_fifo,&vorder,4);
-	GLfloat  points[uorder*vorder];
-	sizep=uorder*vorder*sizeof(GLfloat);
-	fifo_input(&GLOMPcmd_fifo,points,sizep);
-	lib_glMap2f(target,u1,u2,ustride,uorder,v1,v2,vstride,vorder,(GLfloat *)points);
-}
-
-
-void glMap2d(GLenum target,GLdouble u1,GLdouble u2,GLint ustride,GLint uorder,GLdouble v1,GLdouble v2,GLint vstride,GLint vorder,const GLdouble * points)
-{
-	int sizep;
-	int fnum=OVERRIDE_BASE+47;
-	printf("glMap2d %d %f %f %d %d %f %f %d %d \n",target,u1,u2,ustride,uorder,v1,v2,vstride,vorder);
-	int i;
-	for(i=0;i<10;i++)
-	printf("%f ",points[i]);
-	printf("\n");
-
-	if(DEBUG){printf("serveur fnum = %d\n",fnum);}
-	fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
-	fifo_output(&GLOMPcmd_fifo,&target,4);
-	fifo_output(&GLOMPcmd_fifo,&u1,8);
-	fifo_output(&GLOMPcmd_fifo,&u2,8);
-	fifo_output(&GLOMPcmd_fifo,&ustride,4);
-	fifo_output(&GLOMPcmd_fifo,&uorder,4);
-	fifo_output(&GLOMPcmd_fifo,&v1,8);
-	fifo_output(&GLOMPcmd_fifo,&v2,8);
-	fifo_output(&GLOMPcmd_fifo,&vstride,4);
-	fifo_output(&GLOMPcmd_fifo,&vorder,4);
-	sizep=uorder*vorder*sizeof(GLdouble);
-	fifo_output(&GLOMPcmd_fifo,points,sizep);
-	lib_glMap2d(target,u1,u2,ustride,uorder,v1,v2,vstride,vorder,points);
-}
-
-void GLOMPglMap2d()
-{
-	GLenum target;
-	GLdouble u1;
-	GLdouble u2;
-	GLint ustride;
-	GLint uorder;
-	GLdouble v1;
-	GLdouble v2;
-	GLint vstride;
-	GLint vorder;
-	int sizep;
-	fifo_input(&GLOMPcmd_fifo,&target,4);
-	fifo_input(&GLOMPcmd_fifo,&u1,8);
-	fifo_input(&GLOMPcmd_fifo,&u2,8);
-	fifo_input(&GLOMPcmd_fifo,&ustride,4);
-	fifo_input(&GLOMPcmd_fifo,&uorder,4);
-	fifo_input(&GLOMPcmd_fifo,&v1,8);
-	fifo_input(&GLOMPcmd_fifo,&v2,8);
-	fifo_input(&GLOMPcmd_fifo,&vstride,4);
-	fifo_input(&GLOMPcmd_fifo,&vorder,4);
-	sizep=uorder*vorder*sizeof(GLdouble);
-	GLdouble  points[uorder*vorder];
-	fifo_input(&GLOMPcmd_fifo,points,sizep);
-	printf("client glMap2d %d %f %f %d %d %f %f %d %d \n",target,u1,u2,ustride,uorder,v1,v2,vstride,vorder);
-	int i;
-	for(i=0;i<10;i++)
-	printf("%f ",points[i]);
-	printf("\n");
-	lib_glMap2d(target,u1,u2,ustride,uorder,v1,v2,vstride,vorder,(GLdouble*)points);
 }
 
 GLboolean glIsEnabled(GLenum cap)

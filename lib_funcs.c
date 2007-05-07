@@ -115,6 +115,21 @@ void (*lib_glMap1f) (GLenum target, GLfloat u1, GLfloat u2, GLint stride, GLint 
 void (*lib_glMap2d) (GLenum target, GLdouble u1, GLdouble u2, GLint ustride, GLint uorder, GLdouble v1, GLdouble v2, GLint vstride, GLint vorder, const GLdouble *points)=0;
 void (*lib_glMap2f) (GLenum target, GLfloat u1, GLfloat u2, GLint ustride, GLint uorder, GLfloat v1, GLfloat v2, GLint vstride, GLint vorder, const GLfloat *points)=0;
 GLboolean (*lib_glIsEnabled) (GLenum cap)=0;
+void (*lib_glClientActiveTexture) (GLenum)=0;
+void (*lib_glEnableClientState) (GLenum array)=0;
+void (*lib_glDisableClientState) (GLenum array)=0;
+void (*lib_glVertexPointer) (GLint size, GLenum type, GLsizei stride, const GLvoid *pointer)=0;
+void (*lib_glWeightPointerARB)(GLint, GLenum, GLsizei, const GLvoid *)=0;
+void (*lib_glNormalPointer) (GLenum type, GLsizei stride, const GLvoid *pointer)=0;
+void (*lib_glColorPointer) (GLint size, GLenum type, GLsizei stride, const GLvoid *pointer)=0;
+void (*lib_glSecondaryColorPointer) (GLint, GLenum, GLsizei, const GLvoid *)=0;
+void (*lib_glFogCoordPointer) (GLenum, GLsizei, const GLvoid *)=0;
+void (*lib_glIndexPointer) (GLenum type, GLsizei stride, const GLvoid *pointer)=0;
+void (*lib_glEdgeFlagPointer) (GLsizei stride, const GLvoid *pointer)=0;
+void (*lib_glTexCoordPointer) (GLint size, GLenum type, GLsizei stride, const GLvoid *pointer)=0;
+void (*lib_glDrawArrays) (GLenum mode, GLint first, GLsizei count)=0;
+void (*lib_glDrawElements) (GLenum mode, GLsizei count, GLenum type, const GLvoid *indices)=0;
+
 
 
 /* X stuff */
@@ -248,6 +263,21 @@ void lib_funcs_init()
 	lib_glMap2f = dlsym(lib_handle_libGL, "glMap2f");
 	lib_glMap2d = dlsym(lib_handle_libGL, "glMap2d");
 	lib_glIsEnabled = dlsym(lib_handle_libGL, "glIsEnabled");
+	lib_glClientActiveTexture = dlsym(lib_handle_libGL, "glClientActiveTexture");
+	lib_glEnableClientState = dlsym(lib_handle_libGL, "glEnableClientState");
+	lib_glDisableClientState = dlsym(lib_handle_libGL, "glDisableClientState");
+	lib_glVertexPointer = dlsym(lib_handle_libGL, "glVertexPointer");
+	lib_glWeightPointerARB = dlsym(lib_handle_libGL, "glWeightPointerARB");
+	lib_glNormalPointer = dlsym(lib_handle_libGL, "glNormalPointer");
+	lib_glColorPointer = dlsym(lib_handle_libGL, "glColorPointer");
+	lib_glSecondaryColorPointer = dlsym(lib_handle_libGL, "glSecondaryColorPointer");
+	lib_glFogCoordPointer = dlsym(lib_handle_libGL, "glFogCoordPointer");
+	lib_glIndexPointer = dlsym(lib_handle_libGL, "glIndexPointer");
+	lib_glEdgeFlagPointer = dlsym(lib_handle_libGL, "glEdgeFlagPointer");
+	lib_glTexCoordPointer = dlsym(lib_handle_libGL, "glTexCoordPointer");
+	lib_glDrawArrays = dlsym(lib_handle_libGL, "glDrawArrays");
+	lib_glDrawElements = dlsym(lib_handle_libGL, "glDrawElements");
+
 
 	/* X11 stuff */
 	lib_handle_libX11 = dlopen("/usr/lib/libX11.so", RTLD_LAZY);

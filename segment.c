@@ -1,3 +1,7 @@
+/* 
+ * Creates a segment for fire & forget usage
+ */
+
 #include "segment.h"
 
 

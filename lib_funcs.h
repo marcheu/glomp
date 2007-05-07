@@ -111,6 +111,20 @@ extern void (*lib_glMap1f) (GLenum target, GLfloat u1, GLfloat u2, GLint stride,
 extern void (*lib_glMap2d) (GLenum target, GLdouble u1, GLdouble u2, GLint ustride, GLint uorder, GLdouble v1, GLdouble v2, GLint vstride, GLint vorder, const GLdouble *points);
 extern void (*lib_glMap2f) (GLenum target, GLfloat u1, GLfloat u2, GLint ustride, GLint uorder, GLfloat v1, GLfloat v2, GLint vstride, GLint vorder, const GLfloat *points);
 extern GLboolean (*lib_glIsEnabled) (GLenum cap);
+extern void (*lib_glClientActiveTexture) (GLenum);
+extern void (*lib_glEnableClientState) (GLenum array);
+extern void (*lib_glDisableClientState) (GLenum array);
+extern void (*lib_glVertexPointer) (GLint size, GLenum type, GLsizei stride, const GLvoid *pointer);
+extern void (*lib_glWeightPointerARB) (GLint, GLenum, GLsizei, const GLvoid *);
+extern void (*lib_glNormalPointer) (GLenum type, GLsizei stride, const GLvoid *pointer);
+extern void (*lib_glColorPointer) (GLint size, GLenum type, GLsizei stride, const GLvoid *pointer);
+extern void (*lib_glSecondaryColorPointer) (GLint, GLenum, GLsizei, const GLvoid *);
+extern void (*lib_glFogCoordPointer) (GLenum, GLsizei, const GLvoid *);
+extern void (*lib_glIndexPointer) (GLenum type, GLsizei stride, const GLvoid *pointer);
+extern void (*lib_glEdgeFlagPointer) (GLsizei stride, const GLvoid *pointer);
+extern void (*lib_glTexCoordPointer) (GLint size, GLenum type, GLsizei stride, const GLvoid *pointer);
+extern void (*lib_glDrawArrays) (GLenum mode, GLint first, GLsizei count);
+extern void (*lib_glDrawElements) (GLenum mode, GLsizei count, GLenum type, const GLvoid *indices);
 
 
 

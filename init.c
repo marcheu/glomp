@@ -47,12 +47,11 @@ static void GLOMP_init()
 
 	lib_funcs_init();/*charge les pointeurs des fonction OpenGL (cf overrides), a faire avant le fork, tous le monde en a besoin*/
 
-	/*comptage des cartes, et placement definitif dans nbcartes*/
+	/* count screens */
 	dpy = lib_XOpenDisplay("");
 	nbcarte=ScreenCount(dpy);
 	lib_XCloseDisplay(dpy);
 	printf("Initializing GLOMP found %d GPUs",nbcarte);
-	/*a moins que l'on ait creer une variable d'environnement FORCE_GPU qui le modifie de suite*/  
 	/*potentially override the number of GPUs*/
 	force=getenv("FORCE_GPU");
 	if (force)
