@@ -4,10 +4,10 @@
 extern int errno;
 
 /*variable gobale au prog cf fifo.h*/
-GLOMPfifo GLOMPcmd_fifo;
+fifo cmd_fifo;
 
 /* initialize the fifo */
-void GLOMPfifo_init(GLOMPfifo* f)
+void fifo_init(fifo* f)
 {
 	int i;
 	f->message_queue=(int*)malloc(sizeof(int)*nbcarte);
@@ -33,7 +33,7 @@ void GLOMPfifo_init(GLOMPfifo* f)
 }
 
 /* master process flushes what remains in the fifo */
-void fifo_flush(GLOMPfifo* f)
+void fifo_flush(fifo* f)
 {
 	int i;
 	// add the size in front
@@ -52,7 +52,7 @@ void fifo_flush(GLOMPfifo* f)
 
 
 /* outputs data to the fifo from the master process */
-void fifo_output(GLOMPfifo* f,const void* data, int size)
+void fifo_output(fifo* f,const void* data, int size)
 {
 	if (f->idx+size>PACKET_SIZE)
 		fifo_flush(f);  
@@ -65,7 +65,7 @@ void fifo_output(GLOMPfifo* f,const void* data, int size)
 }
 
 /* reads data from the fifo */
-void fifo_input(GLOMPfifo* f,void* data,int size )
+void fifo_input(fifo* f,void* data,int size )
 { 
 	if (f->idx+size>=f->size)
 	{

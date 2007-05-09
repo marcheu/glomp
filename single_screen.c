@@ -67,7 +67,7 @@ static void * creershm_fenetre(int clef)
 
 }
 
-void GLOMP_single_screen_init()
+void single_screen_init()
 {
 	printf("screen init ok\n");
 	GLOMPcreateSem();/*procedure de creation des semaphore (cf transfertFentre)*/
@@ -76,7 +76,7 @@ void GLOMP_single_screen_init()
 
 //creer le segment de memoire partage qui va contenir toute l'image
 //c'est a dire les nbcarte pBuffer
-void GLOMP_single_screen_init_window(int* glxattribs)
+void single_screen_init_window(int* glxattribs)
 {
 	/*creation de la shm des fenetre des differentes cartes*/
 	shmadr_fenetre1=malloc(sizeof(void *)*nbcarte);
@@ -217,7 +217,7 @@ void ecrire_fenetre()
 }  
 
 
-void GLOMP_single_screen_swap(Display *dpy, GLXDrawable drawable)
+void single_screen_swap(Display *dpy, GLXDrawable drawable)
 {
 	if (client_num>0)
 	{

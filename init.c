@@ -1,6 +1,8 @@
 #include "init.h"
 #include "lib_funcs.h"
 #include "tile_screen.h"
+#include "multi_screen.h"
+#include "array.h"
 #include <dlfcn.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -19,13 +21,15 @@ int * client_load;
 int width,height;/*taille de la fenetre de l'appli*/
 /****************************************************************/
 
+extern void initPointers();
+
 
 /*lance la boucle principale des clients qui vont desencapsuler les focntions
-de la fifo avec GLOMPunpack*/
+de la fifo avec client_unpack*/
 static void GLOMPclient_run()
 {
 	while(1){
-		GLOMPunpack();
+		client_unpack();
 	}
 }
 
@@ -44,10 +48,11 @@ void GLOMP_init()
 	printf("Initializing GLOMP\n");
 
 	int i;
-	Display* dpy;/*pointeur sur la structure Display que nous allons ouvrir*/
-	char* force;/*utile si on souhaite forcer un nbr de GPU avec la variable d'env FORCE_GPU (cf ~l.65)*/
+	Display* dpy;
+	char* force;
 
-	lib_funcs_init();/*charge les pointeurs des fonction OpenGL (cf overrides), a faire avant le fork, tous le monde en a besoin*/
+	/* get all useful function pointers by dlsym() */
+	lib_funcs_init();
 
 	/* count screens */
 	dpy = lib_XOpenDisplay("");
@@ -63,7 +68,7 @@ void GLOMP_init()
 	}
 	printf("\n");
 
-	/* init the screen tiling */
+	// init the screen tiling
 	switch(nbcarte)
 	{
 		case 4:tile_screen_init(2,2);break;
@@ -75,8 +80,8 @@ void GLOMP_init()
 		default:tile_screen_init(nbcarte,1);break;
 	}
 
-	GLOMPsegment_create_retour();/*procedure de creation d'un segmant pour le retour*/
-
+	// init our static segment
+	segment_create_static();
 
 	/*initilisation (bidon de client_load)*/
 	/*doit servir a repartir le travaille sur les GPU*/
@@ -88,15 +93,14 @@ void GLOMP_init()
 		client_load[i]=1;
 
 
-	client_num=0;/*on met client_num a 0 pour que le pere ait la bonne valeur*/
+	client_num=0;
 
-	GLOMPfifo_init(&GLOMPcmd_fifo);/*avant le fork, on initialise la fifo*/
+	fifo_init(&cmd_fifo);
 
-	/*initialisation du tableau des clef pour les segments de memoire partage, pour que tous les proces ait le meme (cf transfertFenetre)*/
 #ifdef ENABLE_SINGLE_SCREEN
-	GLOMP_single_screen_init();
+	single_screen_init();
 #else
-	GLOMP_multi_screen_init();
+	multi_screen_init();
 #endif
 
 	/*spawn client processes*/
@@ -112,8 +116,14 @@ void GLOMP_init()
 		}
 	}
 
-	/*pour les client on les initialise et on les lances*/
-	GLOMPclient_init();
+	// fetches all useful function pointers for auto-generated functions
+	initPointers();
+	// creates the output function table
+	creertabfunc();
+	// fetches all useful function poitners for hand-written functions
+	lib_funcs_init();
+	// setup the vertex array code
+	array_init();
 
 #if 1
 	if (client_num!=0){  

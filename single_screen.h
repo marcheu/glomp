@@ -10,9 +10,9 @@
 
 
 
-extern void GLOMP_single_screen_init();
-extern void GLOMP_single_screen_init_window(int* glxattribs);
-extern void GLOMP_single_screen_swap(Display *dpy, GLXDrawable drawable);
+extern void single_screen_init();
+extern void single_screen_init_window(int* glxattribs);
+extern void single_screen_swap(Display *dpy, GLXDrawable drawable);
 
 
 

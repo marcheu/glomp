@@ -25,21 +25,21 @@ void glXSwapBuffers(Display *dpy, GLXDrawable drawable)
 {
 	int fnum=OVERRIDE_BASE;
 
-	fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
-	fifo_flush(&GLOMPcmd_fifo);
+	fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
+	fifo_flush(&cmd_fifo);
 #ifdef ENABLE_SINGLE_SCREEN
-	GLOMP_single_screen_swap(dpy,drawable);
+	single_screen_swap(dpy,drawable);
 #else
-	GLOMP_multi_screen_swap(dpy,drawable);
+	multi_screen_swap(dpy,drawable);
 #endif
 }
 
 void GLOMPglXSwapBuffers()
 { 
 #ifdef ENABLE_SINGLE_SCREEN
-	GLOMP_single_screen_swap(NULL,0);
+	single_screen_swap(NULL,0);
 #else
-	GLOMP_multi_screen_swap(NULL,0);
+	multi_screen_swap(NULL,0);
 #endif
 }
 
@@ -75,20 +75,20 @@ static void CreateWindow()
 		
 
 #ifdef ENABLE_SINGLE_SCREEN
-	GLOMP_single_screen_init_window(glxattribs);
+	single_screen_init_window(glxattribs);
 #else
-	GLOMP_multi_screen_init_window(glxattribs);
+	multi_screen_init_window(glxattribs);
 #endif
 
-	fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
-	fifo_output(&GLOMPcmd_fifo,&width,sizeof(width));
-	fifo_output(&GLOMPcmd_fifo,&height,sizeof(height));
+	fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
+	fifo_output(&cmd_fifo,&width,sizeof(width));
+	fifo_output(&cmd_fifo,&height,sizeof(height));
 
 	i=0;
 	do
 	{
 		value=*(glxattribs+i);
-		fifo_output(&GLOMPcmd_fifo,&value,sizeof(int));
+		fifo_output(&cmd_fifo,&value,sizeof(int));
 		i++;
 	}
 	while(value!=None);
@@ -127,21 +127,21 @@ GLXWindow XCreateWindow(Display *display, Window parent, int x, int y,
 void GLOMPXCreateWindow()
 {
 	int i,value;
-	fifo_input(&GLOMPcmd_fifo,&width,4);
-	fifo_input(&GLOMPcmd_fifo,&height,4);
+	fifo_input(&cmd_fifo,&width,4);
+	fifo_input(&cmd_fifo,&height,4);
 	i=0;
 	do
 	{
-		fifo_input(&GLOMPcmd_fifo,&value,4);
+		fifo_input(&cmd_fifo,&value,4);
 		glxattribs[i]=value;
 		i++;
 	}
 	while(value!=None);
 
 #ifdef ENABLE_SINGLE_SCREEN
-	GLOMP_single_screen_init_window(glxattribs);
+	single_screen_init_window(glxattribs);
 #else
-	GLOMP_multi_screen_init_window(glxattribs);
+	multi_screen_init_window(glxattribs);
 #endif
 }
 
@@ -214,13 +214,13 @@ const char * glXGetClientString(Display *dpy, int name)
 void glFrustum ( GLdouble p0 , GLdouble p1 , GLdouble p2 , GLdouble p3 , GLdouble p4 , GLdouble p5 )
 {
 	int fnum=OVERRIDE_BASE+1;
-	fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
-	fifo_output(&GLOMPcmd_fifo,&p0,8);
-	fifo_output(&GLOMPcmd_fifo,&p1,8);
-	fifo_output(&GLOMPcmd_fifo,&p2,8);
-	fifo_output(&GLOMPcmd_fifo,&p3,8);
-	fifo_output(&GLOMPcmd_fifo,&p4,8);
-	fifo_output(&GLOMPcmd_fifo,&p5,8);
+	fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
+	fifo_output(&cmd_fifo,&p0,8);
+	fifo_output(&cmd_fifo,&p1,8);
+	fifo_output(&cmd_fifo,&p2,8);
+	fifo_output(&cmd_fifo,&p3,8);
+	fifo_output(&cmd_fifo,&p4,8);
+	fifo_output(&cmd_fifo,&p5,8);
 
 #ifdef ENABLE_SINGLE_SCREEN
 	int totalload=0;
@@ -256,12 +256,12 @@ void GLOMPglFrustum()
 	GLdouble p5;
 	GLdouble newp2;
 	GLdouble newp3;
-	fifo_input(&GLOMPcmd_fifo,&p0,8);
-	fifo_input(&GLOMPcmd_fifo,&p1,8);
-	fifo_input(&GLOMPcmd_fifo,&p2,8);
-	fifo_input(&GLOMPcmd_fifo,&p3,8);
-	fifo_input(&GLOMPcmd_fifo,&p4,8);
-	fifo_input(&GLOMPcmd_fifo,&p5,8);
+	fifo_input(&cmd_fifo,&p0,8);
+	fifo_input(&cmd_fifo,&p1,8);
+	fifo_input(&cmd_fifo,&p2,8);
+	fifo_input(&cmd_fifo,&p3,8);
+	fifo_input(&cmd_fifo,&p4,8);
+	fifo_input(&cmd_fifo,&p5,8);
 
 #ifdef ENABLE_SINGLE_SCREEN
 	int totalload=0;
@@ -290,11 +290,11 @@ void glViewport ( GLint x,GLint y,GLsizei w,GLsizei h )
 	int i;
 	int fnum=OVERRIDE_BASE+40;
 
-	fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
-	fifo_output(&GLOMPcmd_fifo,&x,4);
-	fifo_output(&GLOMPcmd_fifo,&y,4);
-	fifo_output(&GLOMPcmd_fifo,&w,4);
-	fifo_output(&GLOMPcmd_fifo,&h,4);
+	fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
+	fifo_output(&cmd_fifo,&x,4);
+	fifo_output(&cmd_fifo,&y,4);
+	fifo_output(&cmd_fifo,&w,4);
+	fifo_output(&cmd_fifo,&h,4);
 
 	int totalload=0;
 	int beforeload=0;
@@ -323,10 +323,10 @@ void GLOMPglViewport()
 
 	GLsizei p2,p3,newp3;
 	GLint p0,p1,newp1;
-	fifo_input(&GLOMPcmd_fifo,&p0,4);
-	fifo_input(&GLOMPcmd_fifo,&p1,4);
-	fifo_input(&GLOMPcmd_fifo,&p2,4);
-	fifo_input(&GLOMPcmd_fifo,&p3,4);
+	fifo_input(&cmd_fifo,&p0,4);
+	fifo_input(&cmd_fifo,&p1,4);
+	fifo_input(&cmd_fifo,&p2,4);
+	fifo_input(&cmd_fifo,&p3,4);
 
 	int totalload=0;
 	int beforeload=0;
@@ -350,13 +350,13 @@ void GLOMPglViewport()
 void glOrtho ( GLdouble p0, GLdouble p1,GLdouble p2,GLdouble p3,GLdouble p4,GLdouble p5 )
 {
 	int fnum=OVERRIDE_BASE+41;
-	fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
-	fifo_output(&GLOMPcmd_fifo,&p0,8);
-	fifo_output(&GLOMPcmd_fifo,&p1,8);
-	fifo_output(&GLOMPcmd_fifo,&p2,8);
-	fifo_output(&GLOMPcmd_fifo,&p3,8);
-	fifo_output(&GLOMPcmd_fifo,&p4,8);
-	fifo_output(&GLOMPcmd_fifo,&p5,8);
+	fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
+	fifo_output(&cmd_fifo,&p0,8);
+	fifo_output(&cmd_fifo,&p1,8);
+	fifo_output(&cmd_fifo,&p2,8);
+	fifo_output(&cmd_fifo,&p3,8);
+	fifo_output(&cmd_fifo,&p4,8);
+	fifo_output(&cmd_fifo,&p5,8);
 
 #ifdef ENABLE_SINGLE_SCREEN
 	int totalload=0;
@@ -394,12 +394,12 @@ void GLOMPglOrtho()
 	GLdouble p5;
 	GLdouble newp2;
 	GLdouble newp3;
-	fifo_input(&GLOMPcmd_fifo,&p0,8);
-	fifo_input(&GLOMPcmd_fifo,&p1,8);
-	fifo_input(&GLOMPcmd_fifo,&p2,8);
-	fifo_input(&GLOMPcmd_fifo,&p3,8);
-	fifo_input(&GLOMPcmd_fifo,&p4,8);
-	fifo_input(&GLOMPcmd_fifo,&p5,8);
+	fifo_input(&cmd_fifo,&p0,8);
+	fifo_input(&cmd_fifo,&p1,8);
+	fifo_input(&cmd_fifo,&p2,8);
+	fifo_input(&cmd_fifo,&p3,8);
+	fifo_input(&cmd_fifo,&p4,8);
+	fifo_input(&cmd_fifo,&p5,8);
 
 #ifdef ENABLE_SINGLE_SCREEN
 	int totalload=0;
@@ -428,13 +428,13 @@ void GLOMPglOrtho()
 static void server_quit()
 {
 	int fnum=OVERRIDE_BASE+49;
-	fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
+	fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
 }
 
 void GLOMPquit()
 {
 #ifdef ENABLE_SINGLE_SCREEN
-	GLOMP_multi_screen_close();
+	multi_screen_close();
 #else
 #endif
 	exit(0);

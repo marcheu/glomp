@@ -633,8 +633,8 @@ int main()
 		  fprintf(fout_c2,"\tint fnum=%d;\n",fnum);
 		  fprintf(fout_c2,"\n\tif(DEBUG){printf(\"serveur fnum = %%d\\n\",fnum);}\n");
 //		  fprintf(fout_c2,"\tint fflags=0;\n");
-		  fprintf(fout_c2,"\tfifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));\n");
-//		  fprintf(fout_c2,"\tfifo_output(&GLOMPcmd_fifo,&fflags,sizeof(fflags));\n");
+		  fprintf(fout_c2,"\tfifo_output(&cmd_fifo,&fnum,sizeof(fnum));\n");
+//		  fprintf(fout_c2,"\tfifo_output(&cmd_fifo,&fflags,sizeof(fflags));\n");
 		  }
 
 		  fprintf(fout_h,");\n");
@@ -698,8 +698,8 @@ int main()
 			  fprintf(ftmpc,"\tsizep=%d*%s;\n",type_size(type[i]),count[i]);
 
 			  if (!master_only)
-				  fprintf(fout_c2,"\tfifo_output(&GLOMPcmd_fifo,%s,sizep);\n",nameparam[i]);
-			  fprintf(ftmpc,"\tfifo_input(&GLOMPcmd_fifo,%s,sizep);\n",nameparam[i]);
+				  fprintf(fout_c2,"\tfifo_output(&cmd_fifo,%s,sizep);\n",nameparam[i]);
+			  fprintf(ftmpc,"\tfifo_input(&cmd_fifo,%s,sizep);\n",nameparam[i]);
 			}
 		      else if(param_attrib[i][1]==1)
 			{   
@@ -710,14 +710,14 @@ int main()
 
 
 			  if (!master_only)
-				  fprintf(fout_c2,"\tfifo_output(&GLOMPcmd_fifo,%s,sizep);\n",nameparam[i]);		     
-			  fprintf(ftmpc,"\tfifo_input(&GLOMPcmd_fifo,%s,sizep);\n",nameparam[i]);
+				  fprintf(fout_c2,"\tfifo_output(&cmd_fifo,%s,sizep);\n",nameparam[i]);		     
+			  fprintf(ftmpc,"\tfifo_input(&cmd_fifo,%s,sizep);\n",nameparam[i]);
 			}
 		      else
 			{
 				if (!master_only)
-					fprintf(fout_c2,"\tfifo_output(&GLOMPcmd_fifo,&%s,%d);\n",nameparam[i],type_size(type[i]));
-			  fprintf(ftmpc,"\tfifo_input(&GLOMPcmd_fifo,&%s,%d);\n",nameparam[i],type_size(type[i]));
+					fprintf(fout_c2,"\tfifo_output(&cmd_fifo,&%s,%d);\n",nameparam[i],type_size(type[i]));
+			  fprintf(ftmpc,"\tfifo_input(&cmd_fifo,&%s,%d);\n",nameparam[i],type_size(type[i]));
 			}
 		    }
 	

@@ -4,7 +4,7 @@
 #include "lib_funcs.h"
 #include <X11/extensions/xf86vmode.h>
 
-void GLOMP_multi_screen_init()
+void multi_screen_init()
 {
 	// nothing needed here
 }
@@ -25,7 +25,7 @@ typedef struct {
 
 static GLWindow GLWin;
 
-void GLOMP_multi_screen_init_window(int* glxattribs)
+void multi_screen_init_window(int* glxattribs)
 {
 	if (client_num>0)
 	{
@@ -98,7 +98,7 @@ void GLOMP_multi_screen_init_window(int* glxattribs)
 	}
 }
 
-void GLOMP_multi_screen_swap(Display *dpy, GLXDrawable drawable)
+void multi_screen_swap(Display *dpy, GLXDrawable drawable)
 {
 	if (client_num>0)
 		lib_glXSwapBuffers(GLWin.dpy, GLWin.win);
@@ -106,7 +106,7 @@ void GLOMP_multi_screen_swap(Display *dpy, GLXDrawable drawable)
 		lib_glXSwapBuffers(dpy, drawable);
 }
 
-void GLOMP_multi_screen_close()
+void multi_screen_close()
 {
 	lib_XCloseDisplay(GLWin.dpy);
 }

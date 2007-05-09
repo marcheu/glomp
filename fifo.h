@@ -16,7 +16,7 @@
 #define FIFO_SIZE (128*1024)
 #define PACKET_SIZE 4080
 
-typedef struct GLOMPfifo
+typedef struct fifo
 {
 	int idx;
 	int size;
@@ -26,15 +26,15 @@ typedef struct GLOMPfifo
 	} msgbuf;
 	int* message_queue;	// sysV message queue id
 }
-GLOMPfifo;
+fifo;
 
 /*variable globale au programme la fifo de commande de GLOMP :  GLOMPcmd_fifo*/
-extern GLOMPfifo GLOMPcmd_fifo;
+extern fifo cmd_fifo;
 
-extern void GLOMPfifo_init(GLOMPfifo* f);
-extern void fifo_output(GLOMPfifo* f,const void * buffer, int size);
-extern void fifo_input(GLOMPfifo* f,void * buffer,int size);
-extern void fifo_flush(GLOMPfifo* f);
+extern void fifo_init(fifo* f);
+extern void fifo_output(fifo* f,const void * buffer, int size);
+extern void fifo_input(fifo* f,void * buffer,int size);
+extern void fifo_flush(fifo* f);
     
 #endif
 

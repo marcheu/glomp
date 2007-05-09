@@ -7,8 +7,7 @@
 
 
 
-extern void GLOMPunpack();
-extern void GLOMPclient_init();
+extern void client_unpack();
 
 
 #endif

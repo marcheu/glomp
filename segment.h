@@ -10,17 +10,17 @@ char* shmadr;
 extern sem_t * semadr;
 extern char * semadrShm;
 
-// creer le segment et ecrit dans la fifo
+// creates a segment and outputs it to the fifo
 extern void segment_create(char* p,int size);
 
-// recupere un segment dans la fifo et l'attache
+// fetches a segment from the fifo and attaches it
 extern char * segment_attach();
 
-// detruit tous les segments
+// deletes all segments
 extern void segment_delete();
 
-/*procedure de creation du segment de retour*/
-extern void GLOMPsegment_create_retour();
+// creates a static segment
+extern void segment_create_static();
 
 
 #endif

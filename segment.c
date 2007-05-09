@@ -37,15 +37,15 @@ void segment_create(char* p,int size)
 	if (p==NULL)
 	{
 		// easy case : NULL pointer
-		fifo_output(&GLOMPcmd_fifo,&zero_key,4);
-		fifo_output(&GLOMPcmd_fifo,&zero_size,4);
+		fifo_output(&cmd_fifo,&zero_key,4);
+		fifo_output(&cmd_fifo,&zero_size,4);
 	}
 	else if (size<FAST_PATH_SIZE)
 	{
 		// fast path : copy the data to the fifo
-		fifo_output(&GLOMPcmd_fifo,&zero_key,4);
-		fifo_output(&GLOMPcmd_fifo,&snd_size,4);
-		fifo_output(&GLOMPcmd_fifo,p,size);
+		fifo_output(&cmd_fifo,&zero_key,4);
+		fifo_output(&cmd_fifo,&snd_size,4);
+		fifo_output(&cmd_fifo,p,size);
 	}
 	else
 	{
@@ -61,8 +61,8 @@ void segment_create(char* p,int size)
 			shmdt(shm);
 		}
 
-		fifo_output(&GLOMPcmd_fifo,&snd_key,4);
-		fifo_output(&GLOMPcmd_fifo,&snd_size,4);
+		fifo_output(&cmd_fifo,&snd_key,4);
+		fifo_output(&cmd_fifo,&snd_size,4);
 	}
 	//printf("[serveur] cree segment key %x size %d\n",p?snd_key:zero_key,snd_size);
 	//fflush(stdout);
@@ -72,8 +72,8 @@ void segment_create(char* p,int size)
 char* segment_attach()
 {
 	uint32_t key,size;
-	fifo_input(&GLOMPcmd_fifo,&key,4);
-	fifo_input(&GLOMPcmd_fifo,&size,4);
+	fifo_input(&cmd_fifo,&key,4);
+	fifo_input(&cmd_fifo,&size,4);
 	//printf("[%d] fifo input ok key %x size %d\n",client_num,key,size);
 
 	if (size==0)
@@ -87,7 +87,7 @@ char* segment_attach()
 		segmat* s=(segmat*)malloc(sizeof(segmat));
 		s->key=0;
 		s->shm=(char*)malloc(size);
-		fifo_input(&GLOMPcmd_fifo,s->shm,size);
+		fifo_input(&cmd_fifo,s->shm,size);
 		return s->shm;
 	}
 	else
@@ -133,7 +133,7 @@ void segment_delete()
 
 
 
-void GLOMPsegment_create_retour()
+void segment_create_static()
 {
 	int i;
 

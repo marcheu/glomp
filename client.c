@@ -1,9 +1,6 @@
 #include "client.h"
-#include "array.h"
 #include "lib_funcs.h"
 
-
-extern void initPointers();
 
 typedef void (*func_dispatch_entry) ();
 
@@ -61,10 +58,10 @@ static func_dispatch_entry func_dispatch[]=
 	GLOMPquit,			// OVERRIDE_BASE + 49
 };
 
-void GLOMPunpack()
+void client_unpack()
 {
 	int func;
-	fifo_input(&GLOMPcmd_fifo,&func,4);
+	fifo_input(&cmd_fifo,&func,4);
 	if(DEBUG){printf("CLIENT %d :fnum:%d\n",client_num,func);fflush(stdout);}
 	if(func<OVERRIDE_BASE)
 		functable[func]();
@@ -74,15 +71,6 @@ void GLOMPunpack()
 		printf("CLIENT: unpack unknown function %d\n",func);
 }
 
-
-/*initialise un client*/
-void GLOMPclient_init()
-{  
-	initPointers();/*recupere toutes les add des fonction glX (cf dewarped)*/
-	creertabfunc();/*creer le tableau des fonction deriver GLOMP...*/ 
-	lib_funcs_init();/* initialiser tous les lib_* */
-	array_init();
-}
 
 
 

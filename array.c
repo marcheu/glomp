@@ -134,9 +134,9 @@ static inline GLint array_number(GLenum array_name)
 static inline void output_array_begin(int nbverts,GLenum mode)
 {
 	int fnum=OVERRIDE_BASE+48;
-	fifo_output(&GLOMPcmd_fifo,&fnum,4);
-	fifo_output(&GLOMPcmd_fifo,&nbverts,4);
-	fifo_output(&GLOMPcmd_fifo,&mode,4);
+	fifo_output(&cmd_fifo,&fnum,4);
+	fifo_output(&cmd_fifo,&nbverts,4);
+	fifo_output(&cmd_fifo,&mode,4);
 }
 
 static inline void output_array_draw_elements(
@@ -155,9 +155,9 @@ static inline void output_array_draw_elements(
 	if (jump<stride)
 		jump=stride;
 
-	fifo_output(&GLOMPcmd_fifo,&array_num,4);
-	fifo_output(&GLOMPcmd_fifo,&arrays[array_num].type,4);
-	fifo_output(&GLOMPcmd_fifo,&arrays[array_num].size,4);
+	fifo_output(&cmd_fifo,&array_num,4);
+	fifo_output(&cmd_fifo,&arrays[array_num].type,4);
+	fifo_output(&cmd_fifo,&arrays[array_num].size,4);
 	switch(type)
 	{
 		case GL_UNSIGNED_BYTE:
@@ -167,7 +167,7 @@ static inline void output_array_draw_elements(
 			{
 				index=indicesb[i];
 				data=arrays[array_num].pointer+index*jump;
-				fifo_output(&GLOMPcmd_fifo,data,component_size);
+				fifo_output(&cmd_fifo,data,component_size);
 			}
 			break;
 		}
@@ -178,7 +178,7 @@ static inline void output_array_draw_elements(
 			{
 				index=indicess[i];
 				data=arrays[array_num].pointer+index*jump;
-				fifo_output(&GLOMPcmd_fifo,data,component_size);
+				fifo_output(&cmd_fifo,data,component_size);
 			}
 			break;
 		}
@@ -189,7 +189,7 @@ static inline void output_array_draw_elements(
 			{
 				index=indicesi[i];
 				data=arrays[array_num].pointer+index*jump;
-				fifo_output(&GLOMPcmd_fifo,data,component_size);
+				fifo_output(&cmd_fifo,data,component_size);
 			}
 			break;
 		}
@@ -213,12 +213,12 @@ static inline void output_array_draw_arrays(
 	
 	data=arrays[array_num].pointer+first*jump;
 
-	fifo_output(&GLOMPcmd_fifo,&array_num,4);
-	fifo_output(&GLOMPcmd_fifo,&arrays[array_num].type,4);
-	fifo_output(&GLOMPcmd_fifo,&arrays[array_num].size,4);
+	fifo_output(&cmd_fifo,&array_num,4);
+	fifo_output(&cmd_fifo,&arrays[array_num].type,4);
+	fifo_output(&cmd_fifo,&arrays[array_num].size,4);
 	for(i=first;i<first+count;i++)
 	{
-		fifo_output(&GLOMPcmd_fifo,data,component_size);
+		fifo_output(&cmd_fifo,data,component_size);
 		data+=component_size+jump;
 	}
 }
@@ -226,7 +226,7 @@ static inline void output_array_draw_arrays(
 static inline void output_array_end()
 {
 	int end=MAX_ARRAY;
-	fifo_output(&GLOMPcmd_fifo,&end,4);
+	fifo_output(&cmd_fifo,&end,4);
 }
 
 static void call_vertex_array(int array_num,GLenum mode,GLenum type,GLsizei size,unsigned char* data)
@@ -271,30 +271,30 @@ void GLOMPdraw_array()
 		array_enabled[i]=0;
 
 	// read the fifo data
-	fifo_input(&GLOMPcmd_fifo,&vtx_count,4);
-	fifo_input(&GLOMPcmd_fifo,&mode,4);
+	fifo_input(&cmd_fifo,&vtx_count,4);
+	fifo_input(&cmd_fifo,&mode,4);
 
 	// read the arrays
 	int r;
-	fifo_input(&GLOMPcmd_fifo,&r,4);
+	fifo_input(&cmd_fifo,&r,4);
 
 	while(r<MAX_ARRAY)
 	{
 		int type,size;
 
 		array_enabled[r]=1;
-		fifo_input(&GLOMPcmd_fifo,&type,4);
-		fifo_input(&GLOMPcmd_fifo,&size,4);
+		fifo_input(&cmd_fifo,&type,4);
+		fifo_input(&cmd_fifo,&size,4);
 		int component_size=size*sizeGLenum(type)/8;
 		data[r]=(unsigned char*)malloc(component_size*vtx_count);
 		// get the data from the fifo
 		for(i=0;i<vtx_count;i++)
-			fifo_input(&GLOMPcmd_fifo,data[r]+i*component_size,component_size);
+			fifo_input(&cmd_fifo,data[r]+i*component_size,component_size);
 
 		// and point opengl to the array data
 		call_vertex_array(r,mode,type,size,data[r]);
 
-		fifo_input(&GLOMPcmd_fifo,&r,4);
+		fifo_input(&cmd_fifo,&r,4);
 	}
 
 	// draw !

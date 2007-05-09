@@ -20,9 +20,9 @@ const GLubyte* glGetString( GLenum name )
 			/* we gather the renderers from all the cards */
 			int fnum=OVERRIDE_BASE+43;
 			int c;
-			fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
-			fifo_output(&GLOMPcmd_fifo,&name,4);
-			fifo_flush(&GLOMPcmd_fifo);
+			fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
+			fifo_output(&cmd_fifo,&name,4);
+			fifo_flush(&cmd_fifo);
 			char** client_renderer=(char**)malloc(sizeof(char*)*nbcarte);
 			strcpy(return_renderer,renderer);
 			strcat(return_renderer,"[");
@@ -45,9 +45,9 @@ const GLubyte* glGetString( GLenum name )
 			int fnum=OVERRIDE_BASE+43;
 			int c;
 			int major,minor;
-			fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
-			fifo_output(&GLOMPcmd_fifo,&name,4);
-			fifo_flush(&GLOMPcmd_fifo);
+			fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
+			fifo_output(&cmd_fifo,&name,4);
+			fifo_flush(&cmd_fifo);
 			const GLubyte* version=lib_glGetString(name);
 			int r=sscanf(version,"%d.%d",&major,&minor);
 			if (r!=2)
@@ -84,9 +84,9 @@ const GLubyte* glGetString( GLenum name )
 			 * so we query each card for its extensions and intersect */
 			int fnum=OVERRIDE_BASE+43;
 			int i,j,c;
-			fifo_output(&GLOMPcmd_fifo,&fnum,sizeof(fnum));
-			fifo_output(&GLOMPcmd_fifo,&name,4);
-			fifo_flush(&GLOMPcmd_fifo);
+			fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
+			fifo_output(&cmd_fifo,&name,4);
+			fifo_flush(&cmd_fifo);
 			extensions=lib_glGetString(name);
 			char** client_extensions=(char**)malloc(sizeof(char*)*nbcarte);
 			// wait for the clients to answer
@@ -135,7 +135,7 @@ const GLubyte* glGetString( GLenum name )
 void GLOMPglGetString()
 {
 	GLenum name;
-	fifo_input(&GLOMPcmd_fifo,&name,4);
+	fifo_input(&cmd_fifo,&name,4);
 	const char* s=(const char*)lib_glGetString(name);
 	strcpy(shmadr+4096*client_num,s);
 	sem_post(&semadr[client_num]);
