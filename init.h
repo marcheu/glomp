@@ -13,7 +13,7 @@
 #include "fifo.h"
 #include "lib_funcs.h"
 
-#define DEBUG 1
+#define DEBUG 0
 
  
 

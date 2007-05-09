@@ -10,8 +10,8 @@ extern PFNGLXGETPROCADDRESSARBPROC lib_glXGetProcAddressARB;
 extern void (*lib_glXSwapBuffers)(Display *dpy, GLXDrawable drawable);
 extern GLXWindow (*lib_glXCreateWindow) (Display *dpy, GLXFBConfig config,
  				 Window win, const int *attrib_list);
-extern char* (*lib_glXGetClientString)(Display *, int);
-extern char* (*lib_glXQueryServerString)(Display *dpy, int screen, int name);
+extern char* (*lib_glXGetClientString)(Display * dpy, int name);
+extern const char* (*lib_glXQueryServerString)(Display *dpy, int screen, int name);
 extern GLXFBConfig* (*lib_glXChooseFBConfig)(Display*,int,int*,int*);
 extern int (*lib_glXGetFBConfigAttrib)(Display *dpy, GLXFBConfig config,
                                 int attribute, int *value);
@@ -23,11 +23,11 @@ extern GLXContext (*lib_glXCreateNewContext)(Display *dpy, GLXFBConfig config,
 extern Bool (*lib_glXIsDirect)(Display *dpy, GLXContext ctx);
 extern Bool (*lib_glXMakeCurrent)(Display *dpy, GLXDrawable drawable,
                            GLXContext ctx);
-extern Bool (*lib_glXMakeCurrent)(Display *dpy, GLXDrawable drawable,
-                           GLXContext ctx);
 extern XVisualInfo* (*lib_glXChooseVisual)(Display *dpy, int screen,int *attrib_list);
 extern Bool (*lib_glXQueryVersion)(Display *dpy, int *major, int *minor);
 extern GLXContext (*lib_glXCreateContext)(Display *dpy, XVisualInfo *vis,GLXContext share_list, Bool direct);
+extern void (*lib_glXDestroyContext)(Display *dpy, GLXContext ctx);
+extern void (*lib_glXCopyContext)(Display *dpy, GLXContext src, GLXContext dst, unsigned long mask);
 
 /* GL */
 extern void (*lib_glBindTexture) ( GLenum p0 , GLuint p1 );

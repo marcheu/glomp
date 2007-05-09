@@ -22,7 +22,7 @@ void id_add(int value,int translated_value)
 // translates an id
 int id_translate(int value)
 {
-	if (value>=id_table_size)
+	if ((id_table==NULL)||(value>=id_table_size))
 	{
 		// oops we didn't find the id in the table
 		// that probably means the application doesn't use glGen*

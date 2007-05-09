@@ -1,10 +1,21 @@
 #define _GNU_SOURCE
 #include <string.h>
 #include "overrides.h"
+#include "glheader.h"
 
 /* functions we implement ourselves */
 
+__GLXextFuncPtr glXGetProcAddress (const GLubyte * procName)
+{
+	printf("pouet +%s+\n",procName);
+	return lib_glXGetProcAddressARB(procName);
+}
 
+__GLXextFuncPtr glXGetProcAddressARB (const GLubyte *procName)
+{
+	printf("pouetARB +%s+\n",procName);
+	return lib_glXGetProcAddressARB(procName);
+}
 
 
 

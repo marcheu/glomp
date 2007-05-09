@@ -14,8 +14,8 @@ PFNGLXGETPROCADDRESSARBPROC lib_glXGetProcAddressARB=0;
 void (*lib_glXSwapBuffers)(Display *dpy, GLXDrawable drawable)=0;
 GLXWindow (*lib_glXCreateWindow) (Display *dpy, GLXFBConfig config,
  				 Window win, const int *attrib_list);
-char* (*lib_glXGetClientString)(Display *, int)=0;
-char* (*lib_glXQueryServerString)(Display *dpy, int screen, int name)=0;
+char* (*lib_glXGetClientString)(Display * dpy, int name)=0;
+const char* (*lib_glXQueryServerString)(Display *dpy, int screen, int name)=0;
 GLXFBConfig* (*lib_glXChooseFBConfig)(Display*,int,int*,int*)=0;
 int (*lib_glXGetFBConfigAttrib)(Display *dpy, GLXFBConfig config,
                                 int attribute, int *value)=0;
@@ -30,6 +30,8 @@ Bool (*lib_glXMakeCurrent)(Display *dpy, GLXDrawable drawable,
 XVisualInfo* (*lib_glXChooseVisual)(Display *dpy, int screen,int *attrib_list)=0;
 Bool (*lib_glXQueryVersion)(Display *dpy, int *major, int *minor)=0;
 GLXContext (*lib_glXCreateContext)(Display *dpy, XVisualInfo *vis,GLXContext share_list, Bool direct)=0;
+void (*lib_glXDestroyContext)(Display *dpy, GLXContext ctx)=0;
+void (*lib_glXCopyContext)(Display *dpy, GLXContext src, GLXContext dst, unsigned long mask)=0;
 
 
 
@@ -206,6 +208,8 @@ void lib_funcs_init()
 	lib_glXChooseVisual = dlsym(lib_handle_libGL, "glXChooseVisual");
 	lib_glXQueryVersion = dlsym(lib_handle_libGL, "glXQueryVersion");
 	lib_glXCreateContext = dlsym(lib_handle_libGL, "glXCreateContext");
+	lib_glXDestroyContext = dlsym(lib_handle_libGL, "glXDestroyContext");
+	lib_glXCopyContext = dlsym(lib_handle_libGL, "glXCopyContext");
 
 	/* intercept library GL function */
 	lib_glBindTexture = dlsym(lib_handle_libGL, "glBindTexture");

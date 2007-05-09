@@ -33,13 +33,15 @@ static void GLOMPclient_run()
 /*initialise tout le programme
 se lance avant le main du prog OpenGL
 creer la fifo, les pointeurs de fonctions, ...*/
-static void GLOMP_init()
+void GLOMP_init()
 {
 	static int init=0;
 	if (init==1)
 		return;
 
 	init=1;
+
+	printf("Initializing GLOMP\n");
 
 	int i;
 	Display* dpy;/*pointeur sur la structure Display que nous allons ouvrir*/
@@ -51,12 +53,12 @@ static void GLOMP_init()
 	dpy = lib_XOpenDisplay("");
 	nbcarte=ScreenCount(dpy);
 	lib_XCloseDisplay(dpy);
-	printf("Initializing GLOMP found %d GPUs",nbcarte);
+	printf("  - found %d GPUs\n",nbcarte);
 	/*potentially override the number of GPUs*/
 	force=getenv("FORCE_GPU");
 	if (force)
 	{
-		printf(" (forcing %d GPUs)",atoi(force));
+		printf("  - forcing %d GPUs\n",atoi(force));
 		nbcarte=atoi(force);
 	}
 	printf("\n");
@@ -67,6 +69,7 @@ static void GLOMP_init()
 		case 4:tile_screen_init(2,2);break;
 		case 6:tile_screen_init(3,2);break;
 		case 8:tile_screen_init(4,2);break;
+		case 9:tile_screen_init(3,3);break;
 		case 10:tile_screen_init(5,2);break;
 		case 12:tile_screen_init(4,3);break;
 		default:tile_screen_init(nbcarte,1);break;
@@ -112,7 +115,7 @@ static void GLOMP_init()
 	/*pour les client on les initialise et on les lances*/
 	GLOMPclient_init();
 
-#if 0
+#if 1
 	if (client_num!=0){  
 		GLOMPclient_run();/*tourne en boucle*/
 	}

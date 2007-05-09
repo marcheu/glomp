@@ -63,16 +63,17 @@ int XSetStandardProperties(
 
 }
 
-GLXWindow XCreateWindow(Display *display, Window parent, int x, int y,
-			       unsigned int width2, unsigned int height2, unsigned int border_width, int depth, unsigned int class, Visual *visual,
-			       unsigned long valuemask, XSetWindowAttributes *attribute)
-{  
+static void CreateWindow()
+{
+	static int init=0;
 	int fnum=OVERRIDE_BASE+39;
 	int i,value;
 
-	width=width2;
-	height=height2;
-	printf("XCreateWindow %d %d\n",width,height);
+	if (init==1)
+		return;
+	init=1;
+		
+
 #ifdef ENABLE_SINGLE_SCREEN
 	GLOMP_single_screen_init_window(glxattribs);
 #else
@@ -91,6 +92,19 @@ GLXWindow XCreateWindow(Display *display, Window parent, int x, int y,
 		i++;
 	}
 	while(value!=None);
+
+}
+
+
+GLXWindow XCreateWindow(Display *display, Window parent, int x, int y,
+			       unsigned int width2, unsigned int height2, unsigned int border_width, int depth, unsigned int class, Visual *visual,
+			       unsigned long valuemask, XSetWindowAttributes *attribute)
+{  
+	width=width2;
+	height=height2;
+	printf("XCreateWindow %d %d\n",width,height);
+
+	CreateWindow();
 
 #ifdef ENABLE_SINGLE_SCREEN
 	return lib_XCreateWindow(display, parent, x, y,width, height, border_width,depth,class,visual,valuemask, attribute);
@@ -151,23 +165,51 @@ GLXContext glXCreateContext(Display *dpy, XVisualInfo *vis,
                                    GLXContext share_list, Bool direct)
 {
 	printf("glXCreateContext called !!!!!!!\n");
+	CreateWindow();
 	return lib_glXCreateContext(dpy,vis,share_list,direct);
 }
 
+void glXDestroyContext(Display *dpy, GLXContext ctx)
+{
+	printf("glXDestroyContext called !!!!!!!\n");
+	lib_glXDestroyContext(dpy,ctx);
+}
+
+Bool glXMakeCurrent(Display *dpy, GLXDrawable drawable, GLXContext ctx)
+{
+	printf("glXMakeCurrent called !!!!!!!\n");
+	return lib_glXMakeCurrent(dpy,drawable,ctx);
+}
+
+void glXCopyContext(Display *dpy, GLXContext src, GLXContext dst, unsigned long mask)
+{
+	printf("glXCopyContext called !!!!!!!\n");
+	lib_glXCopyContext(dpy,src,dst,mask);
+}
 
 XVisualInfo* glXChooseVisual(Display *dpy, int screen,
                                     int *attrib_list)
 {
 	int i=0;
+	GLOMP_init();
 
 	while(attrib_list[i]!=None) 
 		i++;
 
 	memcpy(glxattribs,attrib_list,i*sizeof(int));
 
-	lib_glXChooseVisual(dpy,screen,attrib_list);
+	return lib_glXChooseVisual(dpy,screen,attrib_list);
 }
 
+const char * glXQueryServerString(Display *dpy, int screen, int name)
+{
+	return lib_glXQueryServerString(dpy,screen,name);
+}
+
+const char * glXGetClientString(Display *dpy, int name)
+{
+	return lib_glXGetClientString(dpy,name);
+}
 
 void glFrustum ( GLdouble p0 , GLdouble p1 , GLdouble p2 , GLdouble p3 , GLdouble p4 , GLdouble p5 )
 {

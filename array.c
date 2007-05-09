@@ -8,7 +8,7 @@
  *
  * Shortcomings :
  * - ClientActiveTextureARB not handled, so arrays don't work with multitextures
- * - DrawElement not handled
+ * - ArrayElement not handled
  * - generic attributes not handled
  * - we screw the client opengl state a bit, but I can't see a scenario where that's an issue
  */
@@ -151,23 +151,48 @@ static inline void output_array_draw_elements(
 	int stride=arrays[array_num].stride;
 	const unsigned char* data=NULL;
 	int index=0;
+	int jump=component_size;
+	if (jump<stride)
+		jump=stride;
 
 	fifo_output(&GLOMPcmd_fifo,&array_num,4);
 	fifo_output(&GLOMPcmd_fifo,&arrays[array_num].type,4);
 	fifo_output(&GLOMPcmd_fifo,&arrays[array_num].size,4);
-	for(i=0;i<count;i++)
+	switch(type)
 	{
-		index=0;
-		// put this switch() out of the for() for performance improvements ?
-		switch(type)
+		case GL_UNSIGNED_BYTE:
 		{
-			case GL_UNSIGNED_BYTE:index=((GLubyte*)indices)[i];break;
-			case GL_UNSIGNED_SHORT:index=((GLushort*)indices)[i];break;
-			case GL_UNSIGNED_INT:index=((GLuint*)indices)[i];break;
-			default:printf("Wrong index type 0x%x\n",type);
+			GLubyte* indicesb=(GLubyte*)indices;
+			for(i=0;i<count;i++)
+			{
+				index=indicesb[i];
+				data=arrays[array_num].pointer+index*jump;
+				fifo_output(&GLOMPcmd_fifo,data,component_size);
+			}
+			break;
 		}
-		data=arrays[array_num].pointer+index*(component_size+stride);
-		fifo_output(&GLOMPcmd_fifo,data,component_size);
+		case GL_UNSIGNED_SHORT:
+		{
+			GLushort* indicess=(GLushort*)indices;
+			for(i=0;i<count;i++)
+			{
+				index=indicess[i];
+				data=arrays[array_num].pointer+index*jump;
+				fifo_output(&GLOMPcmd_fifo,data,component_size);
+			}
+			break;
+		}
+		case GL_UNSIGNED_INT:
+		{
+			GLuint* indicesi=(GLuint*)indices;
+			for(i=0;i<count;i++)
+			{
+				index=indicesi[i];
+				data=arrays[array_num].pointer+index*jump;
+				fifo_output(&GLOMPcmd_fifo,data,component_size);
+			}
+			break;
+		}
 	}
 }
 
@@ -180,7 +205,13 @@ static inline void output_array_draw_arrays(
 	int i;
 	int component_size=arrays[array_num].size*sizeGLenum(arrays[array_num].type)/8;
 	int stride=arrays[array_num].stride;
-	const unsigned char* data=arrays[array_num].pointer+first*(component_size+stride);
+	const unsigned char* data;
+	int jump=component_size;
+
+	if (jump<stride)
+		jump=stride;
+	
+	data=arrays[array_num].pointer+first*jump;
 
 	fifo_output(&GLOMPcmd_fifo,&array_num,4);
 	fifo_output(&GLOMPcmd_fifo,&arrays[array_num].type,4);
@@ -188,7 +219,7 @@ static inline void output_array_draw_arrays(
 	for(i=first;i<first+count;i++)
 	{
 		fifo_output(&GLOMPcmd_fifo,data,component_size);
-		data+=component_size+stride;
+		data+=component_size+jump;
 	}
 }
 
@@ -246,6 +277,7 @@ void GLOMPdraw_array()
 	// read the arrays
 	int r;
 	fifo_input(&GLOMPcmd_fifo,&r,4);
+
 	while(r<MAX_ARRAY)
 	{
 		int type,size;
@@ -319,9 +351,7 @@ void glDrawElements(GLenum mode, GLsizei count, GLenum type, const GLvoid *indic
 	output_array_begin(count,mode);
 	for(i=0;i<MAX_ARRAY;i++)
 		if (arrays[i].enabled)
-		{
 			output_array_draw_elements(i,count,type,indices);
-		}
 	output_array_end();
 	lib_glDrawElements(mode,count,type,indices);
 }

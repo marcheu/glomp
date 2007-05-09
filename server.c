@@ -20,32 +20,27 @@ static gl_type colorcomponents[]={
 
 int sizeGLenum(GLenum type)
 {
-  int i=0;
+	int i=0;
 
-    while(colorcomponents[i].name!=0)
-    {
-        if (type==colorcomponents[i].name){
-		return colorcomponents[i].size; 
-    	}
-      
-      i++;
-    }
+	while(colorcomponents[i].name!=0)
+	{
+		if (type==colorcomponents[i].name){
+			return colorcomponents[i].size; 
+		}
+		i++;
+	}
 
-    i=0;
+	i=0;
 
-  while(type_table[i].name!=0)
-    {
-      if (type==type_table[i].name){
-	return type_table[i].size; 
-      }
-      
-      i++;
-      
-      
-    }
+	while(type_table[i].name!=0)
+	{
+		if (type==type_table[i].name){
+			return type_table[i].size; 
+		}
+		i++;
+	}
 
-
-  printf("Attention sizeGLenum=0 %x!!\n",type);
-  return 0;
+	printf("Attention sizeGLenum=0 %x!!\n",type);
+	return 0;
 }
 
