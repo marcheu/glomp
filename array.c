@@ -7,7 +7,6 @@
  * the relevant array pieces, which is about as good as it can get.
  *
  * Shortcomings :
- * - ClientActiveTextureARB not handled, so arrays don't work with multitextures (breaks q3 lightmaps)
  * - ArrayElement not handled
  * - generic attributes not handled
  * - we screw the client opengl state a bit, but I can't see a scenario where that's an issue
