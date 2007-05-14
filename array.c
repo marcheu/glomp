@@ -7,7 +7,7 @@
  * the relevant array pieces, which is about as good as it can get.
  *
  * Shortcomings :
- * - ClientActiveTextureARB not handled, so arrays don't work with multitextures
+ * - ClientActiveTextureARB not handled, so arrays don't work with multitextures (breaks q3 lightmaps)
  * - ArrayElement not handled
  * - generic attributes not handled
  * - we screw the client opengl state a bit, but I can't see a scenario where that's an issue
@@ -41,16 +41,22 @@ void array_init()
 	current_tex=0;
 }
 
-// FIXME TODO XXX
-// on en a besoin pour récupérer le numéro de texture active (current_tex) pour savoir quel array utiliser
-//glClientActiveTextureARB
-//glClientActiveTextureARB
+// we need those two to keep track of the current texture array
+void glClientActiveTexture (GLenum texture)
+{
+	current_tex=texture;
+}
+
+void glClientActiveTextureARB (GLenum texture)
+{
+	current_tex=texture;
+}
 
 // renders a single element
 /*
 static inline void render_element(GLint i)
 {
-	void firefunc[MAX_ARRAY]=
+	void firefunc[MAX_ARRAY][]=
 	{
 		NULL,	NULL,			glVertex2fv,	glVertex3fv,		glVertex4fv,
 		NULL,	glVertexWeightfvEXT,	NULL,		NULL,			NULL,
@@ -78,12 +84,21 @@ static inline void render_element(GLint i)
 	{
 		if (arrays[j].enabled)
 		{
-			
+			GLfloat params[4];
+			// convert parameters
+			for(k=0;k<arrays[j].size;k++)
+			{
+				switch(arrays[j].type)
+				case GL_FLOAT:
+				case GL_UNSIGNED_INT:
+				case GL_UNSIGNED_SHORT:
+				case GL_UNSIGNED_BYTE:
+			}
 			// fire
-			glVertexAttrib3fv
+			firefunc[j][arrays[j].size](params);
 			
 		}
-
+	}
 }
 */
 

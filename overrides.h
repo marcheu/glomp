@@ -66,4 +66,6 @@ void GLOMPglMap2f();
 void GLOMPglMap2d();
 void GLOMPdraw_array();
 void GLOMPquit();
+void GLOMPglLoadMatrixf();
+void GLOMPglLoadMatrixd();
 #endif

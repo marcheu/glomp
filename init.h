@@ -29,7 +29,7 @@ extern int nbcarte;/*nombre de GPU dispo*/
 extern sem_t * semadrfen_in;/*semaphore de protection de la fifo*/
 extern sem_t * semadrfen_out;
 
-extern int * client_load;/*sert a calculer la charge de travaille de chaque GPU,chaque case du tab represente un pourcentage de calcule attribué à la carte (pas encore utiliser reellemet, toutes les cartes ont la meme chages)*/
+extern int * client_load;/*sert a calculer la charge de travaille de chaque GPU,chaque case du tab represente un pourcentage de calcule attribue a la carte (pas encore utiliser reellemet, toutes les cartes ont la meme chages)*/
 
 
 extern int width,height;/*taille de la zone*/

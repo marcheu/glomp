@@ -11,6 +11,44 @@ static void tilecoord(int* tx,int* ty,int tilenum)
 	*ty=tilenum/tile_screen_x;
 }
 
+void tile_screen_glLoadMatrixf(int tilenum,const GLfloat* m)
+{
+	int tx,ty;
+	GLfloat local_matrix[16];
+	tilecoord(&tx,&ty,tilenum);
+	memcpy(local_matrix,m,sizeof(GLfloat)*16);
+
+	local_matrix[0]*=(float)tile_screen_x;
+	if (tile_screen_x>1)
+		local_matrix[8]=2.*(float)tx/(float)(tile_screen_x-1)-1.;
+	
+	// FIXME a verifier
+	local_matrix[5]*=(float)tile_screen_y;
+	if (tile_screen_y>1)
+		local_matrix[9]=2.*(float)ty/(float)(tile_screen_y-1)-1.;
+
+	lib_glLoadMatrixf(local_matrix);
+}
+
+void tile_screen_glLoadMatrixd(int tilenum,const GLdouble* m)
+{
+	int tx,ty;
+	GLdouble local_matrix[16];
+	tilecoord(&tx,&ty,tilenum);
+	memcpy(local_matrix,m,sizeof(GLdouble)*16);
+
+	local_matrix[0]*=(float)tile_screen_x;
+	if (tile_screen_x>1)
+		local_matrix[8]=2.*(float)tx/(float)(tile_screen_x-1)-1.;
+
+	// FIXME a verifier
+	local_matrix[5]*=(float)tile_screen_y;
+	if (tile_screen_y>1)
+		local_matrix[9]=2.*(float)ty/(float)(tile_screen_y-1)-1.;
+
+	lib_glLoadMatrixd(local_matrix);
+}
+
 void tile_screen_glFrustum(int tilenum,GLdouble p0,GLdouble p1,GLdouble p2,GLdouble p3,GLdouble p4,GLdouble p5)
 {
 	int tx,ty;

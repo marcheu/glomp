@@ -91,6 +91,8 @@ extern void (*lib_glMatrixMode) (GLenum mode);
 extern void (*lib_glPushMatrix) (void);
 extern void (*lib_glPopMatrix) (void);
 extern void (*lib_glLoadIdentity) (void);
+extern void (*lib_glLoadMatrixf) (const GLfloat* m);
+extern void (*lib_glLoadMatrixd) (const GLdouble* m);
 extern void (*lib_glViewport)( GLint x,GLint y,GLsizei width,GLsizei height);
 extern void (*lib_glRasterPos2i)( GLint x,GLint y);
 extern void (*lib_glRasterPos2f)( GLfloat x,GLfloat y);

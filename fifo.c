@@ -38,7 +38,7 @@ void fifo_flush(fifo* f)
 	int i;
 	// add the size in front
 	uint32_t* h=(uint32_t*)f->msgbuf.mtext;
-	h[0]=f->idx+1;//+1 pour lire la derniere commande
+	h[0]=f->idx+1;//+1 pour lire la derniere commande XXX +4 ?
 	// fire
 	for(i=1;i<nbcarte;i++)
 	{

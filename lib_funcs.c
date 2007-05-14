@@ -97,6 +97,8 @@ void (*lib_glMatrixMode) (GLenum mode)=0;
 void (*lib_glPushMatrix) (void)=0;
 void (*lib_glPopMatrix) (void)=0;
 void (*lib_glLoadIdentity) (void)=0;
+void (*lib_glLoadMatrixf) (const GLfloat* m)=0;
+void (*lib_glLoadMatrixd) (const GLdouble* m)=0;
 void (*lib_glViewport)( GLint x,GLint y,GLsizei width,GLsizei height)=0;
 void (*lib_glRasterPos2i)( GLint x,GLint y)=0;
 void (*lib_glRasterPos2f)( GLfloat x,GLfloat y)=0;
@@ -239,6 +241,8 @@ void lib_funcs_init()
 	lib_glPushMatrix = dlsym(lib_handle_libGL, "glPushMatrix"); 
 	lib_glPopMatrix = dlsym(lib_handle_libGL, "glPopMatrix"); 
 	lib_glLoadIdentity = dlsym(lib_handle_libGL, "glLoadIdentity"); 
+	lib_glLoadMatrixf = dlsym(lib_handle_libGL, "glLoadMatrixf"); 
+	lib_glLoadMatrixd = dlsym(lib_handle_libGL, "glLoadMatrixd"); 
 
 	/*les extensions*/
 	lib_glBindTextureEXT = dlsym(lib_handle_libGL, "glBindTextureEXT");    

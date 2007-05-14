@@ -1,12 +1,12 @@
 
 Missing overrides
 -------------------
-glXGetProcAddress
+handle glXGetProcAddress, and make it return our functions
 
 
 Try inlining fifo_input/fifo_output
 
 
-Kill dead stuffs (for example generate/ ; also remove lex/yacc)
+Kill dead stuff (for example generate/ ; also remove lex/yacc)
 
 

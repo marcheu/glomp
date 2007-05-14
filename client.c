@@ -56,6 +56,8 @@ static func_dispatch_entry func_dispatch[]=
 	GLOMPglMap2d,			// OVERRIDE_BASE + 47
 	GLOMPdraw_array,		// OVERRIDE_BASE + 48
 	GLOMPquit,			// OVERRIDE_BASE + 49
+	GLOMPglLoadMatrixf,		// OVERRIDE_BASE + 50
+	GLOMPglLoadMatrixd,		// OVERRIDE_BASE + 51
 };
 
 void client_unpack()

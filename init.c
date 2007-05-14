@@ -58,6 +58,7 @@ void GLOMP_init()
 	dpy = lib_XOpenDisplay("");
 	nbcarte=ScreenCount(dpy);
 	lib_XCloseDisplay(dpy);
+	nbcarte=2;
 	printf("  - found %d GPUs\n",nbcarte);
 	/*potentially override the number of GPUs*/
 	force=getenv("FORCE_GPU");

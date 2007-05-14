@@ -145,7 +145,11 @@ char * noParseFunction_table[]=
     "DisableClientState",
     "DrawArrays",
     "DrawArraysEXT",
-
+    "ClientActiveTexture",
+    "ClientActiveTextureARB",
+    /* wrap around matrix load for tiled screen projection setup */
+    "LoadMatrixf",
+    "LoadMatrixd",
 
     /*et dans wrapped pb*/
     "GetMapdv",
