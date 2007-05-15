@@ -43,12 +43,12 @@ void array_init()
 // we need those two to keep track of the current texture array
 void glClientActiveTexture (GLenum texture)
 {
-	current_tex=texture;
+	current_tex=texture-GL_TEXTURE0;
 }
 
 void glClientActiveTextureARB (GLenum texture)
 {
-	current_tex=texture;
+	current_tex=texture-GL_TEXTURE0;
 }
 
 // renders a single element
