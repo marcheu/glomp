@@ -434,8 +434,8 @@ static void server_quit()
 void GLOMPquit()
 {
 #ifdef ENABLE_SINGLE_SCREEN
-	multi_screen_close();
 #else
+	multi_screen_close();
 #endif
 	exit(0);
 }

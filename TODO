@@ -6,7 +6,10 @@ handle glXGetProcAddress, and make it return our functions
 
 Try inlining fifo_input/fifo_output
 
+Add licenses to the files
 
 Kill dead stuff (for example generate/ ; also remove lex/yacc)
+
+Implement multi-screen gamma correction
 
 

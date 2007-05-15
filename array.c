@@ -44,11 +44,13 @@ void array_init()
 void glClientActiveTexture (GLenum texture)
 {
 	current_tex=texture-GL_TEXTURE0;
+	lib_glClientActiveTexture(texture);
 }
 
 void glClientActiveTextureARB (GLenum texture)
 {
 	current_tex=texture-GL_TEXTURE0;
+	lib_glClientActiveTexture(texture);
 }
 
 // renders a single element
