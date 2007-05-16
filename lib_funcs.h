@@ -28,6 +28,8 @@ extern Bool (*lib_glXQueryVersion)(Display *dpy, int *major, int *minor);
 extern GLXContext (*lib_glXCreateContext)(Display *dpy, XVisualInfo *vis,GLXContext share_list, Bool direct);
 extern void (*lib_glXDestroyContext)(Display *dpy, GLXContext ctx);
 extern void (*lib_glXCopyContext)(Display *dpy, GLXContext src, GLXContext dst, unsigned long mask);
+extern int (*lib_glXGetConfig)(Display *dpy, XVisualInfo *vis, int attrib, int *value);
+extern const char *(*lib_glXQueryExtensionsString)(Display *dpy, int screen);
 
 /* GL */
 extern void (*lib_glBindTexture) ( GLenum p0 , GLuint p1 );

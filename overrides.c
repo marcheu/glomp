@@ -21,21 +21,39 @@
 #include <string.h>
 #include "overrides.h"
 #include "glheader.h"
+#include <dlfcn.h>
 
 /* functions we implement ourselves */
 
-__GLXextFuncPtr glXGetProcAddress (const GLubyte * procName)
+__GLXextFuncPtr glXGetProcAddress (const GLubyte * name)
 {
-	printf("pouet +%s+\n",procName);
-	return lib_glXGetProcAddressARB(procName);
+	printf("glXGetProcAddress(\"%s\") called !!!!!!!\n",name);
+	return lib_glXGetProcAddressARB(name);
 }
 
-__GLXextFuncPtr glXGetProcAddressARB (const GLubyte *procName)
+__GLXextFuncPtr glXGetProcAddressARB (const GLubyte * name)
 {
-	printf("pouetARB +%s+\n",procName);
-	return lib_glXGetProcAddressARB(procName);
+	printf("glXGetProcAddressARB(\"%s\") called !!!!!!!\n",name);
+	return lib_glXGetProcAddressARB(name);
 }
 
+#if 0
+void* dlsym(void *handle, const char* name)
+{
+	static void* (*pdlsym)(void*, const char*) = (void *) 0xdeadbeef;
+	static void* libdl;
+
+	/* When pdlsym isn't set, try to dlsym dlsym */
+	if((int)*pdlsym == 0xdeadbeef)
+	{
+		libdl = dlopen("libdl.so", RTLD_GLOBAL|RTLD_LAZY);
+		pdlsym = (void*)dlvsym(libdl, "dlsym", "GLIBC_2.0");
+	}
+
+	printf("dlsym queried for %s\n",name);
+	return pdlsym(handle, name);;
+}
+#endif
 
 
 void glGenTextures ( GLsizei p0 , GLuint *p1 )

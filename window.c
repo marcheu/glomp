@@ -206,6 +206,7 @@ void glXCopyContext(Display *dpy, GLXContext src, GLXContext dst, unsigned long 
 	lib_glXCopyContext(dpy,src,dst,mask);
 }
 
+
 XVisualInfo* glXChooseVisual(Display *dpy, int screen,
                                     int *attrib_list)
 {
@@ -222,13 +223,64 @@ XVisualInfo* glXChooseVisual(Display *dpy, int screen,
 
 const char * glXQueryServerString(Display *dpy, int screen, int name)
 {
+	printf("glXQueryServerString called !!!!!!!\n");
 	return lib_glXQueryServerString(dpy,screen,name);
 }
 
 const char * glXGetClientString(Display *dpy, int name)
 {
+	printf("glXGetClientString called !!!!!!!\n");
 	return lib_glXGetClientString(dpy,name);
 }
+
+GLXFBConfig *glXChooseFBConfig(Display *dpy, int screen,
+                                      const int *attrib_list, int *nelements)
+{
+	printf("glXChooseFBConfig called !!!!!!!\n");
+	return lib_glXChooseFBConfig(dpy,screen,attrib_list,nelements);
+}
+
+int glXGetFBConfigAttrib(Display *dpy, GLXFBConfig config,
+                                int attribute, int *value)
+{
+	printf("glXGetFBConfigAttrib called !!!!!!!\n");
+	return lib_glXGetFBConfigAttrib(dpy,config,attribute,value);
+}
+
+GLXPbuffer glXCreatePbuffer(Display *dpy, GLXFBConfig config,
+                                   const int *attrib_list)
+{
+	printf("glXCreatePbuffer called !!!!!!!\n");
+	return lib_glXCreatePbuffer(dpy,config,attrib_list);
+}
+
+
+Bool glXIsDirect(Display *dpy, GLXContext ctx)
+{
+	printf("glXIsDirect called !!!!!!!\n");
+	return lib_glXIsDirect(dpy,ctx);
+}
+
+Bool glXQueryVersion(Display *dpy, int *major, int *minor)
+{
+	printf("glXQueryVersion called !!!!!!!\n");
+	return lib_glXQueryVersion(dpy,major,minor);
+}
+
+int glXGetConfig(Display *dpy, XVisualInfo *vis,
+                        int attrib, int *value)
+{
+	printf("glXGetConfig called !!!!!!!\n");
+	return lib_glXGetConfig(dpy,vis,attrib,value);
+	
+}
+
+const char *glXQueryExtensionsString(Display *dpy, int screen)
+{
+	printf("glXQueryExtensionsString called !!!!!!!\n");
+	return lib_glXQueryExtensionsString(dpy,screen);
+}
+
 
 void glFrustum ( GLdouble p0 , GLdouble p1 , GLdouble p2 , GLdouble p3 , GLdouble p4 , GLdouble p5 )
 {

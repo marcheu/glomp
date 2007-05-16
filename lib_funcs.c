@@ -51,6 +51,8 @@ Bool (*lib_glXQueryVersion)(Display *dpy, int *major, int *minor)=0;
 GLXContext (*lib_glXCreateContext)(Display *dpy, XVisualInfo *vis,GLXContext share_list, Bool direct)=0;
 void (*lib_glXDestroyContext)(Display *dpy, GLXContext ctx)=0;
 void (*lib_glXCopyContext)(Display *dpy, GLXContext src, GLXContext dst, unsigned long mask)=0;
+int (*lib_glXGetConfig)(Display *dpy, XVisualInfo *vis, int attrib, int *value)=0;
+const char *(*lib_glXQueryExtensionsString)(Display *dpy, int screen)=0;
 
 
 
@@ -219,7 +221,6 @@ void lib_funcs_init()
 	lib_glXSwapBuffers = dlsym(lib_handle_libGL, "glXSwapBuffers");
 	lib_glXCreateWindow = dlsym(lib_handle_libGL, "glXCreateWindow");   
 	lib_glXQueryServerString = dlsym(lib_handle_libGL, "glXQueryServerString");
-	/* FIXME */
 	lib_glXChooseFBConfig = dlsym(lib_handle_libGL,"glXChooseFBConfig");
 	lib_glXGetFBConfigAttrib = dlsym(lib_handle_libGL, "glXGetFBConfigAttrib");
 	lib_glXCreatePbuffer = dlsym(lib_handle_libGL, "glXCreatePbuffer");
@@ -231,6 +232,8 @@ void lib_funcs_init()
 	lib_glXCreateContext = dlsym(lib_handle_libGL, "glXCreateContext");
 	lib_glXDestroyContext = dlsym(lib_handle_libGL, "glXDestroyContext");
 	lib_glXCopyContext = dlsym(lib_handle_libGL, "glXCopyContext");
+	lib_glXGetConfig = dlsym(lib_handle_libGL, "glXGetConfig");
+	lib_glXQueryExtensionsString = dlsym(lib_handle_libGL, "glXQueryExtensionsString");
 
 	/* intercept library GL function */
 	lib_glBindTexture = dlsym(lib_handle_libGL, "glBindTexture");
