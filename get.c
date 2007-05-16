@@ -1,3 +1,22 @@
+/*
+ *   GLOMP - transparent multipipe OpenGL
+ *   Copyright (C) 2007 the GLOMP team (see AUTHORS)
+ *   
+ *   This library is free software; you can redistribute it and/or
+ *   modify it under the terms of the GNU Lesser General Public
+ *   License as published by the Free Software Foundation; either
+ *   version 2.1 of the License, or (at your option) any later version.
+ *   
+ *   This library is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *   Lesser General Public License for more details.
+ *
+ *   You should have received a copy of the GNU Lesser General Public
+ *   License along with this library; if not, write to the Free Software
+ *   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ */
+
 #include "overrides.h"
 #include "glheader.h"
 
@@ -79,7 +98,7 @@ const GLubyte* glGetString( GLenum name )
 		case GL_EXTENSIONS:
 		{
 			/* blacklist extensions that can't be auto genereted and aren't written yet */
-			char* blacklisted_extensions = "GL_ARB_vertex_buffer_object";
+			char* blacklisted_extensions = "GL_ARB_vertex_buffer_object GL_EXT_framebuffer_object";
 			/* we have different cards, but need to expose a single extension string
 			 * so we query each card for its extensions and intersect */
 			int fnum=OVERRIDE_BASE+43;

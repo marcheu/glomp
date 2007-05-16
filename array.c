@@ -1,4 +1,22 @@
-
+/*
+ *   GLOMP - transparent multipipe OpenGL
+ *   Copyright (C) 2007 the GLOMP team (see AUTHORS)
+ *   
+ *   This library is free software; you can redistribute it and/or
+ *   modify it under the terms of the GNU Lesser General Public
+ *   License as published by the Free Software Foundation; either
+ *   version 2.1 of the License, or (at your option) any later version.
+ *   
+ *   This library is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *   Lesser General Public License for more details.
+ *
+ *   You should have received a copy of the GNU Lesser General Public
+ *   License along with this library; if not, write to the Free Software
+ *   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ */
+     
 /* vertex array handling code
  *
  * Since vertex arrays cannot be migrated (there is no locking/unlocking
@@ -9,7 +27,6 @@
  * Shortcomings :
  * - ArrayElement not handled
  * - generic attributes not handled
- * - we screw the client opengl state a bit, but I can't see a scenario where that's an issue
  */
 
 
@@ -249,7 +266,7 @@ static void call_vertex_array(int array_num,GLenum mode,GLenum type,GLsizei size
 {
 	// now enable this array
 	if (array_num>=8)
-		lib_glClientActiveTexture(GL_TEXTURE0+(array_num-8));	// FIXME here we screw the opengl state !!!
+		lib_glClientActiveTexture(GL_TEXTURE0+(array_num-8));
 	lib_glEnableClientState(array_name(array_num));
 
 	// and give opengl the array
@@ -326,7 +343,6 @@ void GLOMPdraw_array()
 	{
 		if (array_enabled[i])
 		{
-			// FIXME here we screw the opengl state !!!
 			if (i>=8)
 				lib_glClientActiveTexture(GL_TEXTURE0+(i-8));
 			lib_glDisableClientState(array_name(i));
