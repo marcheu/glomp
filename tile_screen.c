@@ -1,4 +1,5 @@
 
+#include <string.h>
 #include "tile_screen.h"
 #include "lib_funcs.h"
 

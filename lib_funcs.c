@@ -82,12 +82,12 @@ void (*lib_glFlush) ()=0;
 void (*lib_glFinish) ()=0;
 void (*lib_glDeleteQueries) ( GLsizei p0 , GLuint *p1 )=0;
 void (*lib_glDeleteBuffers) ( GLsizei p0 , GLuint *p1 )=0;
-void (*lib_glDeleteProgramsARB) ( GLsizei p0 , GLuint *p1 )=0;
+void (*lib_glDeleteProgramsARB) ( GLsizei p0 , const GLuint *p1 )=0;
 void (*lib_glDeleteBuffersARB) ( GLsizei p0 , GLuint *p1 )=0;
 void (*lib_glDeleteQueriesARB) ( GLsizei p0 , GLuint *p1 )=0;
 void (*lib_glDeleteTexturesEXT) ( GLsizei p0 , GLuint *p1 )=0;
 void (*lib_glDeleteFencesNV) ( GLsizei p0 , GLuint *p1 )=0;
-void (*lib_glDeleteProgramsNV) ( GLsizei p0 , GLuint *p1 )=0;
+void (*lib_glDeleteProgramsNV) ( GLsizei p0 , const GLuint *p1 )=0;
 void (*lib_glDeleteOcclusionQueriesNV) ( GLsizei p0 , GLuint *p1 )=0;
 void (*lib_glDeleteRenderbuffersEXT) ( GLsizei p0 , GLuint *p1 )=0;
 void (*lib_glDeleteFramebuffersEXT) ( GLsizei p0 , GLuint *p1 )=0;
@@ -201,7 +201,7 @@ void lib_funcs_init()
 	lib_glXCreateWindow = dlsym(lib_handle_libGL, "glXCreateWindow");   
 	lib_glXQueryServerString = dlsym(lib_handle_libGL, "glXQueryServerString");
 	/* FIXME */
-	lib_glXChooseFBConfig = lib_glXGetProcAddressARB("glXChooseFBConfig");
+	lib_glXChooseFBConfig = dlsym(lib_handle_libGL,"glXChooseFBConfig");
 	lib_glXGetFBConfigAttrib = dlsym(lib_handle_libGL, "glXGetFBConfigAttrib");
 	lib_glXCreatePbuffer = dlsym(lib_handle_libGL, "glXCreatePbuffer");
 	lib_glXCreateNewContext = dlsym(lib_handle_libGL, "glXCreateNewContext");

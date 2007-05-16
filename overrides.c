@@ -1033,7 +1033,7 @@ void GLOMPglDeleteBuffers()
 void glDeleteProgramsARB (GLsizei p0, const GLuint * p1)
 {
   int i;
-  int id;
+  GLuint id;
   int fnum=OVERRIDE_BASE+30;
 
   fifo_output(&cmd_fifo,&fnum,sizeof(fnum));
