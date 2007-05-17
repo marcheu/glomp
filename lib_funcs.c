@@ -154,6 +154,10 @@ void (*lib_glEdgeFlagPointer) (GLsizei stride, const GLvoid *pointer)=0;
 void (*lib_glTexCoordPointer) (GLint size, GLenum type, GLsizei stride, const GLvoid *pointer)=0;
 void (*lib_glDrawArrays) (GLenum mode, GLint first, GLsizei count)=0;
 void (*lib_glDrawElements) (GLenum mode, GLsizei count, GLenum type, const GLvoid *indices)=0;
+void (*lib_glGetMapdv) (GLenum target, GLenum query, GLdouble *v)=0;
+void (*lib_glGetMapfv) (GLenum target, GLenum query, GLfloat *v)=0;
+void (*lib_glGetMapiv) (GLenum target, GLenum query, GLint *v)=0;
+void (*lib_glGetTexImage) (GLenum target, GLint level, GLenum format, GLenum type, GLvoid *pixels)=0;
 
 
 
@@ -264,7 +268,11 @@ void lib_funcs_init()
 	lib_glPopMatrix = dlsym(lib_handle_libGL, "glPopMatrix"); 
 	lib_glLoadIdentity = dlsym(lib_handle_libGL, "glLoadIdentity"); 
 	lib_glLoadMatrixf = dlsym(lib_handle_libGL, "glLoadMatrixf"); 
-	lib_glLoadMatrixd = dlsym(lib_handle_libGL, "glLoadMatrixd"); 
+	lib_glLoadMatrixd = dlsym(lib_handle_libGL, "glLoadMatrixd");
+	lib_glGetMapdv = dlsym(lib_handle_libGL, "glGetMapdv");
+	lib_glGetMapfv = dlsym(lib_handle_libGL, "glGetMapfv");
+	lib_glGetMapiv = dlsym(lib_handle_libGL, "glGetMapiv");
+	lib_glGetTexImage = dlsym(lib_handle_libGL, "glGetTexImage");
 
 	/*les extensions*/
 	lib_glBindTextureEXT = dlsym(lib_handle_libGL, "glBindTextureEXT");    

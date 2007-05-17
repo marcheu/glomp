@@ -129,6 +129,10 @@ extern void (*lib_glEdgeFlagPointer) (GLsizei stride, const GLvoid *pointer);
 extern void (*lib_glTexCoordPointer) (GLint size, GLenum type, GLsizei stride, const GLvoid *pointer);
 extern void (*lib_glDrawArrays) (GLenum mode, GLint first, GLsizei count);
 extern void (*lib_glDrawElements) (GLenum mode, GLsizei count, GLenum type, const GLvoid *indices);
+extern void (*lib_glGetMapdv) (GLenum target, GLenum query, GLdouble *v);
+extern void (*lib_glGetMapfv) (GLenum target, GLenum query, GLfloat *v);
+extern void (*lib_glGetMapiv) (GLenum target, GLenum query, GLint *v);
+extern void (*lib_glGetTexImage) (GLenum target, GLint level, GLenum format, GLenum type, GLvoid *pixels);
 
 
 

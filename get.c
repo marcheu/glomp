@@ -160,4 +160,23 @@ void GLOMPglGetString()
 	sem_post(&semadr[client_num]);
 }
 
+void glGetMapdv (GLenum target, GLenum query, GLdouble *v)
+{
+	return lib_glGetMapdv(target,query,v);
+}
+
+void glGetMapfv (GLenum target, GLenum query, GLfloat *v)
+{
+	return lib_glGetMapfv(target,query,v);
+}
+
+void glGetMapiv (GLenum target, GLenum query, GLint *v)
+{
+	return lib_glGetMapiv(target,query,v);
+}
+
+void glGetTexImage (GLenum target, GLint level, GLenum format, GLenum type, GLvoid *pixels)
+{
+	return lib_glGetTexImage(target,level,format,type,pixels);
+}
 
