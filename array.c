@@ -249,10 +249,15 @@ static inline void output_array_draw_arrays(
 	fifo_output(&cmd_fifo,&array_num,4);
 	fifo_output(&cmd_fifo,&arrays[array_num].type,4);
 	fifo_output(&cmd_fifo,&arrays[array_num].size,4);
-	for(i=first;i<first+count;i++)
+	if (jump==0)
 	{
 		fifo_output(&cmd_fifo,data,component_size);
-		data+=component_size+jump;
+	} else {
+		for(i=first;i<first+count;i++)
+		{
+			fifo_output(&cmd_fifo,data,component_size);
+			data+=component_size+jump;
+		}
 	}
 }
 
